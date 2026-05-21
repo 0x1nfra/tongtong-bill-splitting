@@ -1,0 +1,88 @@
+@import url("https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&family=Shadows+Into+Light+Two&family=Bungee&display=swap");
+@import url("https://fonts.cdnfonts.com/css/departure-mono");
+@import "tailwindcss";
+
+@theme inline {
+  /* TongTong color system */
+  --color-paper-chit: #F4EFE6;
+  --color-paper-table: #EEEAE2;
+  --color-ink: #1F1B17;
+  --color-pen: #1E40AF;
+  --color-stamp: #B91C1C;
+
+  /* Tailwind shorthand aliases */
+  --color-background: var(--color-paper-table);
+  --color-foreground: var(--color-ink);
+
+  /* Typography */
+  --font-display: "Departure Mono", monospace;
+  --font-body: "JetBrains Mono", monospace;
+  --font-handwriting: "Shadows Into Light Two", cursive;
+  --font-stamp: "Bungee", sans-serif;
+}
+
+body {
+  background-color: #EEEAE2;
+  color: #1F1B17;
+  font-family: "JetBrains Mono", monospace;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Paper grain texture overlay */
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 9999;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='300' height='300' filter='url(%23noise)' opacity='0.06'/%3E%3C/svg%3E");
+  opacity: 0.06;
+}
+
+/* Ink-bleed SVG filter for stamps */
+@layer base {
+  svg#filters {
+    position: absolute;
+    width: 0;
+    height: 0;
+  }
+}
+
+/* Dot-leader utility */
+.dot-leader {
+  display: flex;
+  align-items: baseline;
+  gap: 0;
+}
+
+.dot-leader::after {
+  content: "";
+  flex: 1;
+  border-bottom: 1px dotted #1F1B17;
+  opacity: 0.4;
+  margin: 0 4px 3px;
+}
+
+/* Hairline rule */
+.rule-hairline {
+  border-color: rgba(31, 27, 23, 0.35);
+  border-width: 0.5px;
+}
+
+/* Chit surface */
+.chit {
+  background-color: #F4EFE6;
+  box-shadow: 2px 4px 16px rgba(31, 27, 23, 0.12), 0 1px 3px rgba(31, 27, 23, 0.08);
+}
+
+/* Perforation edge */
+.perforation {
+  background-image: repeating-linear-gradient(
+    to right,
+    transparent,
+    transparent 6px,
+    rgba(31, 27, 23, 0.25) 6px,
+    rgba(31, 27, 23, 0.25) 8px
+  );
+  height: 1px;
+}
