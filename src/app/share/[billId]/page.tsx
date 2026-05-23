@@ -1,10 +1,12 @@
 "use client";
 
-import { use } from "react";
+import { use, useState, useEffect } from "react";
 import { useQuery } from "convex/react";
 import { useRouter } from "next/navigation";
 import { api } from "../../../../convex/_generated/api";
 import type { Id } from "../../../../convex/_generated/dataModel";
+import { BillSummaryCard } from "@/components/BillSummaryCard";
+import { CopyLinkField } from "@/components/CopyLinkField";
 
 export default function SharePage({
   params,
@@ -13,7 +15,15 @@ export default function SharePage({
 }) {
   const { billId } = use(params);
   const router = useRouter();
-  const bill = useQuery(api.bills.getBillForMember, { billId: billId as Id<"bills"> });
+  const bill = useQuery(api.bills.getBillForMember, {
+    billId: billId as Id<"bills">,
+  });
+
+  // SHARE-03: construct /c/[billId] URL inside useEffect — window.location is browser-only
+  const [shareUrl, setShareUrl] = useState<string>("");
+  useEffect(() => {
+    setShareUrl(`${window.location.origin}/c/${billId}`);
+  }, [billId]);
 
   if (bill === undefined) {
     return (
@@ -40,32 +50,52 @@ export default function SharePage({
     );
   }
 
+  // SHARE-01: display code derived from first 4 chars of Convex billId (uppercase)
   const displayCode = `#TT-${billId.slice(0, 4).toUpperCase()}`;
+
+  // WhatsApp share URL — SHARE-04: recipients need no login
+  const whatsAppUrl = `https://wa.me/?text=${encodeURIComponent(shareUrl)}`;
 
   return (
     <main className="min-h-screen bg-[--color-paper-table]">
       <div className="max-w-[480px] mx-auto px-4 py-8">
-        <h1 className="text-2xl font-bold uppercase text-[--color-ink] tracking-widest mb-2">
+        {/* Page heading — SHARE-02 */}
+        <h1 className="text-2xl font-bold uppercase text-[--color-ink] tracking-widest mb-6">
           SHARE THIS CHIT
         </h1>
-        <p className="text-xs text-[--color-ink] opacity-60 mb-6">
-          {displayCode}
+
+        {/* Bill summary card — SHARE-02: displays bill title, item count, grand total */}
+        <BillSummaryCard
+          title={bill.title}
+          items={bill.items}
+          applySST={bill.applySST}
+          applyServiceCharge={bill.applyServiceCharge}
+          displayCode={displayCode}
+        />
+
+        {/* Send to friends section — SHARE-03 */}
+        <p className="uppercase text-xs text-[--color-ink] opacity-60 mt-6 mb-2">
+          SEND TO FRIENDS
         </p>
-        <div className="bg-[--color-paper-chit] p-4 mb-6">
-          <p className="text-sm font-bold uppercase text-[--color-ink] tracking-wide">
-            {bill.title}
-          </p>
-        </div>
-        <button
-          type="button"
-          className="block w-full bg-[--color-pen] text-white uppercase font-bold text-sm tracking-widest py-3 min-h-[48px] flex items-center justify-center mb-3"
+
+        {/* Copy link field with 2s COPIED! feedback — SHARE-03 */}
+        <CopyLinkField url={shareUrl} />
+
+        {/* WhatsApp share button — SHARE-04 */}
+        <a
+          href={whatsAppUrl}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="mt-3 flex w-full h-12 bg-[--color-pen] text-white uppercase font-bold text-sm tracking-widest items-center justify-center rounded"
         >
-          COPY LINK
-        </button>
+          SEND TO WHATSAPP
+        </a>
+
+        {/* Dashboard navigation — D-09 */}
         <button
           type="button"
           onClick={() => router.push(`/dashboard/${billId}`)}
-          className="block w-full text-center text-sm text-[--color-pen] font-bold uppercase tracking-widest py-2 min-h-[44px] flex items-center justify-center"
+          className="mt-4 w-full text-center text-sm text-[--color-pen] underline py-2"
         >
           VIEW MY DASHBOARD
         </button>
