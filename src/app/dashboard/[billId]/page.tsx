@@ -3,6 +3,7 @@
 import { use, useEffect, useState } from "react";
 import { useQuery } from "convex/react";
 import { api } from "../../../../convex/_generated/api";
+import type { Id } from "../../../../convex/_generated/dataModel";
 
 export default function DashboardPage({
   params,
@@ -22,7 +23,7 @@ export default function DashboardPage({
   // unauthenticated request; Convex server will also verify the secret
   const bill = useQuery(
     api.bills.getBillForOrganizer,
-    organizerSecret ? { billId, organizerSecret } : "skip"
+    organizerSecret ? { billId: billId as Id<"bills">, organizerSecret } : "skip"
   );
 
   // organizerSecret is null while localStorage hasn't been read yet (SSR-safe)

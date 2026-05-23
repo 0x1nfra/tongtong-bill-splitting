@@ -4,6 +4,7 @@ import { use, useEffect, useState } from "react";
 import { useQuery } from "convex/react";
 import { useRouter } from "next/navigation";
 import { api } from "../../../../convex/_generated/api";
+import type { Id } from "../../../../convex/_generated/dataModel";
 
 /**
  * useMemberSession — reads or generates the member session UUID for this bill.
@@ -32,7 +33,7 @@ export default function MemberViewPage({
   const { billId } = use(params);
   const router = useRouter();
   const _memberSession = useMemberSession(billId);
-  const bill = useQuery(api.bills.getBillForMember, { billId });
+  const bill = useQuery(api.bills.getBillForMember, { billId: billId as Id<"bills"> });
 
   // D-05: if organizer opens member link from their own device, redirect to dashboard
   useEffect(() => {

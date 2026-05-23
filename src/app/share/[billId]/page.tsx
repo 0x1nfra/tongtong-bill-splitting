@@ -4,6 +4,7 @@ import { use } from "react";
 import { useQuery } from "convex/react";
 import { useRouter } from "next/navigation";
 import { api } from "../../../../convex/_generated/api";
+import type { Id } from "../../../../convex/_generated/dataModel";
 
 export default function SharePage({
   params,
@@ -12,7 +13,7 @@ export default function SharePage({
 }) {
   const { billId } = use(params);
   const router = useRouter();
-  const bill = useQuery(api.bills.getBillForMember, { billId });
+  const bill = useQuery(api.bills.getBillForMember, { billId: billId as Id<"bills"> });
 
   if (bill === undefined) {
     return (
