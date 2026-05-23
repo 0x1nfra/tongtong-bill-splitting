@@ -4,6 +4,7 @@ import { useState, useEffect, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { useMutation } from "convex/react";
 import { api } from "../../../convex/_generated/api";
+import type { Id } from "../../../convex/_generated/dataModel";
 import { type ItemDraft, ItemRow } from "@/components/ItemRow";
 import { RunningTotal } from "@/components/RunningTotal";
 import { QRUpload } from "@/components/QRUpload";
@@ -89,7 +90,7 @@ export default function CreatePage() {
         title,
         applySST,
         applyServiceCharge,
-        qrStorageId,
+        qrStorageId: qrStorageId as Id<"_storage"> | undefined,
         venueName: venueName || undefined,
         billDate: billDate || undefined,
         items: items.map((item, index) => ({
