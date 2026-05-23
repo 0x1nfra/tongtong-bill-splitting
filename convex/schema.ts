@@ -9,6 +9,8 @@ export default defineSchema({
     applyServiceCharge: v.boolean(),
     qrStorageId: v.optional(v.id("_storage")),
     archivedAt: v.optional(v.number()),
+    venueName: v.optional(v.string()),
+    billDate: v.optional(v.string()), // ISO date string "YYYY-MM-DD"
   }),
 
   items: defineTable({
