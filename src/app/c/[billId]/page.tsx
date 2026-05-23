@@ -175,7 +175,6 @@ export default function MemberViewPage({
               <div
                 key={item._id}
                 className="flex justify-between text-sm text-[--color-ink] py-1 border-b border-[--color-ink] opacity-80"
-                style={{ borderBottomOpacity: 0.15 }}
               >
                 <span className="flex-1">
                   {item.name}
@@ -234,7 +233,7 @@ export default function MemberViewPage({
           ) : null}
 
           {/* Grand total row */}
-          <div className="flex justify-between font-bold text-base text-[--color-ink] border-t border-[--color-ink] mt-2 pt-2" style={{ borderTopOpacity: 0.2 }}>
+          <div className="flex justify-between font-bold text-base text-[--color-ink] border-t border-[--color-ink] mt-2 pt-2">
             <span className="uppercase tracking-widest">GRAND TOTAL</span>
             <span>RM{totals.grandTotal}</span>
           </div>
@@ -263,7 +262,6 @@ export default function MemberViewPage({
               onChange={(e) => setClaimantName(e.target.value)}
               placeholder="Enter your name"
               className="w-full border border-[--color-ink] bg-[--color-paper-chit] text-[--color-ink] text-sm px-3 py-2 focus:outline-none focus:ring-1 focus:ring-[--color-pen]"
-              style={{ borderOpacity: 0.3 }}
             />
           </div>
         ) : null}
