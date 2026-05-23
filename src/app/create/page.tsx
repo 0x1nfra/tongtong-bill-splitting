@@ -6,6 +6,7 @@ import { useMutation } from "convex/react";
 import { api } from "../../../convex/_generated/api";
 import { type ItemDraft, ItemRow } from "@/components/ItemRow";
 import { RunningTotal } from "@/components/RunningTotal";
+import { QRUpload } from "@/components/QRUpload";
 
 /**
  * useOrganizerSecret — reads or generates the organizer UUID from localStorage.
@@ -41,6 +42,9 @@ export default function CreatePage() {
   // Tax toggle state
   const [applySST, setApplySST] = useState(false);
   const [applyServiceCharge, setApplyServiceCharge] = useState(false);
+
+  // QR upload state — BILL-04: storageId from Convex file storage
+  const [qrStorageId, setQrStorageId] = useState<string | undefined>(undefined);
 
   // Submission guard — prevents double-tap
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -85,7 +89,7 @@ export default function CreatePage() {
         title,
         applySST,
         applyServiceCharge,
-        // qrStorageId not wired in this plan — Plan 04 adds QR upload
+        qrStorageId,
         venueName: venueName || undefined,
         billDate: billDate || undefined,
         items: items.map((item, index) => ({
@@ -190,6 +194,14 @@ export default function CreatePage() {
           >
             + ADD ITEM
           </button>
+        </div>
+
+        {/* DuitNow QR upload — BILL-04: optional QR image for payment */}
+        <div className="mt-6">
+          <label className="uppercase text-xs text-[--color-ink] block mb-2">
+            DUITNOW QR (OPTIONAL)
+          </label>
+          <QRUpload onUpload={(id) => setQrStorageId(id)} />
         </div>
 
         {/* Tax toggles */}
