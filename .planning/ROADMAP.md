@@ -6,7 +6,7 @@
 
 ## Phases
 
-- [ ] **Phase 1: Working Bill** - Organizer creates a bill, shares a link, members view it, payment flow and dashboard work end-to-end (functional, unstyled)
+- [x] **Phase 1: Working Bill** - Organizer creates a bill, shares a link, members view it, payment flow and dashboard work end-to-end (functional, unstyled) (completed 2026-05-23)
 - [ ] **Phase 2: Item Claiming** - Members tap to claim individual items; multi-claim splits cost; live proportional totals per person
 - [ ] **Phase 3: TongTong Aesthetic** - Full chit visual theme and landing page applied across every screen
 
@@ -22,14 +22,28 @@
   2. A friend who opens the shared link can see the bill items and their equal-split total, then tap "I've Paid" to register a pending payment
   3. Organizer dashboard shows live per-person payment status (AWAITING / CONFIRMED) and confirm/reject controls that update the member's view in real time
   4. Organizer and member identities persist across page reloads via localStorage with no login screen
-**Plans:** 6 plans
-Plans:
-- [ ] 01-01-PLAN.md — Convex backend functions (bills.ts + payments.ts, all 9 mutations/queries)
-- [ ] 01-02-PLAN.md — Route scaffolds: landing + 4 page shells with real Convex subscriptions
-- [ ] 01-03-PLAN.md — Bill builder form: items state, toggles, running totals, createBill mutation
-- [ ] 01-04-PLAN.md — QR upload (3-step Convex file storage) + complete share screen
-- [ ] 01-05-PLAN.md — Member view: bill items, I'VE PAID, SettleStamp state machine
-- [ ] 01-06-PLAN.md — Organizer dashboard: progress bar, stats, per-person rows, confirm/reject
+**Plans:** 6/6 plans complete
+
+**Wave 1**
+- [x] 01-01-PLAN.md — Convex backend functions (bills.ts + payments.ts, schema patch for venueName/billDate)
+
+**Wave 2** *(blocked on Wave 1 — run `pnpm dev:convex` after Wave 1 to regenerate types)*
+- [x] 01-02-PLAN.md — Route scaffolds: walking skeleton, all 4 page shells with real Convex subscriptions
+
+**Wave 3** *(blocked on Wave 2)*
+- [x] 01-03-PLAN.md — Bill builder form: items state, toggles, running totals, createBill mutation
+
+**Wave 4** *(blocked on Wave 3 — 01-04 and 01-05 run in parallel)*
+- [x] 01-04-PLAN.md — QR upload (3-step Convex file storage) + complete share screen
+- [x] 01-05-PLAN.md — Member view: bill items, I'VE PAID, SettleStamp state machine
+
+**Wave 5** *(blocked on Wave 4)*
+- [x] 01-06-PLAN.md — Organizer dashboard: progress bar, stats, per-person rows, confirm/reject
+
+**Cross-cutting constraints:**
+- `params` is a Promise in Next.js 16 — all dynamic routes use `React.use(params)` (waves 2–5)
+- localStorage reads must be in `useEffect` — null initial state, guard mutations with null check (waves 2–5)
+- Integer RM cents in Convex; display as `(cents/100).toFixed(2)` with "RM" prefix everywhere
 **UI hint**: yes
 
 ### Phase 2: Item Claiming
@@ -61,6 +75,6 @@ Plans:
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 1. Working Bill | 0/6 | Planned | - |
+| 1. Working Bill | 6/6 | Complete   | 2026-05-23 |
 | 2. Item Claiming | 0/? | Not started | - |
 | 3. TongTong Aesthetic | 0/? | Not started | - |

@@ -265,7 +265,7 @@ export default function CreatePage() {
             className={`w-full h-12 bg-[--color-pen] text-white uppercase font-bold text-base rounded transition-opacity ${
               isGenerateDisabled
                 ? "opacity-50 cursor-not-allowed pointer-events-none"
-                : "hover:opacity-90"
+                : "hover:opacity-90 cursor-pointer"
             }`}
           >
             {isSubmitting ? "GENERATING..." : "GENERATE LINK →"}

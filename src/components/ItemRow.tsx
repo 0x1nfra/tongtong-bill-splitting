@@ -33,7 +33,10 @@ export function ItemRow({ item, onUpdate, onDelete }: ItemRowProps) {
           inputMode="decimal"
           placeholder="0.00"
           value={item.price}
-          onChange={(e) => onUpdate(item.id, "price", e.target.value)}
+          onChange={(e) => {
+            const raw = e.target.value.replace(/[^0-9.]/g, "");
+            onUpdate(item.id, "price", raw);
+          }}
           className="w-20 border border-[--color-ink] rounded px-2 py-1 bg-[--color-paper-chit] text-[--color-ink] text-sm"
         />
       </div>
