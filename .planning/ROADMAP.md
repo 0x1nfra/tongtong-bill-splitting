@@ -46,6 +46,20 @@
 - Integer RM cents in Convex; display as `(cents/100).toFixed(2)` with "RM" prefix everywhere
 **UI hint**: yes
 
+### Phase 01.1: Tech debt: DASH-04 label fix + calculateTotals extraction (INSERTED)
+
+**Goal:** Extract shared calculateTotals utility to src/lib/calculateTotals.ts and confirm DASH-04 fix is in place — eliminating duplicated arithmetic across three consumer files
+**Requirements**: TBD (tech debt phase — no formal requirement IDs)
+**Depends on:** Phase 1
+**Plans:** 3 plans
+
+**Wave 1**
+- [ ] 01.1-01-PLAN.md — Create src/lib/calculateTotals.ts (shared utility) + verify DASH-04 fix already present in dashboard
+
+**Wave 2** *(blocked on Wave 1 — src/lib/calculateTotals.ts must exist before consumers can import it; 01.1-02 and 01.1-03 run in parallel)*
+- [ ] 01.1-02-PLAN.md — Replace inline calculateTotals in dashboard/[billId]/page.tsx + BillSummaryCard.tsx
+- [ ] 01.1-03-PLAN.md — Replace inline calculateTotals in c/[billId]/page.tsx (4 display-site updates)
+
 ### Phase 2: Item Claiming
 **Goal:** Members can claim the specific items they ordered; costs split proportionally so each person sees exactly what they owe
 **Mode:** mvp
@@ -76,5 +90,6 @@
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
 | 1. Working Bill | 6/6 | Complete   | 2026-05-23 |
+| 01.1. Tech Debt | 0/3 | In progress | - |
 | 2. Item Claiming | 0/? | Not started | - |
 | 3. TongTong Aesthetic | 0/? | Not started | - |
