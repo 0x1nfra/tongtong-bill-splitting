@@ -79,14 +79,18 @@ export default function SharePage({
         </p>
 
         {/* Copy link field with 2s COPIED! feedback — SHARE-03 */}
+        {/* CR-05: shareUrl is "" on first paint (SSR); field is read-only so no action needed */}
         <CopyLinkField url={shareUrl} />
 
         {/* WhatsApp share button — SHARE-04 */}
+        {/* CR-05: disable until shareUrl is populated to prevent sending empty wa.me link */}
         <a
-          href={whatsAppUrl}
+          href={shareUrl ? whatsAppUrl : undefined}
+          onClick={!shareUrl ? (e) => e.preventDefault() : undefined}
+          aria-disabled={!shareUrl}
           target="_blank"
           rel="noopener noreferrer"
-          className="mt-3 flex w-full h-12 bg-[--color-pen] text-white uppercase font-bold text-sm tracking-widest items-center justify-center rounded"
+          className={`mt-3 flex w-full h-12 bg-[--color-pen] text-white uppercase font-bold text-sm tracking-widest items-center justify-center rounded${!shareUrl ? " opacity-50 cursor-not-allowed pointer-events-none" : ""}`}
         >
           SEND TO WHATSAPP
         </a>
