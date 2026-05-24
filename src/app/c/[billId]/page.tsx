@@ -363,7 +363,10 @@ export default function MemberViewPage({
 
                   {/* Inline "CLAIM" prompt — unclaimed and not expanded (D-10, CLAIM-05) */}
                   {totalClaimants === 0 && !isExpanded ? (
-                    <p className="text-xs text-[--color-stamp] uppercase tracking-widest pb-1 pl-0">
+                    <p
+                      className="text-xs text-[--color-stamp] uppercase tracking-widest pb-1 pl-0 cursor-pointer"
+                      onClick={() => handleItemTap(item._id, myClaimOnItem?._id)}
+                    >
                       CLAIM
                     </p>
                   ) : null}
@@ -405,53 +408,53 @@ export default function MemberViewPage({
           )}
         </div>
 
-        {/* YOUR PORTION panel — sticky, hidden until first claim (D-07, CALC-04) */}
-        <div
-          className={`sticky bottom-0 bg-[--color-paper-chit] border-t border-[--color-ink] border-opacity-20 p-4 shadow-[0_-4px_16px_rgba(31,27,23,0.08)] border-l-4 border-l-[--color-pen] transition-[opacity,transform] duration-300 ease-out mb-4${hasClaims ? " opacity-100 translate-y-0" : " opacity-0 translate-y-2 pointer-events-none"}`}
-        >
-          <p className="text-xs font-bold uppercase tracking-widest text-[--color-ink] opacity-60 mb-3">
-            YOUR PORTION
-          </p>
+        {/* YOUR PORTION panel — static block, visible only when hasClaims (D-07, CALC-04) */}
+        {hasClaims ? (
+          <div className="bg-[--color-paper-chit] border-t-2 border-[--color-pen] p-4 shadow-[0_2px_12px_rgba(31,27,23,0.08)] border-l-4 border-l-[--color-pen] mb-4">
+            <p className="text-xs font-bold uppercase tracking-widest text-[--color-ink] opacity-60 mb-3">
+              YOUR PORTION
+            </p>
 
-          {/* Subtotal row */}
-          <div className="flex justify-between text-sm text-[--color-ink] mb-1">
-            <span className="opacity-60">Subtotal</span>
-            <span>
-              RM{((personTotals?.personSubtotalCents ?? 0) / 100).toFixed(2)}
-            </span>
-          </div>
-
-          {/* Service charge row (conditional) */}
-          {bill.applyServiceCharge ? (
+            {/* Subtotal row */}
             <div className="flex justify-between text-sm text-[--color-ink] mb-1">
-              <span className="opacity-60">Service Charge (10%)</span>
+              <span className="opacity-60">Subtotal</span>
               <span>
-                RM
-                {((personTotals?.personServiceChargeCents ?? 0) / 100).toFixed(
-                  2
-                )}
+                RM{((personTotals?.personSubtotalCents ?? 0) / 100).toFixed(2)}
               </span>
             </div>
-          ) : null}
 
-          {/* SST row (conditional) */}
-          {bill.applySST ? (
-            <div className="flex justify-between text-sm text-[--color-ink] mb-1">
-              <span className="opacity-60">SST (6%)</span>
-              <span>
-                RM{((personTotals?.personSSTCents ?? 0) / 100).toFixed(2)}
+            {/* Service charge row (conditional) */}
+            {bill.applyServiceCharge ? (
+              <div className="flex justify-between text-sm text-[--color-ink] mb-1">
+                <span className="opacity-60">Service Charge (10%)</span>
+                <span>
+                  RM
+                  {((personTotals?.personServiceChargeCents ?? 0) / 100).toFixed(
+                    2
+                  )}
+                </span>
+              </div>
+            ) : null}
+
+            {/* SST row (conditional) */}
+            {bill.applySST ? (
+              <div className="flex justify-between text-sm text-[--color-ink] mb-1">
+                <span className="opacity-60">SST (6%)</span>
+                <span>
+                  RM{((personTotals?.personSSTCents ?? 0) / 100).toFixed(2)}
+                </span>
+              </div>
+            ) : null}
+
+            {/* YOUR TOTAL row */}
+            <div className="flex justify-between font-bold text-base text-[--color-ink] border-t border-[--color-ink] mt-2 pt-2">
+              <span className="uppercase tracking-widest">YOUR TOTAL</span>
+              <span aria-live="polite">
+                RM{((personTotals?.personTotalCents ?? 0) / 100).toFixed(2)}
               </span>
             </div>
-          ) : null}
-
-          {/* YOUR TOTAL row */}
-          <div className="flex justify-between font-bold text-base text-[--color-ink] border-t border-[--color-ink] mt-2 pt-2">
-            <span className="uppercase tracking-widest">YOUR TOTAL</span>
-            <span aria-live="polite">
-              RM{((personTotals?.personTotalCents ?? 0) / 100).toFixed(2)}
-            </span>
           </div>
-        </div>
+        ) : null}
 
         {/* Bill grand total section */}
         <div className="bg-[--color-paper-chit] p-4 mb-6">
