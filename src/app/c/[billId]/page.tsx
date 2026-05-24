@@ -6,39 +6,7 @@ import { useQuery, useMutation } from "convex/react";
 import { api } from "../../../../convex/_generated/api";
 import type { Id } from "../../../../convex/_generated/dataModel";
 import { SettleStamp } from "../../../components/SettleStamp";
-
-/**
- * calculateTotals — client-side bill total calculation (Pattern 7 from RESEARCH.md).
- * Service charge (10%) applied to subtotal first, then SST (6%) on post-service-charge
- * total (Malaysian restaurant convention).
- */
-function calculateTotals(
-  items: Array<{ price: number; quantity: number }>,
-  applySST: boolean,
-  applyServiceCharge: boolean
-) {
-  const subtotalCents = items.reduce(
-    (sum, item) => sum + item.price * item.quantity,
-    0
-  );
-  const serviceChargeCents = applyServiceCharge
-    ? Math.round(subtotalCents * 0.1)
-    : 0;
-  const afterServiceCharge = subtotalCents + serviceChargeCents;
-  const sstCents = applySST ? Math.round(afterServiceCharge * 0.06) : 0;
-  const grandTotalCents = afterServiceCharge + sstCents;
-
-  return {
-    subtotalCents,
-    serviceChargeCents,
-    sstCents,
-    grandTotalCents,
-    subtotal: (subtotalCents / 100).toFixed(2),
-    serviceCharge: (serviceChargeCents / 100).toFixed(2),
-    sst: (sstCents / 100).toFixed(2),
-    grandTotal: (grandTotalCents / 100).toFixed(2),
-  };
-}
+import { calculateTotals } from "@/lib/calculateTotals";
 
 /**
  * useMemberSession — reads or generates the member session UUID for this bill.
@@ -230,14 +198,14 @@ export default function MemberViewPage({
           {/* Subtotal row */}
           <div className="flex justify-between text-sm text-[--color-ink] mb-1">
             <span className="opacity-60">Subtotal</span>
-            <span>RM{totals.subtotal}</span>
+            <span>RM{(totals.subtotalCents / 100).toFixed(2)}</span>
           </div>
 
           {/* Service charge row (shown only if applicable) */}
           {bill.applyServiceCharge ? (
             <div className="flex justify-between text-sm text-[--color-ink] mb-1">
               <span className="opacity-60">Service Charge (10%)</span>
-              <span>RM{totals.serviceCharge}</span>
+              <span>RM{(totals.serviceChargeCents / 100).toFixed(2)}</span>
             </div>
           ) : null}
 
@@ -245,14 +213,14 @@ export default function MemberViewPage({
           {bill.applySST ? (
             <div className="flex justify-between text-sm text-[--color-ink] mb-1">
               <span className="opacity-60">SST (6%)</span>
-              <span>RM{totals.sst}</span>
+              <span>RM{(totals.sstCents / 100).toFixed(2)}</span>
             </div>
           ) : null}
 
           {/* Grand total row */}
           <div className="flex justify-between font-bold text-base text-[--color-ink] border-t border-[--color-ink] mt-2 pt-2">
             <span className="uppercase tracking-widest">GRAND TOTAL</span>
-            <span>RM{totals.grandTotal}</span>
+            <span>RM{(totals.grandTotalCents / 100).toFixed(2)}</span>
           </div>
         </div>
 
