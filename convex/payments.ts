@@ -112,8 +112,9 @@ export const getPaymentsForBill = query({
   },
   handler: async (ctx, { billId, organizerSecret }) => {
     const bill = await ctx.db.get(billId);
+    // WR-06: return null instead of throwing — useQuery stays stuck on undefined when queries throw
     if (!bill || bill.organizerSecret !== organizerSecret) {
-      throw new Error("Unauthorized");
+      return null;
     }
 
     return await ctx.db

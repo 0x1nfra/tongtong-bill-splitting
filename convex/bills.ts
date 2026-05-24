@@ -105,8 +105,9 @@ export const getBillForOrganizer = query({
     if (!bill) return null;
 
     // Server-side secret verification (T-01-05)
+    // WR-06: return null instead of throwing — useQuery stays stuck on undefined when queries throw
     if (bill.organizerSecret !== organizerSecret) {
-      throw new Error("Unauthorized");
+      return null;
     }
 
     const items = await ctx.db
