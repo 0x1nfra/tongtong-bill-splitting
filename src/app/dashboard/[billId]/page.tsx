@@ -133,11 +133,12 @@ export default function DashboardPage({
   const amountPerMemberCents =
     memberCount > 0 ? Math.round(grandTotalCents / memberCount) : grandTotalCents;
 
-  // Derive stats from payments
+  // Derive stats from payments (CR-04: correct variable semantics)
   const confirmed = payments?.filter((p) => p.status === "settled").length ?? 0;
   const awaiting = payments?.filter((p) => p.status === "pending").length ?? 0;
-  const claimed = payments?.filter((p) => p.status === "rejected").length ?? 0;
+  const rejected = payments?.filter((p) => p.status === "rejected").length ?? 0;
   const unclaimed = 0; // Phase 1: no claiming data; Phase 2 will supply real counts
+  void rejected; // tracked for future use; not surfaced in StatsBar in Phase 1
 
   // TOTAL COLLECTED: count of settled payments × per-member share
   const collectedCents = confirmed * amountPerMemberCents;
@@ -190,11 +191,11 @@ export default function DashboardPage({
               totalCents={grandTotalCents}
             />
 
-            {/* Stats bar (DASH-02) */}
+            {/* Stats bar (DASH-02) — claimed=0 in Phase 1 (no item-claiming yet) */}
             <StatsBar
               confirmed={confirmed}
               awaiting={awaiting}
-              claimed={claimed}
+              claimed={0}
               unclaimed={unclaimed}
             />
 
