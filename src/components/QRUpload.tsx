@@ -29,7 +29,18 @@ export function QRUpload({ onUpload }: QRUploadProps) {
         headers: { "Content-Type": file.type },
         body: file,
       });
+
+      // CR-03: check HTTP status before attempting to parse JSON
+      if (!result.ok) {
+        throw new Error(`Upload failed: ${result.status} ${result.statusText}`);
+      }
+
       const { storageId } = await result.json() as { storageId: string };
+
+      // CR-03: guard against missing storageId in response body
+      if (!storageId) {
+        throw new Error("Upload response missing storageId");
+      }
 
       // Step 3: Show local preview and pass storageId to parent
       setPreviewUrl(URL.createObjectURL(file));
