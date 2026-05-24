@@ -2,7 +2,6 @@
 
 import { use, useEffect, useState } from "react";
 import { useQuery, useMutation } from "convex/react";
-import { useRouter } from "next/navigation";
 import { api } from "../../../../convex/_generated/api";
 import type { Id } from "../../../../convex/_generated/dataModel";
 import { SettleStamp } from "../../../components/SettleStamp";
@@ -65,7 +64,6 @@ export default function MemberViewPage({
   params: Promise<{ billId: string }>;
 }) {
   const { billId } = use(params);
-  const router = useRouter();
   const claimantSession = useMemberSession(billId);
 
   const [claimantName, setClaimantName] = useState<string>("");
@@ -84,14 +82,6 @@ export default function MemberViewPage({
   );
 
   const markPaid = useMutation(api.payments.markPaid);
-
-  // D-05: if organizer opens member link from their own device, redirect to dashboard
-  useEffect(() => {
-    const secret = localStorage.getItem("tongtong_organizer_secret");
-    if (secret) {
-      router.replace(`/dashboard/${billId}`);
-    }
-  }, [billId, router]);
 
   /**
    * handlePay — PAY-01: call markPaid mutation to create pending payment record.
