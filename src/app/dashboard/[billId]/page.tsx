@@ -147,26 +147,34 @@ export default function DashboardPage({
   const displayCode = `#TT-${billId.slice(0, 4).toUpperCase()}`;
 
   function handleConfirm(paymentId: string) {
-    void confirmPayment({
+    confirmPayment({
       paymentId: paymentId as Id<"payments">,
       organizerSecret: organizerSecret!,
+    }).catch((err: unknown) => {
+      console.error("Failed to confirm payment:", err);
     });
   }
 
   function handleReject(paymentId: string) {
-    void rejectPayment({
+    rejectPayment({
       paymentId: paymentId as Id<"payments">,
       organizerSecret: organizerSecret!,
+    }).catch((err: unknown) => {
+      console.error("Failed to reject payment:", err);
     });
   }
 
   // DASH-06: copies share link to clipboard
   function handleRemind() {
-    void navigator.clipboard.writeText(shareUrl);
+    navigator.clipboard.writeText(shareUrl).catch((err: unknown) => {
+      console.error("Failed to copy share link:", err);
+    });
   }
 
   function handleCopyShareLink() {
-    void navigator.clipboard.writeText(shareUrl);
+    navigator.clipboard.writeText(shareUrl).catch((err: unknown) => {
+      console.error("Failed to copy share link:", err);
+    });
   }
 
   return (
