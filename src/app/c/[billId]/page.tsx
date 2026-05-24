@@ -1,6 +1,7 @@
 "use client";
 
 import { use, useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 import { useQuery, useMutation } from "convex/react";
 import { api } from "../../../../convex/_generated/api";
 import type { Id } from "../../../../convex/_generated/dataModel";
@@ -64,10 +65,33 @@ export default function MemberViewPage({
   params: Promise<{ billId: string }>;
 }) {
   const { billId } = use(params);
+  const router = useRouter();
   const claimantSession = useMemberSession(billId);
 
   const [claimantName, setClaimantName] = useState<string>("");
   const [isPaying, setIsPaying] = useState<boolean>(false);
+
+  // T-05-05: read organizer secret to check if this device owns this specific bill
+  const [organizerSecret, setOrganizerSecret] = useState<string | null>(null);
+  useEffect(() => {
+    const stored = localStorage.getItem("tongtong_organizer_secret");
+    setOrganizerSecret(stored ?? "");
+  }, []);
+
+  // T-05-05: check if stored secret matches this bill server-side (returns null if not organizer)
+  const organizerBillData = useQuery(
+    api.bills.getBillForOrganizer,
+    organizerSecret
+      ? { billId: billId as Id<"bills">, organizerSecret }
+      : "skip"
+  );
+
+  // T-05-05: redirect to dashboard only when confirmed as this bill's organizer
+  useEffect(() => {
+    if (organizerBillData != null) {
+      router.replace(`/dashboard/${billId}`);
+    }
+  }, [organizerBillData, billId, router]);
 
   const bill = useQuery(api.bills.getBillForMember, {
     billId: billId as Id<"bills">,
