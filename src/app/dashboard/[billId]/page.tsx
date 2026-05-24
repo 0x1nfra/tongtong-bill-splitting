@@ -45,6 +45,12 @@ export default function DashboardPage({
       : "skip"
   );
 
+  // Real-time CLAIMED/UNCLAIMED subscription (DASH-02); skipped until organizerSecret loads
+  const claimsStats = useQuery(
+    api.bills.getClaimsForBill,
+    organizerSecret ? { billId: billId as Id<"bills">, organizerSecret } : "skip"
+  );
+
   const confirmPayment = useMutation(api.payments.confirmPayment);
   const rejectPayment = useMutation(api.payments.rejectPayment);
 
@@ -118,8 +124,9 @@ export default function DashboardPage({
   const confirmed = payments?.filter((p) => p.status === "settled").length ?? 0;
   const awaiting = payments?.filter((p) => p.status === "pending").length ?? 0;
   const rejected = payments?.filter((p) => p.status === "rejected").length ?? 0;
-  const unclaimed = 0; // Phase 1: no claiming data; Phase 2 will supply real counts
-  void rejected; // tracked for future use; not surfaced in StatsBar in Phase 1
+  void rejected; // tracked for future use; not surfaced in StatsBar
+  const claimed = claimsStats?.claimedCount ?? 0;
+  const unclaimed = claimsStats?.unclaimedCount ?? 0;
 
   // TOTAL COLLECTED: count of settled payments × per-member share
   const collectedCents = confirmed * amountPerMemberCents;
@@ -180,11 +187,11 @@ export default function DashboardPage({
               totalCents={grandTotalCents}
             />
 
-            {/* Stats bar (DASH-02) — claimed=0 in Phase 1 (no item-claiming yet) */}
+            {/* Stats bar (DASH-02) — claimed/unclaimed from real getClaimsForBill subscription */}
             <StatsBar
               confirmed={confirmed}
               awaiting={awaiting}
-              claimed={0}
+              claimed={claimed}
               unclaimed={unclaimed}
             />
 
