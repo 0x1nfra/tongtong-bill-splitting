@@ -54,11 +54,11 @@
 **Plans:** 3 plans
 
 **Wave 1**
-- [ ] 01.1-01-PLAN.md — Create src/lib/calculateTotals.ts (shared utility) + verify DASH-04 fix already present in dashboard
+- [x] 01.1-01-PLAN.md — Create src/lib/calculateTotals.ts (shared utility) + verify DASH-04 fix already present in dashboard
 
 **Wave 2** *(blocked on Wave 1 — src/lib/calculateTotals.ts must exist before consumers can import it; 01.1-02 and 01.1-03 run in parallel)*
-- [ ] 01.1-02-PLAN.md — Replace inline calculateTotals in dashboard/[billId]/page.tsx + BillSummaryCard.tsx
-- [ ] 01.1-03-PLAN.md — Replace inline calculateTotals in c/[billId]/page.tsx (4 display-site updates)
+- [x] 01.1-02-PLAN.md — Replace inline calculateTotals in dashboard/[billId]/page.tsx + BillSummaryCard.tsx
+- [x] 01.1-03-PLAN.md — Replace inline calculateTotals in c/[billId]/page.tsx (4 display-site updates)
 
 ### Phase 2: Item Claiming
 **Goal:** Members can claim the specific items they ordered; costs split proportionally so each person sees exactly what they owe
@@ -70,7 +70,24 @@
   2. Multiple members can claim the same item and each sees their equal share of that item's cost
   3. Tax and service charge appear in each member's total proportional to their subtotal share, not as a flat equal split
   4. Other members' claim actions appear on screen within seconds without a page refresh
-**Plans:** TBD
+**Plans:** 4 plans
+
+**Wave 1**
+- [ ] 02-01-PLAN.md — Convex backend: claimItem + unclaimItem mutations, getClaimsForBill query, extend getBillForMember to return claims[]
+
+**Wave 2** *(02-02 and 02-04 run in parallel — both blocked only on Wave 1)*
+- [ ] 02-02-PLAN.md — calculatePersonTotals TDD: write tests first, then implement proportional per-person math in src/lib/calculateTotals.ts
+- [ ] 02-04-PLAN.md — Dashboard wiring: add getClaimsForBill subscription, replace hardcoded claimed=0/unclaimed=0 with real counts
+
+**Wave 3** *(blocked on 02-01 and 02-02)*
+- [ ] 02-03-PLAN.md — Member view rewrite: interactive claim rows, inline name entry, Your Portion panel, Shadows Into Light Two font migration
+
+**Cross-cutting constraints:**
+- Guard all mutations with `if (!claimantSession) return` — session is null on first render (SSR-safe useEffect)
+- `next/font/google` used in layout.tsx (Server Component only) — never in "use client" files
+- Convex queries return null on auth failure, never throw (WR-06 pattern)
+- Math.round() on all per-person cent calculations — no floats
+- Use calculateTotals output for bill-level SC/SST in calculatePersonTotals — never recalculate independently
 **UI hint**: yes
 
 ### Phase 3: TongTong Aesthetic
@@ -90,6 +107,6 @@
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
 | 1. Working Bill | 6/6 | Complete   | 2026-05-23 |
-| 01.1. Tech Debt | 0/3 | In progress | - |
-| 2. Item Claiming | 0/? | Not started | - |
+| 01.1. Tech Debt | 3/3 | Complete | 2026-05-24 |
+| 2. Item Claiming | 0/4 | Not started | - |
 | 3. TongTong Aesthetic | 0/? | Not started | - |

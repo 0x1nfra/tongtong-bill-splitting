@@ -127,3 +127,71 @@ export const getBillForOrganizer = query({
     return { bill, items, payments, qrUrl };
   },
 });
+
+/**
+ * claimItem — creates a claim record for a member's item selection (CLAIM-01, CLAIM-02).
+ * Idempotent: if the same session+item combination already exists, returns the existing _id
+ * without creating a duplicate (T-02-03 threat mitigation — prevents INSERT storms).
+ * Validates billId and itemId belong together to prevent cross-bill tampering (T-02-01).
+ */
+export const claimItem = mutation({
+  args: {
+    billId: v.id("bills"),
+    itemId: v.id("items"),
+    claimantName: v.string(),
+    claimantSession: v.string(),
+  },
+  handler: async (ctx, { billId, itemId, claimantName, claimantSession }) => {
+    // Verify bill exists
+    const bill = await ctx.db.get(billId);
+    if (!bill) throw new Error("Bill not found");
+
+    // Verify item exists and belongs to this bill
+    const item = await ctx.db.get(itemId);
+    if (!item || item.billId !== billId) throw new Error("Item not found on this bill");
+
+    // Idempotency guard: return existing claim _id if session already claimed this item (T-02-03)
+    const existing = await ctx.db
+      .query("claims")
+      .withIndex("by_session", (q) =>
+        q.eq("billId", billId).eq("claimantSession", claimantSession)
+      )
+      .filter((q) => q.eq(q.field("itemId"), itemId))
+      .first();
+
+    if (existing) {
+      return existing._id;
+    }
+
+    return await ctx.db.insert("claims", {
+      billId,
+      itemId,
+      claimantName,
+      claimantSession,
+      createdAt: Date.now(),
+    });
+  },
+});
+
+/**
+ * unclaimItem — deletes a claim record, session-gated (CLAIM-01, T-02-02).
+ * Only the originating session can unclaim — prevents other members from
+ * removing someone else's claim (T-02-02 threat mitigation).
+ */
+export const unclaimItem = mutation({
+  args: {
+    claimId: v.id("claims"),
+    claimantSession: v.string(),
+  },
+  handler: async (ctx, { claimId, claimantSession }) => {
+    const claim = await ctx.db.get(claimId);
+    if (!claim) throw new Error("Claim not found");
+
+    // Session ownership gate (T-02-02)
+    if (claim.claimantSession !== claimantSession) {
+      throw new Error("Unauthorized: can only unclaim your own items");
+    }
+
+    await ctx.db.delete(claimId);
+  },
+});
