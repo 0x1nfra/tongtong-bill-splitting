@@ -65,6 +65,9 @@ export const generateUploadUrl = mutation({
 /**
  * getBillForMember — public query, no auth required (SHARE-04).
  * Intentionally excludes organizerSecret from the result (T-01-04 threat mitigation).
+ * Also returns claims[] so the member view has one subscription for items + claims (CLAIM-06).
+ * Claims data is intentionally public — members viewing a bill can see all claimant names
+ * (T-02-05 accepted: this is the product feature; organizerSecret still excluded).
  */
 export const getBillForMember = query({
   args: { billId: v.id("bills") },
@@ -74,6 +77,11 @@ export const getBillForMember = query({
 
     const items = await ctx.db
       .query("items")
+      .withIndex("by_bill", (q) => q.eq("billId", billId))
+      .collect();
+
+    const claims = await ctx.db
+      .query("claims")
       .withIndex("by_bill", (q) => q.eq("billId", billId))
       .collect();
 
@@ -87,7 +95,7 @@ export const getBillForMember = query({
       ...billWithoutSecret
     } = bill;
 
-    return { ...billWithoutSecret, items, qrUrl };
+    return { ...billWithoutSecret, items, claims, qrUrl };
   },
 });
 
@@ -193,5 +201,59 @@ export const unclaimItem = mutation({
     }
 
     await ctx.db.delete(claimId);
+  },
+});
+
+/**
+ * getClaimsForBill — organizer-authenticated query returning CLAIMED and UNCLAIMED counts (DASH-02).
+ * - CLAIMED: unique claimantSessions with ≥1 claim that have NOT submitted a pending/settled payment
+ * - UNCLAIMED: items with zero associated claim records
+ * WR-06: returns null on auth failure (not a throw) — keeps useQuery from getting stuck on undefined.
+ * T-02-04: organizerSecret verified server-side before any claims data is returned.
+ */
+export const getClaimsForBill = query({
+  args: {
+    billId: v.id("bills"),
+    organizerSecret: v.string(),
+  },
+  handler: async (ctx, { billId, organizerSecret }) => {
+    const bill = await ctx.db.get(billId);
+    // WR-06 + T-02-04: return null on missing bill or secret mismatch — never throw
+    if (!bill || bill.organizerSecret !== organizerSecret) {
+      return null;
+    }
+
+    const claims = await ctx.db
+      .query("claims")
+      .withIndex("by_bill", (q) => q.eq("billId", billId))
+      .collect();
+
+    const items = await ctx.db
+      .query("items")
+      .withIndex("by_bill", (q) => q.eq("billId", billId))
+      .collect();
+
+    const payments = await ctx.db
+      .query("payments")
+      .withIndex("by_bill", (q) => q.eq("billId", billId))
+      .collect();
+
+    // CLAIMED: unique sessions that have claims but no pending/settled payment (D-08)
+    // Rejected payments do NOT count as paid — member must re-submit
+    const claimingSessions = new Set(claims.map((c) => c.claimantSession));
+    const paidSessions = new Set(
+      payments
+        .filter((p) => p.status === "pending" || p.status === "settled")
+        .map((p) => p.claimantSession)
+    );
+    const claimedCount = [...claimingSessions].filter(
+      (s) => !paidSessions.has(s)
+    ).length;
+
+    // UNCLAIMED: items with zero claim records
+    const claimedItemIds = new Set(claims.map((c) => c.itemId));
+    const unclaimedCount = items.filter((i) => !claimedItemIds.has(i._id)).length;
+
+    return { claimedCount, unclaimedCount };
   },
 });
