@@ -41,8 +41,8 @@ export default function DashboardPage({
 
   useEffect(() => {
     const stored = localStorage.getItem("tongtong_organizer_secret");
-    // setOrganizerSecret to stored value (may be null if not present on this device)
-    setOrganizerSecret(stored ?? "");
+    // stored is null if key is absent — use null directly to signal "not found on this device"
+    setOrganizerSecret(stored);
   }, []);
 
   useEffect(() => {
@@ -78,7 +78,23 @@ export default function DashboardPage({
     );
   }
 
-  // organizerSecret loaded but data still loading
+  // D-10: organizerSecret is "" (empty string) — key absent, wrong device (AUTH-03)
+  if (!organizerSecret) {
+    return (
+      <main className="min-h-screen bg-[--color-paper-table] flex items-center justify-center">
+        <div className="max-w-[480px] mx-auto px-4 py-12 text-center">
+          <h1 className="text-xl font-bold uppercase text-[--color-ink] tracking-widest mb-3">
+            DASHBOARD NOT ACCESSIBLE
+          </h1>
+          <p className="text-sm text-[--color-ink] opacity-60">
+            Dashboard access requires the device you used to create this chit.
+          </p>
+        </div>
+      </main>
+    );
+  }
+
+  // organizerSecret loaded but Convex data still arriving
   if (billData === undefined) {
     return (
       <main className="min-h-screen bg-[--color-paper-table] flex items-center justify-center">
@@ -89,7 +105,7 @@ export default function DashboardPage({
     );
   }
 
-  // D-10: bill is null — wrong device or invalid secret (AUTH-03)
+  // D-10: bill is null — secret does not match this bill's organizer (AUTH-03)
   if (billData === null) {
     return (
       <main className="min-h-screen bg-[--color-paper-table] flex items-center justify-center">
