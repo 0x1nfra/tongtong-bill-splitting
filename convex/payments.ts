@@ -13,6 +13,10 @@ export const markPaid = mutation({
     claimantName: v.string(),
   },
   handler: async (ctx, { billId, claimantSession, claimantName }) => {
+    // Verify bill exists before creating any payment record (CR-02)
+    const bill = await ctx.db.get(billId);
+    if (!bill) throw new Error("Bill not found");
+
     // Check for existing pending/settled payment for this session (T-01-03)
     const existing = await ctx.db
       .query("payments")
