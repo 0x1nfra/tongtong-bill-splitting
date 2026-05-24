@@ -107,6 +107,9 @@ export default function MemberViewPage({
         claimantSession,
         claimantName: claimantName.trim(),
       });
+    } catch (err) {
+      // WR-03: log error so failures are not silent; button re-enables via finally
+      console.error("Failed to mark as paid:", err);
     } finally {
       setIsPaying(false);
     }
