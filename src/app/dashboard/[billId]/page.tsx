@@ -8,26 +8,7 @@ import { BillSummaryCard } from "../../../components/BillSummaryCard";
 import { ProgressBar } from "../../../components/ProgressBar";
 import { StatsBar } from "../../../components/StatsBar";
 import { MemberRow } from "../../../components/MemberRow";
-
-/**
- * calculateTotals — derives grand total from items stored as integer cents.
- * Service charge (10%) applied before SST (6%) — Malaysian restaurant convention.
- */
-function calculateTotals(
-  items: Array<{ price: number; quantity: number }>,
-  applySST: boolean,
-  applyServiceCharge: boolean
-) {
-  const subtotal = items.reduce(
-    (sum, item) => sum + item.price * item.quantity,
-    0
-  );
-  const serviceCharge = applyServiceCharge ? Math.round(subtotal * 0.1) : 0;
-  const afterSC = subtotal + serviceCharge;
-  const sst = applySST ? Math.round(afterSC * 0.06) : 0;
-  const grandTotalCents = afterSC + sst;
-  return { subtotal, serviceCharge, sst, grandTotalCents };
-}
+import { calculateTotals } from "@/lib/calculateTotals";
 
 export default function DashboardPage({
   params,

@@ -1,5 +1,7 @@
 "use client";
 
+import { calculateTotals } from "@/lib/calculateTotals";
+
 type BillSummaryCardProps = Readonly<{
   title: string;
   items: Array<{ name: string; price: number; quantity: number }>; // price in cents
@@ -8,32 +10,6 @@ type BillSummaryCardProps = Readonly<{
   displayCode: string; // e.g. "#TT-K97C"
 }>;
 
-/**
- * calculateTotals — derives grand total from items already stored as integer cents.
- * Service charge (10%) applied before SST (6%) — Malaysian restaurant convention.
- */
-function calculateTotals(
-  items: Array<{ price: number; quantity: number }>,
-  applySST: boolean,
-  applyServiceCharge: boolean
-) {
-  // price is already in integer RM cents
-  const subtotal = items.reduce(
-    (sum, item) => sum + item.price * item.quantity,
-    0
-  );
-
-  // Service charge (10%) applied BEFORE SST — Malaysian restaurant convention
-  const serviceCharge = applyServiceCharge ? Math.round(subtotal * 0.1) : 0;
-  const afterSC = subtotal + serviceCharge;
-
-  // SST (6%) applied on post-service-charge total
-  const sst = applySST ? Math.round(afterSC * 0.06) : 0;
-  const grandTotal = afterSC + sst;
-
-  return { subtotal, serviceCharge, sst, grandTotal };
-}
-
 export function BillSummaryCard({
   title,
   items,
@@ -41,7 +17,7 @@ export function BillSummaryCard({
   applyServiceCharge,
   displayCode,
 }: BillSummaryCardProps) {
-  const { grandTotal } = calculateTotals(items, applySST, applyServiceCharge);
+  const { grandTotalCents } = calculateTotals(items, applySST, applyServiceCharge);
 
   return (
     <div className="bg-[--color-paper-chit] rounded p-4">
@@ -67,7 +43,7 @@ export function BillSummaryCard({
             TOTAL
           </span>
           <span className="text-lg font-bold text-[--color-ink]">
-            RM{(grandTotal / 100).toFixed(2)}
+            RM{(grandTotalCents / 100).toFixed(2)}
           </span>
         </div>
       </div>
