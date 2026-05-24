@@ -50,6 +50,9 @@ export default function CreatePage() {
   // Submission guard — prevents double-tap
   const [isSubmitting, setIsSubmitting] = useState(false);
 
+  // WR-04: client-side item validation error message
+  const [validationError, setValidationError] = useState<string | null>(null);
+
   // Add a new empty item row
   const addItem = useCallback(() => {
     setItems((prev) => [
@@ -82,6 +85,21 @@ export default function CreatePage() {
 
     // BILL-06 / T-03-04: cannot generate with empty items
     if (items.length === 0) return;
+
+    // WR-04: client-side validation — each item must have a name and a valid positive price
+    const invalidItems = items.filter(
+      (item) =>
+        !item.name.trim() ||
+        isNaN(parseFloat(item.price)) ||
+        parseFloat(item.price) <= 0
+    );
+    if (invalidItems.length > 0) {
+      setValidationError(
+        "Each item must have a name and a price greater than RM 0.00."
+      );
+      return;
+    }
+    setValidationError(null);
 
     setIsSubmitting(true);
     try {
@@ -257,6 +275,13 @@ export default function CreatePage() {
           {items.length === 0 && (
             <p className="text-[--color-ink] opacity-70 text-xs text-center mt-2">
               ADD AT LEAST ONE ITEM — You cannot share an empty chit.
+            </p>
+          )}
+
+          {/* WR-04: inline validation message for invalid items */}
+          {validationError && (
+            <p className="text-[--color-ink] opacity-70 text-xs text-center mt-2">
+              {validationError}
             </p>
           )}
         </div>

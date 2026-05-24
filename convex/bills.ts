@@ -25,6 +25,14 @@ export const createBill = mutation({
     ),
   },
   handler: async (ctx, args) => {
+    // WR-04: server-side item validation — catches any bypass of client-side checks
+    for (const item of args.items) {
+      if (!item.name.trim()) throw new Error("Item name cannot be empty");
+      if (!Number.isInteger(item.price) || item.price < 0) {
+        throw new Error("Item price must be a non-negative integer (RM cents)");
+      }
+    }
+
     const billId = await ctx.db.insert("bills", {
       organizerSecret: args.organizerSecret,
       title: args.title,
