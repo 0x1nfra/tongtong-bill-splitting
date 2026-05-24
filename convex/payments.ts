@@ -58,6 +58,11 @@ export const confirmPayment = mutation({
       throw new Error("Unauthorized");
     }
 
+    // WR-01: enforce state machine — only pending payments can be confirmed
+    if (payment.status !== "pending") {
+      throw new Error(`Cannot confirm a payment with status: ${payment.status}`);
+    }
+
     await ctx.db.patch(paymentId, {
       status: "settled",
       confirmedAt: Date.now(),
@@ -83,6 +88,11 @@ export const rejectPayment = mutation({
     // Server-side secret verification (T-01-02)
     if (!bill || bill.organizerSecret !== organizerSecret) {
       throw new Error("Unauthorized");
+    }
+
+    // WR-01: enforce state machine — only pending payments can be rejected
+    if (payment.status !== "pending") {
+      throw new Error(`Cannot reject a payment with status: ${payment.status}`);
     }
 
     await ctx.db.patch(paymentId, {
