@@ -10,7 +10,7 @@ export default defineConfig({
   },
   resolve: {
     alias: {
-      '@': '/Users/irfanmurad/Developer/vessl/tongtong-bill-splitting/.claude/worktrees/agent-a35f31b085e8f0615/src',
+      '@': new URL('./src', import.meta.url).pathname,
     },
   },
 })
