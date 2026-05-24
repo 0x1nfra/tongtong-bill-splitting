@@ -247,7 +247,6 @@ export default function DashboardPage({
                       name={payment.claimantName}
                       status={memberStatus}
                       amountOwed={amountPerMemberCents}
-                      paymentId={payment._id}
                       onConfirm={() => handleConfirm(payment._id)}
                       onReject={() => handleReject(payment._id)}
                       onRemind={handleRemind}

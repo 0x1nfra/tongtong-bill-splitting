@@ -7,7 +7,6 @@ type MemberRowProps = Readonly<{
   name: string;
   status: StatusValue;
   amountOwed: number; // integer cents
-  paymentId?: string;
   onConfirm?: () => void;
   onReject?: () => void;
   onRemind?: () => void;
