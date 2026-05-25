@@ -44,8 +44,8 @@ export default function RootLayout({
         <svg id="filters" aria-hidden="true">
           <defs>
             <filter id="ink-bleed">
-              <feTurbulence type="fractalNoise" baseFrequency="0.04" numOctaves="4" />
-              <feDisplacementMap scale="2.5" xChannelSelector="R" yChannelSelector="G" />
+              <feTurbulence type="fractalNoise" baseFrequency="0.04" numOctaves="4" result="noise" />
+              <feDisplacementMap in="SourceGraphic" in2="noise" scale="2.5" xChannelSelector="R" yChannelSelector="G" />
             </filter>
           </defs>
         </svg>

@@ -76,6 +76,11 @@ body::before {
   border-bottom: 1px dotted #1F1B17;
   opacity: 0.4;
   margin: 0 4px 3px;
+  order: 0;
+}
+
+.dot-leader > *:last-child {
+  order: 1;
 }
 
 /* Hairline rule */
@@ -95,9 +100,9 @@ body::before {
   background-image: repeating-linear-gradient(
     to right,
     transparent,
-    transparent 6px,
-    rgba(31, 27, 23, 0.25) 6px,
-    rgba(31, 27, 23, 0.25) 8px
+    transparent 5px,
+    rgba(31, 27, 23, 0.5) 5px,
+    rgba(31, 27, 23, 0.5) 8px
   );
-  height: 1px;
+  height: 2px;
 }

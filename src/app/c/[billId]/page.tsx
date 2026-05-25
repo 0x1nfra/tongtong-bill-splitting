@@ -100,9 +100,14 @@ export default function MemberViewPage({
     }
   }, [organizerBillData, billId, router]);
 
-  const bill = useQuery(api.bills.getBillForMember, {
-    billId: billId as Id<"bills">,
-  });
+  // Convex IDs are lowercase alphanumeric, typically 20+ chars.
+  // Reject obviously malformed IDs before hitting the validator.
+  const isValidBillIdFormat = /^[a-z0-9]{15,}$/.test(billId);
+
+  const bill = useQuery(
+    api.bills.getBillForMember,
+    isValidBillIdFormat ? { billId: billId as Id<"bills"> } : "skip"
+  );
 
   // PAY-02: subscribe to member's own payment status for real-time stamp state machine
   const payment = useQuery(
@@ -207,6 +212,34 @@ export default function MemberViewPage({
       console.error("Claim failed:", err);
     }
   };
+
+  if (!isValidBillIdFormat) {
+    return (
+      <main className="min-h-screen bg-paper-table flex items-center justify-center px-4">
+        <div className="chit max-w-[360px] w-full p-6 text-center mx-auto">
+          <div className="mb-4 flex justify-center">
+            <div
+              className="inline-block border-2 border-stamp px-4 py-2"
+              style={{ transform: "rotate(-6deg)" }}
+            >
+              <span
+                className="text-3xl font-bold text-stamp uppercase tracking-widest"
+                style={{ fontFamily: "var(--font-stamp)" }}
+              >
+                EXPIRED
+              </span>
+            </div>
+          </div>
+          <h2 className="text-lg font-bold text-ink uppercase tracking-widest mt-6 mb-2">
+            This chit has been torn up
+          </h2>
+          <p className="text-sm text-ink opacity-60">
+            The bill you&apos;re looking for doesn&apos;t exist.
+          </p>
+        </div>
+      </main>
+    );
+  }
 
   if (bill === undefined) {
     return (
