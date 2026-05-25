@@ -211,17 +211,34 @@ export default function MemberViewPage({
   if (bill === undefined) {
     return (
       <main className="min-h-screen bg-paper-table flex items-center justify-center">
-        <p className="text-sm font-bold uppercase text-ink tracking-widest">
-          LOADING...
-        </p>
+        <div className="chit max-w-[480px] w-full mx-4 p-4 animate-pulse">
+          <div className="h-4 bg-ink opacity-10 rounded mb-3 w-1/3"></div>
+          <div className="h-3 bg-ink opacity-10 rounded mb-2 w-full"></div>
+          <div className="h-3 bg-ink opacity-10 rounded mb-2 w-4/5"></div>
+          <div className="h-3 bg-ink opacity-10 rounded mb-2 w-full"></div>
+          <div className="h-3 bg-ink opacity-10 rounded w-3/4"></div>
+        </div>
       </main>
     );
   }
 
   if (bill === null) {
     return (
-      <main className="min-h-screen bg-paper-table flex items-center justify-center">
-        <div className="max-w-[480px] mx-auto px-4 py-12 text-center">
+      <main className="min-h-screen bg-paper-table flex items-center justify-center px-4">
+        <div className="chit max-w-[360px] w-full p-6 text-center mx-auto">
+          <div className="mb-4 flex justify-center">
+            <div
+              className="inline-block border-2 border-stamp px-4 py-2"
+              style={{ transform: "rotate(-6deg)" }}
+            >
+              <span
+                className="text-2xl font-bold text-stamp uppercase tracking-widest"
+                style={{ fontFamily: "var(--font-stamp)" }}
+              >
+                EXPIRED
+              </span>
+            </div>
+          </div>
           <h1 className="text-xl font-bold uppercase text-ink tracking-widest mb-3">
             THIS CHIT HAS BEEN TORN UP
           </h1>
@@ -280,10 +297,11 @@ export default function MemberViewPage({
         </p>
 
         {/* Interactive items list — CLAIM-01 through CLAIM-05 */}
-        <div className="bg-paper-chit p-4 mb-4">
+        <div className="chit p-4 mb-4">
           <p className="text-xs font-bold uppercase text-ink tracking-widest mb-3 opacity-60">
             ITEMS
           </p>
+          <div className="perforation mb-3"></div>
           {items.map(
             (item: {
               _id: string;
@@ -406,6 +424,7 @@ export default function MemberViewPage({
               );
             }
           )}
+          <div className="perforation mt-3"></div>
         </div>
 
         {/* YOUR PORTION panel — static block, visible only when hasClaims (D-07, CALC-04) */}
