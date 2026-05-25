@@ -1,9 +1,10 @@
 ---
 status: complete
 phase: 02-item-claiming
-source: [02-01-SUMMARY.md, 02-02-SUMMARY.md, 02-03-SUMMARY.md, 02-04-SUMMARY.md]
+source: [02-01-SUMMARY.md, 02-02-SUMMARY.md, 02-03-SUMMARY.md, 02-04-SUMMARY.md, 02-05-SUMMARY.md]
 started: 2026-05-25T01:50:00Z
-updated: 2026-05-25T02:05:00Z
+updated: 2026-05-25T22:15:00Z
+gap_closure_verified: true
 ---
 
 ## Current Test
@@ -14,9 +15,9 @@ updated: 2026-05-25T02:05:00Z
 
 ### 1. Claim an Item
 expected: Open the member view (/c/[billId]). Unclaimed items show red ❋ prefix and "CLAIM" prompt below each row. Tap an unclaimed item — name input expands below that row. Enter name, tap CLAIM — your name appears in blue handwriting below the item row; ❋ and CLAIM prompt disappear for that item.
-result: issue
-reported: "kind of works with some bugs. 1. the prefix is not red. 2. when trying to claim an item the name input only appears only when we click the item name not the CLAIM button below it. 3. better place to organise the member portion and not on top of the total"
-severity: major
+result: pass
+gap_closure: true
+gap_fixed_by: 02-05-PLAN.md
 
 ### 2. Name Persists Across Reload
 expected: After claiming an item (name now stored), reload the page. Tap a different unclaimed item. The claim fires immediately — no name input prompt appears. The second item shows your name right away.
@@ -40,9 +41,9 @@ result: pass
 
 ### 7. Real-Time Updates — Other Member's Claims
 expected: Open the member view in two separate browser windows (or tabs) with different sessions. Claim an item in one window. In the other window — without refreshing — the claimed item shows the other member's name in blue handwriting within a few seconds.
-result: issue
-reported: "pass but the handwriting is not in blue"
-severity: cosmetic
+result: pass
+gap_closure: true
+gap_fixed_by: 02-05-PLAN.md
 
 ### 8. Dashboard Claim Stats
 expected: Open the organizer dashboard. The stats bar shows CLAIMED and UNCLAIMED counts. After a member claims items in the member view, the CLAIMED count in the dashboard updates in real time (no refresh needed).
@@ -51,8 +52,8 @@ result: pass
 ## Summary
 
 total: 8
-passed: 6
-issues: 2
+passed: 8
+issues: 0
 pending: 0
 skipped: 0
 blocked: 0
