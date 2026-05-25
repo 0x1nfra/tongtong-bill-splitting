@@ -138,51 +138,54 @@ export default function CreatePage() {
         </h1>
 
         {/* Bill details section */}
-        <div className="space-y-4">
-          {/* Bill title */}
-          <div className="flex flex-col gap-1">
-            <label className="uppercase text-xs text-ink">
-              Bill Title
-            </label>
-            <input
-              type="text"
-              value={title}
-              onChange={(e) => setTitle(e.target.value)}
-              placeholder="e.g. Team Lunch"
-              className="w-full border border-ink bg-paper-chit px-3 py-2 text-ink text-sm rounded"
-            />
-          </div>
+        <div className="chit p-4 mb-4">
+          <div className="space-y-4">
+            {/* Bill title */}
+            <div className="flex flex-col gap-1">
+              <label className="uppercase text-xs text-ink">
+                Bill Title
+              </label>
+              <input
+                type="text"
+                value={title}
+                onChange={(e) => setTitle(e.target.value)}
+                placeholder="e.g. Team Lunch"
+                className="w-full border border-ink bg-paper-chit px-3 py-2 text-ink text-sm"
+              />
+            </div>
 
-          {/* Venue / restaurant name (optional) */}
-          <div className="flex flex-col gap-1">
-            <label className="uppercase text-xs text-ink">
-              Restaurant / Venue
-            </label>
-            <input
-              type="text"
-              value={venueName}
-              onChange={(e) => setVenueName(e.target.value)}
-              placeholder="e.g. Pak Mat Nasi Lemak"
-              className="w-full border border-ink bg-paper-chit px-3 py-2 text-ink text-sm rounded"
-            />
-          </div>
+            {/* Venue / restaurant name (optional) */}
+            <div className="flex flex-col gap-1">
+              <label className="uppercase text-xs text-ink">
+                Restaurant / Venue
+              </label>
+              <input
+                type="text"
+                value={venueName}
+                onChange={(e) => setVenueName(e.target.value)}
+                placeholder="e.g. Pak Mat Nasi Lemak"
+                className="w-full border border-ink bg-paper-chit px-3 py-2 text-ink text-sm"
+              />
+            </div>
 
-          {/* Date (optional) */}
-          <div className="flex flex-col gap-1">
-            <label className="uppercase text-xs text-ink">
-              Date
-            </label>
-            <input
-              type="date"
-              value={billDate}
-              onChange={(e) => setBillDate(e.target.value)}
-              className="w-full border border-ink bg-paper-chit px-3 py-2 text-ink text-sm rounded"
-            />
+            {/* Date (optional) */}
+            <div className="flex flex-col gap-1">
+              <label className="uppercase text-xs text-ink">
+                Date
+              </label>
+              <input
+                type="date"
+                value={billDate}
+                onChange={(e) => setBillDate(e.target.value)}
+                className="w-full border border-ink bg-paper-chit px-3 py-2 text-ink text-sm"
+              />
+            </div>
           </div>
         </div>
+        <div className="perforation my-4" />
 
         {/* Items section */}
-        <div className="mt-6">
+        <div className="chit p-4 mb-4">
           <h2 className="uppercase text-sm font-bold text-ink mb-2">
             Items
           </h2>
@@ -209,11 +212,12 @@ export default function CreatePage() {
           <button
             type="button"
             onClick={addItem}
-            className="mt-3 w-full h-11 border border-ink text-ink uppercase text-sm font-medium rounded hover:opacity-70 transition-opacity"
+            className="mt-3 w-full h-11 border border-ink text-ink uppercase text-sm font-medium hover:opacity-70 transition-opacity"
           >
             + ADD ITEM
           </button>
         </div>
+        <div className="perforation my-4" />
 
         {/* DuitNow QR upload — BILL-04: optional QR image for payment */}
         <div className="mt-6">
@@ -262,7 +266,7 @@ export default function CreatePage() {
             type="button"
             onClick={handleGenerate}
             disabled={isGenerateDisabled}
-            className={`w-full h-12 bg-pen text-white uppercase font-bold text-base rounded transition-opacity ${
+            className={`w-full h-12 bg-pen text-white uppercase font-bold text-base transition-opacity ${
               isGenerateDisabled
                 ? "opacity-50 cursor-not-allowed pointer-events-none"
                 : "hover:opacity-90 cursor-pointer"

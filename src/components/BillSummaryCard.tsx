@@ -20,7 +20,7 @@ export function BillSummaryCard({
   const { grandTotalCents } = calculateTotals(items, applySST, applyServiceCharge);
 
   return (
-    <div className="bg-paper-chit rounded p-4">
+    <div className="chit p-4">
       {/* Display code — short human-readable bill code */}
       <p className="uppercase text-xs text-ink opacity-60 mb-1">
         {displayCode}
@@ -38,7 +38,7 @@ export function BillSummaryCard({
 
       {/* Grand total */}
       <div className="border-t border-ink pt-3">
-        <div className="flex justify-between items-center">
+        <div className="dot-leader items-center">
           <span className="uppercase text-sm font-bold text-ink">
             TOTAL
           </span>
