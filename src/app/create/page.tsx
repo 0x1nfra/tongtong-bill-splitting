@@ -130,10 +130,10 @@ export default function CreatePage() {
   const isGenerateDisabled = items.length === 0 || isSubmitting;
 
   return (
-    <main className="min-h-screen bg-[--color-paper-table]">
+    <main className="min-h-screen bg-paper-table">
       <div className="max-w-[480px] mx-auto px-4 py-8">
         {/* Page heading */}
-        <h1 className="text-2xl font-bold uppercase text-[--color-ink] tracking-widest mb-6">
+        <h1 className="text-2xl font-bold uppercase text-ink tracking-widest mb-6">
           CREATE NEW CHIT
         </h1>
 
@@ -141,7 +141,7 @@ export default function CreatePage() {
         <div className="space-y-4">
           {/* Bill title */}
           <div className="flex flex-col gap-1">
-            <label className="uppercase text-xs text-[--color-ink]">
+            <label className="uppercase text-xs text-ink">
               Bill Title
             </label>
             <input
@@ -149,13 +149,13 @@ export default function CreatePage() {
               value={title}
               onChange={(e) => setTitle(e.target.value)}
               placeholder="e.g. Team Lunch"
-              className="w-full border border-[--color-ink] bg-[--color-paper-chit] px-3 py-2 text-[--color-ink] text-sm rounded"
+              className="w-full border border-ink bg-paper-chit px-3 py-2 text-ink text-sm rounded"
             />
           </div>
 
           {/* Venue / restaurant name (optional) */}
           <div className="flex flex-col gap-1">
-            <label className="uppercase text-xs text-[--color-ink]">
+            <label className="uppercase text-xs text-ink">
               Restaurant / Venue
             </label>
             <input
@@ -163,33 +163,33 @@ export default function CreatePage() {
               value={venueName}
               onChange={(e) => setVenueName(e.target.value)}
               placeholder="e.g. Pak Mat Nasi Lemak"
-              className="w-full border border-[--color-ink] bg-[--color-paper-chit] px-3 py-2 text-[--color-ink] text-sm rounded"
+              className="w-full border border-ink bg-paper-chit px-3 py-2 text-ink text-sm rounded"
             />
           </div>
 
           {/* Date (optional) */}
           <div className="flex flex-col gap-1">
-            <label className="uppercase text-xs text-[--color-ink]">
+            <label className="uppercase text-xs text-ink">
               Date
             </label>
             <input
               type="date"
               value={billDate}
               onChange={(e) => setBillDate(e.target.value)}
-              className="w-full border border-[--color-ink] bg-[--color-paper-chit] px-3 py-2 text-[--color-ink] text-sm rounded"
+              className="w-full border border-ink bg-paper-chit px-3 py-2 text-ink text-sm rounded"
             />
           </div>
         </div>
 
         {/* Items section */}
         <div className="mt-6">
-          <h2 className="uppercase text-sm font-bold text-[--color-ink] mb-2">
+          <h2 className="uppercase text-sm font-bold text-ink mb-2">
             Items
           </h2>
 
           {/* Item list */}
           {items.length === 0 ? (
-            <p className="text-[--color-ink] opacity-60 text-sm text-center py-4">
+            <p className="text-ink opacity-60 text-sm text-center py-4">
               ADD YOUR FIRST ITEM
             </p>
           ) : (
@@ -209,7 +209,7 @@ export default function CreatePage() {
           <button
             type="button"
             onClick={addItem}
-            className="mt-3 w-full h-11 border border-[--color-ink] text-[--color-ink] uppercase text-sm font-medium rounded hover:opacity-70 transition-opacity"
+            className="mt-3 w-full h-11 border border-ink text-ink uppercase text-sm font-medium rounded hover:opacity-70 transition-opacity"
           >
             + ADD ITEM
           </button>
@@ -217,7 +217,7 @@ export default function CreatePage() {
 
         {/* DuitNow QR upload — BILL-04: optional QR image for payment */}
         <div className="mt-6">
-          <label className="uppercase text-xs text-[--color-ink] block mb-2">
+          <label className="uppercase text-xs text-ink block mb-2">
             DUITNOW QR (OPTIONAL)
           </label>
           <QRUpload onUpload={(id) => setQrStorageId(id)} />
@@ -230,9 +230,9 @@ export default function CreatePage() {
               type="checkbox"
               checked={applyServiceCharge}
               onChange={(e) => setApplyServiceCharge(e.target.checked)}
-              className="w-4 h-4 accent-[--color-ink]"
+              className="w-4 h-4 accent-ink"
             />
-            <span className="text-sm text-[--color-ink] uppercase">
+            <span className="text-sm text-ink uppercase">
               Service Charge (10%)
             </span>
           </label>
@@ -241,9 +241,9 @@ export default function CreatePage() {
               type="checkbox"
               checked={applySST}
               onChange={(e) => setApplySST(e.target.checked)}
-              className="w-4 h-4 accent-[--color-ink]"
+              className="w-4 h-4 accent-ink"
             />
-            <span className="text-sm text-[--color-ink] uppercase">
+            <span className="text-sm text-ink uppercase">
               SST (6%)
             </span>
           </label>
@@ -262,7 +262,7 @@ export default function CreatePage() {
             type="button"
             onClick={handleGenerate}
             disabled={isGenerateDisabled}
-            className={`w-full h-12 bg-[--color-pen] text-white uppercase font-bold text-base rounded transition-opacity ${
+            className={`w-full h-12 bg-pen text-white uppercase font-bold text-base rounded transition-opacity ${
               isGenerateDisabled
                 ? "opacity-50 cursor-not-allowed pointer-events-none"
                 : "hover:opacity-90 cursor-pointer"
@@ -273,14 +273,14 @@ export default function CreatePage() {
 
           {/* Inline validation message when no items */}
           {items.length === 0 && (
-            <p className="text-[--color-ink] opacity-70 text-xs text-center mt-2">
+            <p className="text-ink opacity-70 text-xs text-center mt-2">
               ADD AT LEAST ONE ITEM — You cannot share an empty chit.
             </p>
           )}
 
           {/* WR-04: inline validation message for invalid items */}
           {validationError && (
-            <p className="text-[--color-ink] opacity-70 text-xs text-center mt-2">
+            <p className="text-ink opacity-70 text-xs text-center mt-2">
               {validationError}
             </p>
           )}

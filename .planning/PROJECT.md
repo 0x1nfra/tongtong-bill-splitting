@@ -12,17 +12,16 @@ A friend who has already paid can share a link that lets everyone else claim wha
 
 ### Validated
 
-(None yet — ship to validate)
+- ✓ Organizer can create a bill with title, line items (name + price + quantity), SST 6% toggle, service charge 10% toggle, and DuitNow QR upload — Phase 1
+- ✓ Organizer identity tied to localStorage UUID (no login screen) — Phase 1
+- ✓ Shareable link auto-generated on bill creation; recipients require no auth — Phase 1
+- ✓ Member can tap "I've Paid" → creates pending payment visible on organizer dashboard — Phase 1
+- ✓ Organizer dashboard shows live per-person status with confirm/reject controls — Phase 1
 
 ### Active
 
-- [ ] Organizer can create a bill with title, line items (name + price + quantity), SST 6% toggle, service charge 10% toggle, and DuitNow QR upload
-- [ ] Organizer identity tied to localStorage UUID (no login screen)
-- [ ] Shareable link auto-generated on bill creation; recipients require no auth
 - [ ] Members can claim items (tappable rows); multi-claim splits item cost equally among claimants
 - [ ] Each member's total updates live as items are claimed, with proportional tax/service charge
-- [ ] Member can tap "I've Paid" → creates pending payment visible on organizer dashboard
-- [ ] Organizer dashboard shows live per-person status with confirm/reject controls
 - [ ] Full TongTong chit aesthetic: paper colors, Departure Mono / JetBrains Mono / Shadows Into Light Two fonts, dot-leader alignment, SETTLE stamp, handwritten claimant names with random rotation
 - [ ] Mobile-first responsive design for WhatsApp link recipients
 
@@ -79,8 +78,9 @@ A friend who has already paid can share a link that lets everyone else claim wha
 | No auth for MVP | Bills resolve within 24h; localStorage secrets prevent unauthorized confirm/reject | — Pending |
 | Convex for backend | TypeScript-native, realtime queries built in, free tier generous, file storage for QR | — Pending |
 | Equal-split multi-claim only | Weighted claims add UX complexity not needed for MVP differentiator | — Pending |
-| Price stored as integer (RM cents) | Avoids float precision issues in financial calculations | — Pending |
-| Proportional tax per person | Prevents rounding drift; matches how restaurants present bills | — Pending |
+| Price stored as integer (RM cents) | Avoids float precision issues in financial calculations | Validated — Phase 1 |
+| Proportional tax per person | Prevents rounding drift; matches how restaurants present bills | — Pending (Phase 2) |
+| calculateTotals extracted to src/lib/calculateTotals.ts | Eliminates 3 inline duplicates; integer-cent inputs; Math.round on % calcs; service charge before SST (Malaysian convention) | Shipped — Phase 01.1 |
 
 ## Evolution
 
@@ -100,4 +100,4 @@ This document evolves at phase transitions and milestone boundaries.
 4. Update Context with current state
 
 ---
-*Last updated: 2026-05-22 after initialization + design mock ingestion*
+*Last updated: 2026-05-24 after Phase 01.1 (calculateTotals extraction + DASH-04 confirmation)*

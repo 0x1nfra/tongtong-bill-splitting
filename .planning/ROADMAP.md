@@ -7,7 +7,7 @@
 ## Phases
 
 - [x] **Phase 1: Working Bill** - Organizer creates a bill, shares a link, members view it, payment flow and dashboard work end-to-end (functional, unstyled) (completed 2026-05-23)
-- [ ] **Phase 2: Item Claiming** - Members tap to claim individual items; multi-claim splits cost; live proportional totals per person
+- [x] **Phase 2: Item Claiming** - Members tap to claim individual items; multi-claim splits cost; live proportional totals per person (completed 2026-05-24)
 - [ ] **Phase 3: TongTong Aesthetic** - Full chit visual theme and landing page applied across every screen
 
 ## Phase Details
@@ -70,17 +70,17 @@
   2. Multiple members can claim the same item and each sees their equal share of that item's cost
   3. Tax and service charge appear in each member's total proportional to their subtotal share, not as a flat equal split
   4. Other members' claim actions appear on screen within seconds without a page refresh
-**Plans:** 4 plans
+**Plans:** 4/4 plans complete
 
 **Wave 1**
-- [ ] 02-01-PLAN.md — Convex backend: claimItem + unclaimItem mutations, getClaimsForBill query, extend getBillForMember to return claims[]
+- [x] 02-01-PLAN.md — Convex backend: claimItem + unclaimItem mutations, getClaimsForBill query, extend getBillForMember to return claims[]
 
 **Wave 2** *(02-02 and 02-04 run in parallel — both blocked only on Wave 1)*
-- [ ] 02-02-PLAN.md — calculatePersonTotals TDD: write tests first, then implement proportional per-person math in src/lib/calculateTotals.ts
-- [ ] 02-04-PLAN.md — Dashboard wiring: add getClaimsForBill subscription, replace hardcoded claimed=0/unclaimed=0 with real counts
+- [x] 02-02-PLAN.md — calculatePersonTotals TDD: write tests first, then implement proportional per-person math in src/lib/calculateTotals.ts
+- [x] 02-04-PLAN.md — Dashboard wiring: add getClaimsForBill subscription, replace hardcoded claimed=0/unclaimed=0 with real counts
 
 **Wave 3** *(blocked on 02-01 and 02-02)*
-- [ ] 02-03-PLAN.md — Member view rewrite: interactive claim rows, inline name entry, Your Portion panel, Shadows Into Light Two font migration
+- [x] 02-03-PLAN.md — Member view rewrite: interactive claim rows, inline name entry, Your Portion panel, Shadows Into Light Two font migration
 
 **Cross-cutting constraints:**
 - Guard all mutations with `if (!claimantSession) return` — session is null on first render (SSR-safe useEffect)
@@ -108,5 +108,5 @@
 |-------|----------------|--------|-----------|
 | 1. Working Bill | 6/6 | Complete   | 2026-05-23 |
 | 01.1. Tech Debt | 3/3 | Complete | 2026-05-24 |
-| 2. Item Claiming | 0/4 | Not started | - |
+| 2. Item Claiming | 4/4 | Complete   | 2026-05-24 |
 | 3. TongTong Aesthetic | 0/? | Not started | - |

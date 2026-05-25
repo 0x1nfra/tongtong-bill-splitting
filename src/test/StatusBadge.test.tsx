@@ -15,14 +15,14 @@ describe('StatusBadge', () => {
     const { container } = render(<StatusBadge status="UNCLAIMED ❋" />)
     const badge = container.querySelector('span')
     expect(badge).toBeInTheDocument()
-    expect(badge?.className).toContain('text-[--color-stamp]')
+    expect(badge?.className).toContain('text-stamp')
   })
 
   it('"UNCLAIMED ❋" does NOT use --color-ink class', () => {
     const { container } = render(<StatusBadge status="UNCLAIMED ❋" />)
     const badge = container.querySelector('span')
     // Should not have the ink class in addition to stamp
-    expect(badge?.className).not.toContain('text-[--color-ink]')
+    expect(badge?.className).not.toContain('text-ink')
   })
 
   it('"N/A" renders with opacity-40 class', () => {
@@ -40,7 +40,7 @@ describe('StatusBadge', () => {
   it('"CONFIRMED" renders with --color-ink class (no red, no blue stamp)', () => {
     const { container } = render(<StatusBadge status="CONFIRMED" />)
     const badge = container.querySelector('span')
-    expect(badge?.className).toContain('text-[--color-ink]')
+    expect(badge?.className).toContain('text-ink')
     expect(badge?.className).not.toContain('--color-stamp')
     expect(badge?.className).not.toContain('opacity-40')
   })
@@ -48,14 +48,14 @@ describe('StatusBadge', () => {
   it('"AWAITING" renders with --color-ink class (no red)', () => {
     const { container } = render(<StatusBadge status="AWAITING" />)
     const badge = container.querySelector('span')
-    expect(badge?.className).toContain('text-[--color-ink]')
+    expect(badge?.className).toContain('text-ink')
     expect(badge?.className).not.toContain('--color-stamp')
   })
 
   it('"CLAIMED — UNPAID" renders with --color-ink class (no red)', () => {
     const { container } = render(<StatusBadge status="CLAIMED — UNPAID" />)
     const badge = container.querySelector('span')
-    expect(badge?.className).toContain('text-[--color-ink]')
+    expect(badge?.className).toContain('text-ink')
     expect(badge?.className).not.toContain('--color-stamp')
   })
 

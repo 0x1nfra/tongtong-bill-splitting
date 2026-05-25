@@ -26,13 +26,13 @@ export function CopyLinkField({ url }: CopyLinkFieldProps) {
         type="text"
         readOnly
         value={url}
-        className="flex-1 font-mono text-[--color-pen] text-sm border border-[--color-ink] bg-[--color-paper-chit] px-3 py-2 rounded-l outline-none"
+        className="flex-1 font-mono text-pen text-sm border border-ink bg-paper-chit px-3 py-2 rounded-l outline-none"
         aria-label="Shareable bill link"
       />
       <button
         type="button"
         onClick={() => void handleCopy()}
-        className="bg-[--color-pen] text-white uppercase text-sm font-bold h-10 px-4 rounded-r whitespace-nowrap"
+        className="bg-pen text-white uppercase text-sm font-bold h-10 px-4 rounded-r whitespace-nowrap"
         aria-label={copied ? "Link copied to clipboard" : "Copy link to clipboard"}
       >
         {copied ? "COPIED!" : "COPY LINK"}

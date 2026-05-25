@@ -43,16 +43,16 @@ export function RunningTotal({
   );
 
   return (
-    <div className="border-t border-[--color-ink] pt-4 mt-4 space-y-2">
+    <div className="border-t border-ink pt-4 mt-4 space-y-2">
       {/* Subtotal row */}
-      <div className="flex justify-between items-center text-sm text-[--color-ink]">
+      <div className="flex justify-between items-center text-sm text-ink">
         <span className="uppercase">Subtotal</span>
         <span>RM{(subtotal / 100).toFixed(2)}</span>
       </div>
 
       {/* Service charge row — only shown when enabled */}
       {applyServiceCharge && (
-        <div className="flex justify-between items-center text-sm text-[--color-ink]">
+        <div className="flex justify-between items-center text-sm text-ink">
           <span className="uppercase">Service Charge (10%)</span>
           <span>RM{(serviceCharge / 100).toFixed(2)}</span>
         </div>
@@ -60,14 +60,14 @@ export function RunningTotal({
 
       {/* SST row — only shown when enabled */}
       {applySST && (
-        <div className="flex justify-between items-center text-sm text-[--color-ink]">
+        <div className="flex justify-between items-center text-sm text-ink">
           <span className="uppercase">SST (6%)</span>
           <span>RM{(sst / 100).toFixed(2)}</span>
         </div>
       )}
 
       {/* Grand total row */}
-      <div className="flex justify-between items-center text-lg font-bold text-[--color-ink] pt-1 border-t border-[--color-ink]">
+      <div className="flex justify-between items-center text-lg font-bold text-ink pt-1 border-t border-ink">
         <span className="uppercase">Total</span>
         <span>RM{(grandTotal / 100).toFixed(2)}</span>
       </div>

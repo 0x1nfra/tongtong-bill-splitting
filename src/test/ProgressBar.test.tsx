@@ -15,26 +15,26 @@ describe('ProgressBar', () => {
   it('fill width is (collectedCents / totalCents) * 100% when within bounds', () => {
     const { container } = render(<ProgressBar collectedCents={500} totalCents={1000} />)
     // The fill div is the second div inside the track div
-    const fillDiv = container.querySelector('.bg-\\[--color-pen\\]')
+    const fillDiv = container.querySelector('.bg-pen')
     expect(fillDiv).toBeInTheDocument()
     expect(fillDiv).toHaveStyle({ width: '50%' })
   })
 
   it('fill width is 0% when collectedCents is 0', () => {
     const { container } = render(<ProgressBar collectedCents={0} totalCents={1000} />)
-    const fillDiv = container.querySelector('.bg-\\[--color-pen\\]')
+    const fillDiv = container.querySelector('.bg-pen')
     expect(fillDiv).toHaveStyle({ width: '0%' })
   })
 
   it('fill width is capped at 100% when collectedCents exceeds totalCents', () => {
     const { container } = render(<ProgressBar collectedCents={2000} totalCents={1000} />)
-    const fillDiv = container.querySelector('.bg-\\[--color-pen\\]')
+    const fillDiv = container.querySelector('.bg-pen')
     expect(fillDiv).toHaveStyle({ width: '100%' })
   })
 
   it('fill width is 0% when totalCents is 0 (avoids division by zero)', () => {
     const { container } = render(<ProgressBar collectedCents={0} totalCents={0} />)
-    const fillDiv = container.querySelector('.bg-\\[--color-pen\\]')
+    const fillDiv = container.querySelector('.bg-pen')
     expect(fillDiv).toHaveStyle({ width: '0%' })
   })
 

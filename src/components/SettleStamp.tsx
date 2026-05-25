@@ -12,8 +12,8 @@ export type SettleStampStatus = "pending" | "settled" | "rejected" | null;
  *   rejected → no output (member can re-tap I'VE PAID)
  *
  * Color rules (CLAUDE.md / UI-SPEC hard constraints):
- *   SETTLE text and border: text-[--color-stamp] / border-[--color-stamp] (#B91C1C)
- *   "HAVE A GOOD ONE!" text: text-[--color-pen] (#1E40AF) — pen copy, not stamp
+ *   SETTLE text and border: text-stamp / border-stamp (#B91C1C)
+ *   "HAVE A GOOD ONE!" text: text-pen (#1E40AF) — pen copy, not stamp
  */
 export function SettleStamp({
   status,
@@ -26,14 +26,14 @@ export function SettleStamp({
     return (
       <div className="text-center opacity-50">
         <div
-          className="inline-block border-2 border-[--color-stamp] rounded px-4 py-2"
+          className="inline-block border-2 border-stamp rounded px-4 py-2"
           style={{ transform: "rotate(-6deg)" }}
         >
-          <span className="text-3xl font-bold text-[--color-stamp] uppercase tracking-widest">
+          <span className="text-3xl font-bold text-stamp uppercase tracking-widest">
             SETTLE
           </span>
         </div>
-        <p className="text-xs text-[--color-stamp] uppercase tracking-widest mt-1">
+        <p className="text-xs text-stamp uppercase tracking-widest mt-1">
           AWAITING CONFIRMATION
         </p>
       </div>
@@ -44,14 +44,14 @@ export function SettleStamp({
   return (
     <div className="text-center">
       <div
-        className="inline-block border-2 border-[--color-stamp] rounded px-4 py-2"
+        className="inline-block border-2 border-stamp rounded px-4 py-2"
         style={{ transform: "rotate(-6deg)" }}
       >
-        <span className="text-3xl font-bold text-[--color-stamp] uppercase tracking-widest">
+        <span className="text-3xl font-bold text-stamp uppercase tracking-widest">
           SETTLE
         </span>
       </div>
-      <p className="text-xs text-[--color-pen] uppercase tracking-widest mt-1">
+      <p className="text-xs text-pen uppercase tracking-widest mt-1">
         HAVE A GOOD ONE!
       </p>
     </div>

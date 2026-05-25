@@ -22,12 +22,12 @@ export function ItemRow({ item, onUpdate, onDelete }: ItemRowProps) {
         placeholder="Item name"
         value={item.name}
         onChange={(e) => onUpdate(item.id, "name", e.target.value)}
-        className="flex-1 border border-[--color-ink] rounded px-2 py-1 bg-[--color-paper-chit] text-[--color-ink] text-sm"
+        className="flex-1 border border-ink rounded px-2 py-1 bg-paper-chit text-ink text-sm"
       />
 
       {/* Price with RM prefix */}
       <div className="flex items-center gap-1">
-        <span className="text-[--color-ink] text-xs font-medium">RM</span>
+        <span className="text-ink text-xs font-medium">RM</span>
         <input
           type="text"
           inputMode="decimal"
@@ -37,7 +37,7 @@ export function ItemRow({ item, onUpdate, onDelete }: ItemRowProps) {
             const raw = e.target.value.replace(/[^0-9.]/g, "");
             onUpdate(item.id, "price", raw);
           }}
-          className="w-20 border border-[--color-ink] rounded px-2 py-1 bg-[--color-paper-chit] text-[--color-ink] text-sm"
+          className="w-20 border border-ink rounded px-2 py-1 bg-paper-chit text-ink text-sm"
         />
       </div>
 
@@ -49,14 +49,14 @@ export function ItemRow({ item, onUpdate, onDelete }: ItemRowProps) {
         onChange={(e) =>
           onUpdate(item.id, "quantity", parseInt(e.target.value) || 1)
         }
-        className="w-12 border border-[--color-ink] rounded px-2 py-1 bg-[--color-paper-chit] text-[--color-ink] text-sm text-center"
+        className="w-12 border border-ink rounded px-2 py-1 bg-paper-chit text-ink text-sm text-center"
       />
 
       {/* Delete button — min 44×44px touch target, NOT red (red reserved for stamp/❋ only) */}
       <button
         type="button"
         onClick={() => onDelete(item.id)}
-        className="flex items-center justify-center min-w-[44px] min-h-[44px] text-[--color-ink] text-lg font-bold hover:opacity-60 transition-opacity"
+        className="flex items-center justify-center min-w-[44px] min-h-[44px] text-ink text-lg font-bold hover:opacity-60 transition-opacity"
         aria-label="Delete item"
       >
         ×

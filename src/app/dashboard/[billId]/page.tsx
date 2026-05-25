@@ -57,8 +57,8 @@ export default function DashboardPage({
   // organizerSecret is null while localStorage hasn't been read yet (SSR-safe)
   if (organizerSecret === null) {
     return (
-      <main className="min-h-screen bg-[--color-paper-table] flex items-center justify-center">
-        <p className="text-sm font-bold uppercase text-[--color-ink] tracking-widest">
+      <main className="min-h-screen bg-paper-table flex items-center justify-center">
+        <p className="text-sm font-bold uppercase text-ink tracking-widest">
           LOADING...
         </p>
       </main>
@@ -68,12 +68,12 @@ export default function DashboardPage({
   // D-10: organizerSecret is "" (empty string) — key absent, wrong device (AUTH-03)
   if (!organizerSecret) {
     return (
-      <main className="min-h-screen bg-[--color-paper-table] flex items-center justify-center">
+      <main className="min-h-screen bg-paper-table flex items-center justify-center">
         <div className="max-w-[480px] mx-auto px-4 py-12 text-center">
-          <h1 className="text-xl font-bold uppercase text-[--color-ink] tracking-widest mb-3">
+          <h1 className="text-xl font-bold uppercase text-ink tracking-widest mb-3">
             DASHBOARD NOT ACCESSIBLE
           </h1>
-          <p className="text-sm text-[--color-ink] opacity-60">
+          <p className="text-sm text-ink opacity-60">
             Dashboard access requires the device you used to create this chit.
           </p>
         </div>
@@ -84,8 +84,8 @@ export default function DashboardPage({
   // organizerSecret loaded but Convex data still arriving
   if (billData === undefined) {
     return (
-      <main className="min-h-screen bg-[--color-paper-table] flex items-center justify-center">
-        <p className="text-sm font-bold uppercase text-[--color-ink] tracking-widest">
+      <main className="min-h-screen bg-paper-table flex items-center justify-center">
+        <p className="text-sm font-bold uppercase text-ink tracking-widest">
           LOADING...
         </p>
       </main>
@@ -95,12 +95,12 @@ export default function DashboardPage({
   // D-10: bill is null — secret does not match this bill's organizer (AUTH-03)
   if (billData === null) {
     return (
-      <main className="min-h-screen bg-[--color-paper-table] flex items-center justify-center">
+      <main className="min-h-screen bg-paper-table flex items-center justify-center">
         <div className="max-w-[480px] mx-auto px-4 py-12 text-center">
-          <h1 className="text-xl font-bold uppercase text-[--color-ink] tracking-widest mb-3">
+          <h1 className="text-xl font-bold uppercase text-ink tracking-widest mb-3">
             DASHBOARD NOT ACCESSIBLE
           </h1>
-          <p className="text-sm text-[--color-ink] opacity-60">
+          <p className="text-sm text-ink opacity-60">
             Dashboard access requires the device you used to create this chit.
           </p>
         </div>
@@ -166,13 +166,13 @@ export default function DashboardPage({
   }
 
   return (
-    <main className="min-h-screen bg-[--color-paper-table]">
+    <main className="min-h-screen bg-paper-table">
       <div className="max-w-[960px] mx-auto px-4 py-8">
         {/* Heading */}
-        <h1 className="text-2xl font-bold uppercase text-[--color-ink] tracking-widest mb-0.5">
+        <h1 className="text-2xl font-bold uppercase text-ink tracking-widest mb-0.5">
           {bill.title}
         </h1>
-        <p className="text-xs text-[--color-ink] opacity-60 mb-6 uppercase">
+        <p className="text-xs text-ink opacity-60 mb-6 uppercase">
           {displayCode}
         </p>
 
@@ -196,24 +196,24 @@ export default function DashboardPage({
             />
 
             {/* People section (DASH-03) */}
-            <h2 className="uppercase text-xs font-bold text-[--color-ink] tracking-widest mt-6 mb-2">
+            <h2 className="uppercase text-xs font-bold text-ink tracking-widest mt-6 mb-2">
               PEOPLE
             </h2>
 
             {payments?.length === 0 ? (
               /* Empty state per UI-SPEC Copywriting Contract */
-              <div className="text-center py-8 border border-dashed border-[--color-ink] border-opacity-20 rounded">
-                <p className="text-base font-bold uppercase text-[--color-ink] mb-1">
+              <div className="text-center py-8 border border-dashed border-ink border-opacity-20 rounded">
+                <p className="text-base font-bold uppercase text-ink mb-1">
                   NO ONE&apos;S JOINED YET
                 </p>
-                <p className="text-sm text-[--color-ink] opacity-60 mb-4">
+                <p className="text-sm text-ink opacity-60 mb-4">
                   Share the link and they&apos;ll appear here.
                 </p>
                 {/* Blue primary CTA — COPY SHARE LINK in empty state */}
                 <button
                   type="button"
                   onClick={handleCopyShareLink}
-                  className="bg-[--color-pen] text-white text-xs h-10 px-5 uppercase tracking-widest cursor-pointer"
+                  className="bg-pen text-white text-xs h-10 px-5 uppercase tracking-widest cursor-pointer"
                 >
                   COPY SHARE LINK
                 </button>
@@ -257,7 +257,7 @@ export default function DashboardPage({
             />
 
             {/* Quick actions */}
-            <h3 className="uppercase text-xs font-bold text-[--color-ink] tracking-widest mt-4 mb-2">
+            <h3 className="uppercase text-xs font-bold text-ink tracking-widest mt-4 mb-2">
               QUICK ACTIONS
             </h3>
 
@@ -265,7 +265,7 @@ export default function DashboardPage({
             <button
               type="button"
               onClick={handleCopyShareLink}
-              className="w-full border border-[--color-ink] text-[--color-ink] h-10 uppercase text-sm tracking-widest mb-2 cursor-pointer"
+              className="w-full border border-ink text-ink h-10 uppercase text-sm tracking-widest mb-2 cursor-pointer"
             >
               COPY SHARE LINK
             </button>
@@ -275,13 +275,13 @@ export default function DashboardPage({
               <button
                 type="button"
                 onClick={() => setShowCloseConfirm(true)}
-                className="w-full border border-[--color-stamp] text-[--color-stamp] h-10 uppercase text-sm tracking-widest cursor-pointer"
+                className="w-full border border-stamp text-stamp h-10 uppercase text-sm tracking-widest cursor-pointer"
               >
                 CLOSE CHIT EARLY
               </button>
             ) : (
-              <div className="border border-[--color-stamp] p-3">
-                <p className="text-xs text-[--color-stamp] uppercase mb-2 font-bold">
+              <div className="border border-stamp p-3">
+                <p className="text-xs text-stamp uppercase mb-2 font-bold">
                   Close this chit? Members will no longer be able to pay.
                 </p>
                 <div className="flex gap-2">
@@ -291,14 +291,14 @@ export default function DashboardPage({
                       alert("Close chit feature coming soon.");
                       setShowCloseConfirm(false);
                     }}
-                    className="border border-[--color-stamp] text-[--color-stamp] text-xs h-8 px-3 uppercase tracking-widest cursor-pointer"
+                    className="border border-stamp text-stamp text-xs h-8 px-3 uppercase tracking-widest cursor-pointer"
                   >
                     CLOSE CHIT
                   </button>
                   <button
                     type="button"
                     onClick={() => setShowCloseConfirm(false)}
-                    className="border border-[--color-ink] text-[--color-ink] text-xs h-8 px-3 uppercase tracking-widest cursor-pointer"
+                    className="border border-ink text-ink text-xs h-8 px-3 uppercase tracking-widest cursor-pointer"
                   >
                     CANCEL
                   </button>

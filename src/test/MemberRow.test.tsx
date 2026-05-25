@@ -47,7 +47,7 @@ describe('MemberRow', () => {
     expect(screen.getByRole('button', { name: /stamp settled/i })).toBeInTheDocument()
   })
 
-  it('AWAITING status: STAMP SETTLED button has blue bg-[--color-pen] class', () => {
+  it('AWAITING status: STAMP SETTLED button has blue bg-pen class', () => {
     const { container } = render(
       <MemberRow
         name="Carol"
@@ -58,7 +58,7 @@ describe('MemberRow', () => {
       />
     )
     const confirmBtn = screen.getByRole('button', { name: /stamp settled/i })
-    expect(confirmBtn.className).toContain('bg-[--color-pen]')
+    expect(confirmBtn.className).toContain('bg-pen')
   })
 
   it('AWAITING status: REJECT button is visible', () => {

@@ -63,30 +63,38 @@ blocked: 0
   status: failed
   reason: "User reported: prefix is not red"
   severity: cosmetic
+  root_cause: "@theme inline in globals.css does not emit CSS custom properties at :root; text-[--color-stamp] compiles to color: var(--color-stamp) but the variable does not exist at runtime"
+  fix: "Change @theme inline to @theme in globals.css — this generates :root CSS variables for all tokens"
   test: 1
-  artifacts: []
-  missing: []
+  artifacts: [src/app/globals.css]
+  missing: [":root { --color-stamp }"]
 
-- truth: "Tapping the CLAIM button below an item row expands the name input"
+- truth: "Tapping the CLAIM button/prompt below an item row expands the name input"
   status: failed
-  reason: "User reported: name input only appears when clicking item name, not the CLAIM button"
+  reason: "User reported: name input only appears when clicking item name, not the CLAIM prompt below it"
   severity: major
+  root_cause: "The CLAIM <p> element at page.tsx:364-368 is outside the tappable <button> and has no onClick handler; clicks do not reach handleItemTap"
+  fix: "Add onClick={() => handleItemTap(item._id, myClaimOnItem?._id)} to the CLAIM <p> element, or convert it to a <button>"
   test: 1
-  artifacts: []
-  missing: []
+  artifacts: [src/app/c/[billId]/page.tsx]
+  missing: ["onClick on CLAIM prompt element"]
 
-- truth: "Your Portion panel placement is distinct from Bill Total section"
+- truth: "Your Portion panel is visually distinct from Bill Total, not sandwiched in content flow"
   status: failed
   reason: "User reported: better place for member portion, not on top of the total"
   severity: cosmetic
+  root_cause: "Panel uses sticky bottom-0 inside the page content flow; appears visually between items list and Bill Total section rather than as a separate persistent panel"
+  fix: "Move Your Portion panel outside/below the items scroll area, above Bill Total, with clear visual separator (border or spacing)"
   test: 1
-  artifacts: []
+  artifacts: [src/app/c/[billId]/page.tsx]
   missing: []
 
-- truth: "Claimant names render in blue (--color-pen) handwriting font"
+- truth: "Claimant names render in blue (--color-pen)"
   status: failed
   reason: "User reported: handwriting is not in blue"
   severity: cosmetic
+  root_cause: "Same as ❋ color: @theme inline does not create :root CSS variables; text-[--color-pen] resolves var(--color-pen) which is undefined at runtime"
+  fix: "Same fix as ❋ color: change @theme inline to @theme in globals.css"
   test: 7
-  artifacts: []
-  missing: []
+  artifacts: [src/app/globals.css]
+  missing: [":root { --color-pen }"]

@@ -57,8 +57,8 @@ describe('SettleStamp', () => {
     // Find the paragraph that contains "HAVE A GOOD ONE!"
     const para = container.querySelector('p')
     expect(para).toBeInTheDocument()
-    expect(para?.className).toContain('text-[--color-pen]')
-    expect(para?.className).not.toContain('text-[--color-stamp]')
+    expect(para?.className).toContain('text-pen')
+    expect(para?.className).not.toContain('text-stamp')
   })
 
   it('"settled" status: renders "SETTLE" stamp text', () => {

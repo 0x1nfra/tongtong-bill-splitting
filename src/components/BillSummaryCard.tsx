@@ -20,29 +20,29 @@ export function BillSummaryCard({
   const { grandTotalCents } = calculateTotals(items, applySST, applyServiceCharge);
 
   return (
-    <div className="bg-[--color-paper-chit] rounded p-4">
+    <div className="bg-paper-chit rounded p-4">
       {/* Display code — short human-readable bill code */}
-      <p className="uppercase text-xs text-[--color-ink] opacity-60 mb-1">
+      <p className="uppercase text-xs text-ink opacity-60 mb-1">
         {displayCode}
       </p>
 
       {/* Bill title */}
-      <p className="text-base font-bold text-[--color-ink] uppercase tracking-wide mb-1">
+      <p className="text-base font-bold text-ink uppercase tracking-wide mb-1">
         {title || "UNTITLED CHIT"}
       </p>
 
       {/* Item count */}
-      <p className="text-xs text-[--color-ink] opacity-60 mb-3">
+      <p className="text-xs text-ink opacity-60 mb-3">
         {items.length} {items.length === 1 ? "ITEM" : "ITEMS"}
       </p>
 
       {/* Grand total */}
-      <div className="border-t border-[--color-ink] pt-3">
+      <div className="border-t border-ink pt-3">
         <div className="flex justify-between items-center">
-          <span className="uppercase text-sm font-bold text-[--color-ink]">
+          <span className="uppercase text-sm font-bold text-ink">
             TOTAL
           </span>
-          <span className="text-lg font-bold text-[--color-ink]">
+          <span className="text-lg font-bold text-ink">
             RM{(grandTotalCents / 100).toFixed(2)}
           </span>
         </div>

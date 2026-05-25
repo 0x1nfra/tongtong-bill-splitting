@@ -18,10 +18,10 @@ export function ProgressBar({ collectedCents, totalCents }: ProgressBarProps) {
     <div>
       {/* Label row */}
       <div className="flex justify-between items-center mb-1">
-        <span className="uppercase text-xs text-[--color-ink] font-bold tracking-widest">
+        <span className="uppercase text-xs text-ink font-bold tracking-widest">
           TOTAL COLLECTED
         </span>
-        <span className="text-xs text-[--color-ink]">
+        <span className="text-xs text-ink">
           RM{collectedDisplay} / RM{totalDisplay}
         </span>
       </div>
@@ -33,7 +33,7 @@ export function ProgressBar({ collectedCents, totalCents }: ProgressBarProps) {
       >
         {/* Blue fill — DASH-01 */}
         <div
-          className="h-2 bg-[--color-pen] rounded transition-all duration-300"
+          className="h-2 bg-pen rounded transition-all duration-300"
           style={{ width: `${pct}%` }}
         />
       </div>

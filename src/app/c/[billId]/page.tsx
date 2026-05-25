@@ -210,8 +210,8 @@ export default function MemberViewPage({
 
   if (bill === undefined) {
     return (
-      <main className="min-h-screen bg-[--color-paper-table] flex items-center justify-center">
-        <p className="text-sm font-bold uppercase text-[--color-ink] tracking-widest">
+      <main className="min-h-screen bg-paper-table flex items-center justify-center">
+        <p className="text-sm font-bold uppercase text-ink tracking-widest">
           LOADING...
         </p>
       </main>
@@ -220,12 +220,12 @@ export default function MemberViewPage({
 
   if (bill === null) {
     return (
-      <main className="min-h-screen bg-[--color-paper-table] flex items-center justify-center">
+      <main className="min-h-screen bg-paper-table flex items-center justify-center">
         <div className="max-w-[480px] mx-auto px-4 py-12 text-center">
-          <h1 className="text-xl font-bold uppercase text-[--color-ink] tracking-widest mb-3">
+          <h1 className="text-xl font-bold uppercase text-ink tracking-widest mb-3">
             THIS CHIT HAS BEEN TORN UP
           </h1>
-          <p className="text-sm text-[--color-ink] opacity-60">
+          <p className="text-sm text-ink opacity-60">
             The link may have expired or the chit was closed.
           </p>
         </div>
@@ -269,19 +269,19 @@ export default function MemberViewPage({
     payment?.status === "settled";
 
   return (
-    <main className="min-h-screen bg-[--color-paper-table]">
+    <main className="min-h-screen bg-paper-table">
       <div className="max-w-[480px] mx-auto px-4 py-6">
         {/* Bill header */}
-        <h1 className="text-xl font-bold uppercase text-[--color-ink] tracking-widest mb-1">
+        <h1 className="text-xl font-bold uppercase text-ink tracking-widest mb-1">
           {bill.title}
         </h1>
-        <p className="text-xs text-[--color-ink] opacity-60 mb-6 uppercase tracking-widest">
+        <p className="text-xs text-ink opacity-60 mb-6 uppercase tracking-widest">
           {"#TT-" + billId.slice(0, 4).toUpperCase()}
         </p>
 
         {/* Interactive items list — CLAIM-01 through CLAIM-05 */}
-        <div className="bg-[--color-paper-chit] p-4 mb-4">
-          <p className="text-xs font-bold uppercase text-[--color-ink] tracking-widest mb-3 opacity-60">
+        <div className="bg-paper-chit p-4 mb-4">
+          <p className="text-xs font-bold uppercase text-ink tracking-widest mb-3 opacity-60">
             ITEMS
           </p>
           {items.map(
@@ -307,12 +307,12 @@ export default function MemberViewPage({
               return (
                 <div
                   key={item._id}
-                  className="border-b border-[--color-ink] border-opacity-10 last:border-0"
+                  className="border-b border-ink border-opacity-10 last:border-0"
                 >
                   {/* Tappable item row */}
                   <button
                     type="button"
-                    className={`w-full min-h-[48px] flex justify-between items-center text-left px-0 py-2 cursor-pointer hover:bg-[--color-paper-chit]/50 transition-colors${isMine ? " bg-[--color-paper-chit] border-l-4 border-[--color-pen] pl-2" : ""} disabled:opacity-50 disabled:cursor-wait`}
+                    className={`w-full min-h-[48px] flex justify-between items-center text-left px-0 py-2 cursor-pointer hover:bg-paper-chit/50 transition-colors${isMine ? " bg-paper-chit border-l-4 border-pen pl-2" : ""} disabled:opacity-50 disabled:cursor-wait`}
                     disabled={isPending}
                     aria-label={`${item.name} — tap to ${isMine ? "unclaim" : totalClaimants > 0 ? "co-claim" : "claim"}`}
                     onClick={() =>
@@ -321,10 +321,10 @@ export default function MemberViewPage({
                   >
                     {/* Left side: unclaimed indicator + item name + qty */}
                     <span
-                      className={`flex-1 flex items-center gap-1 text-sm text-[--color-ink]${isMine ? " font-bold" : ""}`}
+                      className={`flex-1 flex items-center gap-1 text-sm text-ink${isMine ? " font-bold" : ""}`}
                     >
                       {totalClaimants === 0 ? (
-                        <span className="text-[--color-stamp] mr-0.5">❋</span>
+                        <span className="text-stamp mr-0.5">❋</span>
                       ) : null}
                       {item.name}
                       {item.quantity > 1 ? (
@@ -336,7 +336,7 @@ export default function MemberViewPage({
 
                     {/* Right side: price (member share or full price) */}
                     <span
-                      className={`text-sm${isMine ? " font-bold text-[--color-pen]" : " text-[--color-ink]"}`}
+                      className={`text-sm${isMine ? " font-bold text-pen" : " text-ink"}`}
                     >
                       RM{(splitPriceCents / 100).toFixed(2)}
                     </span>
@@ -348,7 +348,7 @@ export default function MemberViewPage({
                       {itemClaims.map((claim) => (
                         <span
                           key={claim._id}
-                          className={`font-[family-name:var(--font-handwriting)] text-[--color-pen] text-sm${claim.claimantSession === claimantSession ? " font-bold" : ""}`}
+                          className={`font-[family-name:var(--font-handwriting)] text-pen text-sm${claim.claimantSession === claimantSession ? " font-bold" : ""}`}
                           style={{
                             display: "inline-block",
                             transform: `rotate(${getRotation(claim._id)}deg)`,
@@ -364,7 +364,7 @@ export default function MemberViewPage({
                   {/* Inline "CLAIM" prompt — unclaimed and not expanded (D-10, CLAIM-05) */}
                   {totalClaimants === 0 && !isExpanded ? (
                     <p
-                      className="text-xs text-[--color-stamp] uppercase tracking-widest pb-1 pl-0 cursor-pointer"
+                      className="text-xs text-stamp uppercase tracking-widest pb-1 pl-0 cursor-pointer"
                       onClick={() => handleItemTap(item._id, myClaimOnItem?._id)}
                     >
                       CLAIM
@@ -375,10 +375,10 @@ export default function MemberViewPage({
                   <div
                     className={`overflow-hidden transition-[max-height] duration-200 ease-out${isExpanded ? " max-h-[80px]" : " max-h-0"}`}
                   >
-                    <div className="bg-[--color-paper-chit] px-2 py-2 flex gap-2 items-center">
+                    <div className="bg-paper-chit px-2 py-2 flex gap-2 items-center">
                       <label
                         htmlFor="claimantNameInput"
-                        className="text-xs font-bold uppercase tracking-widest text-[--color-ink] shrink-0"
+                        className="text-xs font-bold uppercase tracking-widest text-ink shrink-0"
                       >
                         YOUR NAME
                       </label>
@@ -391,12 +391,12 @@ export default function MemberViewPage({
                         onKeyDown={(e) => {
                           if (e.key === "Enter") handleNameSubmit(item._id);
                         }}
-                        className="flex-1 border border-[--color-ink] bg-[--color-paper-chit] text-[--color-ink] text-sm px-2 py-1 focus:outline-none focus:ring-1 focus:ring-[--color-pen] min-w-0"
+                        className="flex-1 border border-ink bg-paper-chit text-ink text-sm px-2 py-1 focus:outline-none focus:ring-1 focus:ring-pen min-w-0"
                       />
                       <button
                         type="button"
                         onClick={() => handleNameSubmit(item._id)}
-                        className="bg-[--color-pen] text-white text-xs uppercase font-bold tracking-widest px-3 py-1 shrink-0"
+                        className="bg-pen text-white text-xs uppercase font-bold tracking-widest px-3 py-1 shrink-0"
                       >
                         CLAIM
                       </button>
@@ -410,13 +410,13 @@ export default function MemberViewPage({
 
         {/* YOUR PORTION panel — static block, visible only when hasClaims (D-07, CALC-04) */}
         {hasClaims ? (
-          <div className="bg-[--color-paper-chit] border-t-2 border-[--color-pen] p-4 shadow-[0_2px_12px_rgba(31,27,23,0.08)] border-l-4 border-l-[--color-pen] mb-4">
-            <p className="text-xs font-bold uppercase tracking-widest text-[--color-ink] opacity-60 mb-3">
+          <div className="bg-paper-chit border-t-2 border-pen p-4 shadow-[0_2px_12px_rgba(31,27,23,0.08)] border-l-4 border-l-pen mb-4">
+            <p className="text-xs font-bold uppercase tracking-widest text-ink opacity-60 mb-3">
               YOUR PORTION
             </p>
 
             {/* Subtotal row */}
-            <div className="flex justify-between text-sm text-[--color-ink] mb-1">
+            <div className="flex justify-between text-sm text-ink mb-1">
               <span className="opacity-60">Subtotal</span>
               <span>
                 RM{((personTotals?.personSubtotalCents ?? 0) / 100).toFixed(2)}
@@ -425,7 +425,7 @@ export default function MemberViewPage({
 
             {/* Service charge row (conditional) */}
             {bill.applyServiceCharge ? (
-              <div className="flex justify-between text-sm text-[--color-ink] mb-1">
+              <div className="flex justify-between text-sm text-ink mb-1">
                 <span className="opacity-60">Service Charge (10%)</span>
                 <span>
                   RM
@@ -438,7 +438,7 @@ export default function MemberViewPage({
 
             {/* SST row (conditional) */}
             {bill.applySST ? (
-              <div className="flex justify-between text-sm text-[--color-ink] mb-1">
+              <div className="flex justify-between text-sm text-ink mb-1">
                 <span className="opacity-60">SST (6%)</span>
                 <span>
                   RM{((personTotals?.personSSTCents ?? 0) / 100).toFixed(2)}
@@ -447,7 +447,7 @@ export default function MemberViewPage({
             ) : null}
 
             {/* YOUR TOTAL row */}
-            <div className="flex justify-between font-bold text-base text-[--color-ink] border-t border-[--color-ink] mt-2 pt-2">
+            <div className="flex justify-between font-bold text-base text-ink border-t border-ink mt-2 pt-2">
               <span className="uppercase tracking-widest">YOUR TOTAL</span>
               <span aria-live="polite">
                 RM{((personTotals?.personTotalCents ?? 0) / 100).toFixed(2)}
@@ -457,20 +457,20 @@ export default function MemberViewPage({
         ) : null}
 
         {/* Bill grand total section */}
-        <div className="bg-[--color-paper-chit] p-4 mb-6">
-          <p className="text-xs font-bold uppercase text-[--color-ink] tracking-widest mb-3 opacity-60">
+        <div className="bg-paper-chit p-4 mb-6">
+          <p className="text-xs font-bold uppercase text-ink tracking-widest mb-3 opacity-60">
             BILL TOTAL
           </p>
 
           {/* Subtotal row */}
-          <div className="flex justify-between text-sm text-[--color-ink] mb-1">
+          <div className="flex justify-between text-sm text-ink mb-1">
             <span className="opacity-60">Subtotal</span>
             <span>RM{(totals.subtotalCents / 100).toFixed(2)}</span>
           </div>
 
           {/* Service charge row (shown only if applicable) */}
           {bill.applyServiceCharge ? (
-            <div className="flex justify-between text-sm text-[--color-ink] mb-1">
+            <div className="flex justify-between text-sm text-ink mb-1">
               <span className="opacity-60">Service Charge (10%)</span>
               <span>RM{(totals.serviceChargeCents / 100).toFixed(2)}</span>
             </div>
@@ -478,14 +478,14 @@ export default function MemberViewPage({
 
           {/* SST row (shown only if applicable) */}
           {bill.applySST ? (
-            <div className="flex justify-between text-sm text-[--color-ink] mb-1">
+            <div className="flex justify-between text-sm text-ink mb-1">
               <span className="opacity-60">SST (6%)</span>
               <span>RM{(totals.sstCents / 100).toFixed(2)}</span>
             </div>
           ) : null}
 
           {/* Grand total row */}
-          <div className="flex justify-between font-bold text-base text-[--color-ink] border-t border-[--color-ink] mt-2 pt-2">
+          <div className="flex justify-between font-bold text-base text-ink border-t border-ink mt-2 pt-2">
             <span className="uppercase tracking-widest">GRAND TOTAL</span>
             <span>RM{(totals.grandTotalCents / 100).toFixed(2)}</span>
           </div>
@@ -494,7 +494,7 @@ export default function MemberViewPage({
         {/* DuitNow QR (PAY-03) */}
         {bill.qrUrl ? (
           <div className="mb-4 text-center">
-            <p className="text-xs font-bold uppercase text-[--color-ink] tracking-widest mb-2 opacity-60">
+            <p className="text-xs font-bold uppercase text-ink tracking-widest mb-2 opacity-60">
               SCAN TO PAY
             </p>
             <img
@@ -518,7 +518,7 @@ export default function MemberViewPage({
             type="button"
             onClick={handlePay}
             disabled={isButtonDisabled}
-            className="w-full h-12 bg-[--color-pen] text-white uppercase font-bold text-sm tracking-widest flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed"
+            className="w-full h-12 bg-pen text-white uppercase font-bold text-sm tracking-widest flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed"
           >
             I&apos;VE PAID
           </button>
@@ -526,21 +526,21 @@ export default function MemberViewPage({
 
         {/* AWAITING CONFIRMATION subtext (PAY-02) */}
         {paymentStatus === "pending" ? (
-          <p className="text-xs text-center text-[--color-ink] opacity-60 uppercase tracking-widest mt-4">
+          <p className="text-xs text-center text-ink opacity-60 uppercase tracking-widest mt-4">
             AWAITING CONFIRMATION FROM THE ORGANIZER
           </p>
         ) : null}
 
         {/* HAVE A GOOD ONE! confirmation copy (PAY-04) */}
         {paymentStatus === "settled" ? (
-          <p className="text-sm text-center font-bold text-[--color-pen] uppercase tracking-widest mt-4">
+          <p className="text-sm text-center font-bold text-pen uppercase tracking-widest mt-4">
             PAYMENT CONFIRMED — HAVE A GOOD ONE!
           </p>
         ) : null}
 
         {/* Rejection note — member can re-tap I'VE PAID */}
         {paymentStatus === "rejected" ? (
-          <p className="text-xs text-center text-[--color-ink] opacity-60 uppercase tracking-widest mt-2">
+          <p className="text-xs text-center text-ink opacity-60 uppercase tracking-widest mt-2">
             PAYMENT WAS NOT CONFIRMED. PLEASE TRY AGAIN.
           </p>
         ) : null}
