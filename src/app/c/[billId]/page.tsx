@@ -285,6 +285,9 @@ export default function MemberViewPage({
     payment?.status === "pending" ||
     payment?.status === "settled";
 
+  // UI-09: deterministic 1–2° rotation derived from billId charCode (one-imperfection rule)
+  const rotationDeg = (billId.charCodeAt(0) % 20) / 10 + 1;
+
   return (
     <main className="min-h-screen bg-paper-table">
       <div className="max-w-[480px] mx-auto px-4 py-6">
@@ -297,18 +300,21 @@ export default function MemberViewPage({
         </p>
 
         {/* Interactive items list — CLAIM-01 through CLAIM-05 */}
-        <div className="chit p-4 mb-4">
+        <div className="chit p-4 mb-4" style={{ transform: `rotate(${rotationDeg}deg)` }}>
           <p className="text-xs font-bold uppercase text-ink tracking-widest mb-3 opacity-60">
             ITEMS
           </p>
           <div className="perforation mb-3"></div>
           {items.map(
-            (item: {
-              _id: string;
-              name: string;
-              price: number;
-              quantity: number;
-            }) => {
+            (
+              item: {
+                _id: string;
+                name: string;
+                price: number;
+                quantity: number;
+              },
+              index: number
+            ) => {
               const itemClaims = claimsByItem.get(item._id) ?? [];
               const myClaimOnItem = itemClaims.find(
                 (c) => c.claimantSession === claimantSession
@@ -323,14 +329,11 @@ export default function MemberViewPage({
               const isPending = pendingItems.has(item._id);
 
               return (
-                <div
-                  key={item._id}
-                  className="border-b border-ink border-opacity-10 last:border-0"
-                >
+                <div key={item._id}>
                   {/* Tappable item row */}
                   <button
                     type="button"
-                    className={`w-full min-h-[48px] flex justify-between items-center text-left px-0 py-2 cursor-pointer hover:bg-paper-chit/50 transition-colors${isMine ? " bg-paper-chit border-l-4 border-pen pl-2" : ""} disabled:opacity-50 disabled:cursor-wait`}
+                    className={`dot-leader w-full min-h-[48px] flex justify-between items-center text-left px-0 py-2 cursor-pointer hover:bg-paper-chit/50 transition-colors${isMine ? " bg-paper-chit border-l-4 border-pen pl-2" : ""} disabled:opacity-50 disabled:cursor-wait`}
                     disabled={isPending}
                     aria-label={`${item.name} — tap to ${isMine ? "unclaim" : totalClaimants > 0 ? "co-claim" : "claim"}`}
                     onClick={() =>
@@ -420,6 +423,9 @@ export default function MemberViewPage({
                       </button>
                     </div>
                   </div>
+                  {index < items.length - 1 ? (
+                    <hr className="rule-hairline" />
+                  ) : null}
                 </div>
               );
             }
@@ -429,13 +435,13 @@ export default function MemberViewPage({
 
         {/* YOUR PORTION panel — static block, visible only when hasClaims (D-07, CALC-04) */}
         {hasClaims ? (
-          <div className="bg-paper-chit border-t-2 border-pen p-4 shadow-[0_2px_12px_rgba(31,27,23,0.08)] border-l-4 border-l-pen mb-4">
+          <div className="chit border-t-2 border-pen border-l-4 border-l-pen p-4 mb-4">
             <p className="text-xs font-bold uppercase tracking-widest text-ink opacity-60 mb-3">
               YOUR PORTION
             </p>
 
             {/* Subtotal row */}
-            <div className="flex justify-between text-sm text-ink mb-1">
+            <div className="dot-leader flex justify-between text-sm text-ink mb-1">
               <span className="opacity-60">Subtotal</span>
               <span>
                 RM{((personTotals?.personSubtotalCents ?? 0) / 100).toFixed(2)}
@@ -444,7 +450,7 @@ export default function MemberViewPage({
 
             {/* Service charge row (conditional) */}
             {bill.applyServiceCharge ? (
-              <div className="flex justify-between text-sm text-ink mb-1">
+              <div className="dot-leader flex justify-between text-sm text-ink mb-1">
                 <span className="opacity-60">Service Charge (10%)</span>
                 <span>
                   RM
@@ -457,7 +463,7 @@ export default function MemberViewPage({
 
             {/* SST row (conditional) */}
             {bill.applySST ? (
-              <div className="flex justify-between text-sm text-ink mb-1">
+              <div className="dot-leader flex justify-between text-sm text-ink mb-1">
                 <span className="opacity-60">SST (6%)</span>
                 <span>
                   RM{((personTotals?.personSSTCents ?? 0) / 100).toFixed(2)}
@@ -466,7 +472,7 @@ export default function MemberViewPage({
             ) : null}
 
             {/* YOUR TOTAL row */}
-            <div className="flex justify-between font-bold text-base text-ink border-t border-ink mt-2 pt-2">
+            <div className="dot-leader flex justify-between font-bold text-base text-ink border-t border-ink mt-2 pt-2">
               <span className="uppercase tracking-widest">YOUR TOTAL</span>
               <span aria-live="polite">
                 RM{((personTotals?.personTotalCents ?? 0) / 100).toFixed(2)}
