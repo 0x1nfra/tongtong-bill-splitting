@@ -21,6 +21,14 @@
   --font-stamp: "Bungee", sans-serif;
 }
 
+:root {
+  --color-paper-chit: #F4EFE6;
+  --color-paper-table: #EEEAE2;
+  --color-ink: #1F1B17;
+  --color-pen: #1E40AF;
+  --color-stamp: #B91C1C;
+}
+
 body {
   background-color: #EEEAE2;
   color: #1F1B17;
