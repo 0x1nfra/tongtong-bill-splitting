@@ -22,8 +22,8 @@ export default function DashboardPage({
 
   useEffect(() => {
     const stored = localStorage.getItem("tongtong_organizer_secret");
-    // stored is null if key is absent — use null directly to signal "not found on this device"
-    setOrganizerSecret(stored);
+    // null means key absent (different device) — coerce to "" so the !organizerSecret guard fires
+    setOrganizerSecret(stored ?? "");
   }, []);
 
   useEffect(() => {
