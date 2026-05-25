@@ -58,9 +58,12 @@ export default function DashboardPage({
   if (organizerSecret === null) {
     return (
       <main className="min-h-screen bg-paper-table flex items-center justify-center">
-        <p className="text-sm font-bold uppercase text-ink tracking-widest">
-          LOADING...
-        </p>
+        <div className="chit max-w-[480px] w-full mx-4 p-4 animate-pulse">
+          <div className="h-4 bg-ink opacity-10 rounded mb-3 w-1/3" />
+          <div className="h-3 bg-ink opacity-10 rounded mb-2 w-full" />
+          <div className="h-3 bg-ink opacity-10 rounded mb-2 w-4/5" />
+          <div className="h-3 bg-ink opacity-10 rounded w-3/4" />
+        </div>
       </main>
     );
   }
@@ -85,9 +88,12 @@ export default function DashboardPage({
   if (billData === undefined) {
     return (
       <main className="min-h-screen bg-paper-table flex items-center justify-center">
-        <p className="text-sm font-bold uppercase text-ink tracking-widest">
-          LOADING...
-        </p>
+        <div className="chit max-w-[480px] w-full mx-4 p-4 animate-pulse">
+          <div className="h-4 bg-ink opacity-10 rounded mb-3 w-1/3" />
+          <div className="h-3 bg-ink opacity-10 rounded mb-2 w-full" />
+          <div className="h-3 bg-ink opacity-10 rounded mb-2 w-4/5" />
+          <div className="h-3 bg-ink opacity-10 rounded w-3/4" />
+        </div>
       </main>
     );
   }
@@ -195,21 +201,23 @@ export default function DashboardPage({
               unclaimed={unclaimed}
             />
 
+            {/* Perforation between stats and people section */}
+            <div className="perforation my-4" />
+
             {/* People section (DASH-03) */}
             <h2 className="uppercase text-xs font-bold text-ink tracking-widest mt-6 mb-2">
               PEOPLE
             </h2>
 
             {payments?.length === 0 ? (
-              /* Empty state per UI-SPEC Copywriting Contract */
-              <div className="text-center py-8 border border-dashed border-ink border-opacity-20 rounded">
-                <p className="text-base font-bold uppercase text-ink mb-1">
-                  NO ONE&apos;S JOINED YET
+              /* Empty state per UI-11 */
+              <div className="chit p-6 text-center">
+                <p className="text-xs font-bold uppercase text-ink tracking-widest mb-1 opacity-60">
+                  NOTHING HERE YET
                 </p>
                 <p className="text-sm text-ink opacity-60 mb-4">
                   Share the link and they&apos;ll appear here.
                 </p>
-                {/* Blue primary CTA — COPY SHARE LINK in empty state */}
                 <button
                   type="button"
                   onClick={handleCopyShareLink}
@@ -255,6 +263,9 @@ export default function DashboardPage({
               applyServiceCharge={bill.applyServiceCharge}
               displayCode={displayCode}
             />
+
+            {/* Perforation between BillSummaryCard and quick actions */}
+            <div className="perforation my-4" />
 
             {/* Quick actions */}
             <h3 className="uppercase text-xs font-bold text-ink tracking-widest mt-4 mb-2">
