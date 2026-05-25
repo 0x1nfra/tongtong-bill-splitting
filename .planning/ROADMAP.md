@@ -8,7 +8,7 @@
 
 - [x] **Phase 1: Working Bill** - Organizer creates a bill, shares a link, members view it, payment flow and dashboard work end-to-end (functional, unstyled) (completed 2026-05-23)
 - [x] **Phase 2: Item Claiming** - Members tap to claim individual items; multi-claim splits cost; live proportional totals per person (completed 2026-05-24)
-- [ ] **Phase 3: TongTong Aesthetic** - Full chit visual theme and landing page applied across every screen
+- [x] **Phase 3: TongTong Aesthetic** - Full chit visual theme and landing page applied across every screen (completed 2026-05-25)
 
 ## Phase Details
 
@@ -99,17 +99,17 @@
   1. The claim screen displays item rows with dot-leader alignment, handwritten blue claimant names at slight random rotations, and a SETTLE stamp with ink-bleed animation on payment confirmation
   2. A visitor to the landing page sees the "tongtong." logotype, Manglish marketing copy, and a "START NEW BILL" chop-style button — and can reach the bill builder in one tap
   3. Every screen uses the correct color roles: warm paper background, charcoal ink, blue pen marks, and red reserved strictly for SETTLE stamp and unclaimed item warnings
-**Plans:** 4 plans
+**Plans:** 4/4 plans complete
 
 **Wave 1**
-- [ ] 03-01-PLAN.md — Font migration (JetBrains Mono + Bungee → next/font/google; Departure Mono → self-hosted WOFF2) + CSS animation token + SVG ink-bleed filter in layout.tsx
+- [x] 03-01-PLAN.md — Font migration (JetBrains Mono + Bungee → next/font/google; Departure Mono → self-hosted WOFF2) + CSS animation token + SVG ink-bleed filter in layout.tsx
 
 **Wave 2** *(03-02 and 03-03 run in parallel — both blocked on Wave 1 font delivery)*
-- [ ] 03-02-PLAN.md — Landing page full rewrite (logotype, DemoChit hero, Manglish copy, CTA) + SettleStamp thwack animation + ink-bleed filter
-- [ ] 03-03-PLAN.md — Member/claim view aesthetic polish: .chit wrappers, .dot-leader rows, .rule-hairline, .perforation, loading skeleton, EXPIRED stamp state, UI-09 rotation
+- [x] 03-02-PLAN.md — Landing page full rewrite (logotype, DemoChit hero, Manglish copy, CTA) + SettleStamp thwack animation + ink-bleed filter
+- [x] 03-03-PLAN.md — Member/claim view aesthetic polish: .chit wrappers, .dot-leader rows, .rule-hairline, .perforation, loading skeleton, EXPIRED stamp state, UI-09 rotation
 
 **Wave 3** *(blocked on Wave 2)*
-- [ ] 03-04-PLAN.md — Organizer screens: bill builder .chit form, dashboard skeleton/empty-state/panels, BillSummaryCard .chit upgrade
+- [x] 03-04-PLAN.md — Organizer screens: bill builder .chit form, dashboard skeleton/empty-state/panels, BillSummaryCard .chit upgrade
 
 **Cross-cutting constraints:**
 - next/font/google functions only in Server Components (layout.tsx) — never in "use client" files
@@ -125,4 +125,4 @@
 | 1. Working Bill | 6/6 | Complete   | 2026-05-23 |
 | 01.1. Tech Debt | 3/3 | Complete | 2026-05-24 |
 | 2. Item Claiming | 4/4 | Complete   | 2026-05-24 |
-| 3. TongTong Aesthetic | 0/4 | Not started | - |
+| 3. TongTong Aesthetic | 4/4 | Complete   | 2026-05-25 |
