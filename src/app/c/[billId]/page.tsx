@@ -85,10 +85,14 @@ export default function MemberViewPage({
     setOrganizerSecret(stored ?? "");
   }, []);
 
+  // Convex IDs are lowercase alphanumeric, typically 20+ chars.
+  // Reject obviously malformed IDs before hitting the validator.
+  const isValidBillIdFormat = /^[a-z0-9]{15,}$/.test(billId);
+
   // T-05-05: check if stored secret matches this bill server-side (returns null if not organizer)
   const organizerBillData = useQuery(
     api.bills.getBillForOrganizer,
-    organizerSecret
+    organizerSecret && isValidBillIdFormat
       ? { billId: billId as Id<"bills">, organizerSecret }
       : "skip"
   );
@@ -100,10 +104,6 @@ export default function MemberViewPage({
     }
   }, [organizerBillData, billId, router]);
 
-  // Convex IDs are lowercase alphanumeric, typically 20+ chars.
-  // Reject obviously malformed IDs before hitting the validator.
-  const isValidBillIdFormat = /^[a-z0-9]{15,}$/.test(billId);
-
   const bill = useQuery(
     api.bills.getBillForMember,
     isValidBillIdFormat ? { billId: billId as Id<"bills"> } : "skip"
@@ -112,7 +112,7 @@ export default function MemberViewPage({
   // PAY-02: subscribe to member's own payment status for real-time stamp state machine
   const payment = useQuery(
     api.payments.getMyPayment,
-    claimantSession
+    claimantSession && isValidBillIdFormat
       ? { billId: billId as Id<"bills">, claimantSession }
       : "skip"
   );

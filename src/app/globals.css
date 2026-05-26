@@ -66,16 +66,16 @@ body::before {
 /* Dot-leader utility */
 .dot-leader {
   display: flex;
-  align-items: baseline;
+  align-items: center;
   gap: 0;
 }
 
 .dot-leader::after {
   content: "";
   flex: 1;
-  border-bottom: 1px dotted #1F1B17;
+  border-bottom: 2px dotted #1F1B17;
   opacity: 0.4;
-  margin: 0 4px 3px;
+  margin: 0 6px;
   order: 0;
 }
 
