@@ -332,6 +332,19 @@ export default function MemberViewPage({
           {"#TT-" + billId.slice(0, 4).toUpperCase()}
         </p>
 
+        {/* Receipt image — shown when organizer uploaded bill proof */}
+        {bill.receiptUrl && (
+          <div className="mb-4">
+            <p className="uppercase text-xs text-ink opacity-60 mb-2">BILL RECEIPT</p>
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src={bill.receiptUrl}
+              alt="Bill receipt uploaded by organizer"
+              className="w-full max-w-[320px] border border-ink"
+            />
+          </div>
+        )}
+
         {/* Interactive items list — CLAIM-01 through CLAIM-05 */}
         <div className="chit p-4 mb-4" style={{ transform: `rotate(${rotationDeg}deg)` }}>
           <p className="text-xs font-bold uppercase text-ink tracking-widest mb-3 opacity-60">

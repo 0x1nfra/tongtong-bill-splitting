@@ -89,13 +89,17 @@ export const getBillForMember = query({
       ? await ctx.storage.getUrl(bill.qrStorageId)
       : null;
 
+    const receiptUrl = bill.receiptStorageId
+      ? await ctx.storage.getUrl(bill.receiptStorageId)
+      : null;
+
     // Explicitly exclude organizerSecret — members must not see it (T-01-04)
     const {
       organizerSecret: _excluded,
       ...billWithoutSecret
     } = bill;
 
-    return { ...billWithoutSecret, items, claims, qrUrl };
+    return { ...billWithoutSecret, items, claims, qrUrl, receiptUrl };
   },
 });
 
@@ -132,7 +136,11 @@ export const getBillForOrganizer = query({
       ? await ctx.storage.getUrl(bill.qrStorageId)
       : null;
 
-    return { bill, items, payments, qrUrl };
+    const receiptUrl = bill.receiptStorageId
+      ? await ctx.storage.getUrl(bill.receiptStorageId)
+      : null;
+
+    return { bill, items, payments, qrUrl, receiptUrl };
   },
 });
 
@@ -255,5 +263,20 @@ export const getClaimsForBill = query({
     const unclaimedCount = items.filter((i) => !claimedItemIds.has(i._id)).length;
 
     return { claimedCount, unclaimedCount };
+  },
+});
+
+export const setBillReceipt = mutation({
+  args: {
+    billId: v.id("bills"),
+    organizerSecret: v.string(),
+    receiptStorageId: v.id("_storage"),
+  },
+  handler: async (ctx, { billId, organizerSecret, receiptStorageId }) => {
+    const bill = await ctx.db.get(billId);
+    if (!bill || bill.organizerSecret !== organizerSecret) {
+      throw new Error("Unauthorized");
+    }
+    await ctx.db.patch(billId, { receiptStorageId });
   },
 });

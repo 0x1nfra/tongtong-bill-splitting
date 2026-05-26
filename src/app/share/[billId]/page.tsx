@@ -53,8 +53,9 @@ export default function SharePage({
   // SHARE-01: display code derived from first 4 chars of Convex billId (uppercase)
   const displayCode = `#TT-${billId.slice(0, 4).toUpperCase()}`;
 
-  // WhatsApp share URL — SHARE-04: recipients need no login
-  const whatsAppUrl = `https://wa.me/?text=${encodeURIComponent(shareUrl)}`;
+  // WhatsApp share URL — SHARE-04: pre-filled Manglish message (BONUS-02)
+  const manglishMessage = `Eh, join the chit lah! ${bill.title} — tap here to claim your items and see how much you owe:\n${shareUrl}\n\nSettle dulu k`;
+  const whatsAppUrl = `https://wa.me/?text=${encodeURIComponent(manglishMessage)}`;
 
   return (
     <main className="min-h-screen bg-paper-table">

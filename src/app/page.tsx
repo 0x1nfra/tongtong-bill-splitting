@@ -4,12 +4,25 @@ import { DemoChit } from "@/components/DemoChit";
 export default function Home() {
   return (
     <main className="min-h-screen flex flex-col items-center justify-center bg-paper-table px-4 py-12">
-      <h1
-        className="text-[28px] lowercase tracking-tight text-ink mb-1"
-        style={{ fontFamily: "var(--font-display)" }}
+      <svg
+        viewBox="0 0 168 36"
+        width="168"
+        height="36"
+        role="img"
+        aria-label="tongtong."
+        className="mb-1"
+        overflow="visible"
       >
-        tongtong<span className="text-stamp">.</span>
-      </h1>
+        <text
+          x="0"
+          y="28"
+          fontSize="28"
+          fontFamily="'Departure Mono', monospace"
+          filter="url(#ink-bleed)"
+        >
+          <tspan fill="#1F1B17">tongtong</tspan><tspan fill="#B91C1C">.</tspan>
+        </text>
+      </svg>
 
       <p className="text-xs font-bold uppercase tracking-widest text-ink mb-6 opacity-60">
         A CHIT FOR EVERYONE
