@@ -17,7 +17,11 @@ export function BillSummaryCard({
   applyServiceCharge,
   displayCode,
 }: BillSummaryCardProps) {
-  const { grandTotalCents } = calculateTotals(items, applySST, applyServiceCharge);
+  const { grandTotalCents } = calculateTotals(
+    items,
+    applySST,
+    applyServiceCharge,
+  );
 
   return (
     <div className="chit p-4">
@@ -39,9 +43,7 @@ export function BillSummaryCard({
       {/* Grand total */}
       <div className="border-t border-ink pt-3">
         <div className="dot-leader items-center">
-          <span className="uppercase text-sm font-bold text-ink">
-            TOTAL
-          </span>
+          <span className="uppercase text-sm font-bold text-ink">GRAND TOTAL</span>
           <span className="text-lg font-bold text-ink">
             RM{(grandTotalCents / 100).toFixed(2)}
           </span>
