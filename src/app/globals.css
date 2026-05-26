@@ -74,8 +74,8 @@ body::before {
   content: "";
   flex: 1;
   height: 4px;
-  background-image: radial-gradient(circle, rgba(31,27,23,0.55) 1.5px, transparent 1.5px);
-  background-size: 8px 4px;
+  background-image: radial-gradient(circle, rgba(31,27,23,0.55) 1px, transparent 1px);
+  background-size: 7px 3px;
   background-repeat: repeat-x;
   background-position: 0 center;
   margin: 0 6px;
