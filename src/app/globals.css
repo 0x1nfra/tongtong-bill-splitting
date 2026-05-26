@@ -66,16 +66,20 @@ body::before {
 /* Dot-leader utility */
 .dot-leader {
   display: flex;
-  align-items: center;
+  align-items: baseline;
   gap: 0;
 }
 
 .dot-leader::after {
   content: "";
   flex: 1;
-  border-bottom: 2px dotted #1F1B17;
-  opacity: 0.4;
+  height: 4px;
+  background-image: radial-gradient(circle, rgba(31,27,23,0.55) 1.5px, transparent 1.5px);
+  background-size: 8px 4px;
+  background-repeat: repeat-x;
+  background-position: 0 center;
   margin: 0 6px;
+  align-self: center;
   order: 0;
 }
 
