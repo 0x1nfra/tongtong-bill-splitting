@@ -1,4 +1,4 @@
-import { mutation, query } from "./_generated/server";
+import { mutation, query, internalMutation } from "./_generated/server";
 import { v } from "convex/values";
 
 /**
@@ -161,6 +161,7 @@ export const claimItem = mutation({
     // Verify bill exists
     const bill = await ctx.db.get(billId);
     if (!bill) throw new Error("Bill not found");
+    if (bill.archivedAt !== undefined) throw new Error("Bill is archived");
 
     // Verify item exists and belongs to this bill
     const item = await ctx.db.get(itemId);
@@ -202,6 +203,8 @@ export const unclaimItem = mutation({
   handler: async (ctx, { claimId, claimantSession }) => {
     const claim = await ctx.db.get(claimId);
     if (!claim) throw new Error("Claim not found");
+    const bill = await ctx.db.get(claim.billId);
+    if (bill?.archivedAt !== undefined) throw new Error("Bill is archived");
 
     // Session ownership gate (T-02-02)
     if (claim.claimantSession !== claimantSession) {
@@ -277,6 +280,30 @@ export const setBillReceipt = mutation({
     if (!bill || bill.organizerSecret !== organizerSecret) {
       throw new Error("Unauthorized");
     }
+    if (bill.archivedAt !== undefined) throw new Error("Bill is archived");
     await ctx.db.patch(billId, { receiptStorageId });
+  },
+});
+
+/**
+ * archiveStale — internalMutation called by the daily cron job (BONUS-03).
+ * Archives bills older than 30 days by setting archivedAt timestamp.
+ * Uses JS-side filter instead of Convex q.eq filter on optional field to avoid
+ * undefined field edge cases (Pitfall 1 from RESEARCH.md).
+ * Declared as internalMutation — not callable via public api.* namespace (T-04-03).
+ */
+export const archiveStale = internalMutation({
+  args: {},
+  handler: async (ctx) => {
+    const thirtyDaysAgo = Date.now() - 30 * 24 * 60 * 60 * 1000;
+    // Safe approach: collect all bills and JS-filter — avoids undefined optional field
+    // filter edge cases in Convex (do NOT use Convex filter on archivedAt)
+    const allBills = await ctx.db.query("bills").collect();
+    const staleBills = allBills.filter(
+      (b) => !b.archivedAt && b._creationTime < thirtyDaysAgo
+    );
+    for (const bill of staleBills) {
+      await ctx.db.patch(bill._id, { archivedAt: Date.now() });
+    }
   },
 });
