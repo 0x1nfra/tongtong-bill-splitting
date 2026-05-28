@@ -6,6 +6,7 @@ import { useQuery, useMutation } from "convex/react";
 import { api } from "../../../../convex/_generated/api";
 import type { Id } from "../../../../convex/_generated/dataModel";
 import { SettleStamp } from "../../../components/SettleStamp";
+import { ArchivedStamp } from "../../../components/ArchivedStamp";
 import { calculateTotals, calculatePersonTotals } from "@/lib/calculateTotals";
 
 /**
@@ -150,6 +151,7 @@ export default function MemberViewPage({
    * If name set: fire claim/unclaim immediately (D-03/D-04).
    */
   const handleItemTap = async (itemId: string, myClaimId?: string) => {
+    if (bill?.archivedAt) return; // BONUS-03: archived bills block all claims
     if (!claimantSession) return; // T-02-09: session not yet loaded
     if (pendingItems.has(itemId)) return; // T-02-10: mutation in-flight
 
@@ -283,6 +285,17 @@ export default function MemberViewPage({
     );
   }
 
+  // BONUS-03: early return for archived bills — show ArchivedStamp overlay, no bill content
+  if (bill.archivedAt) {
+    return (
+      <main className="min-h-screen bg-paper-table flex items-center justify-center">
+        <div className="max-w-[480px] mx-auto px-4 py-12">
+          <ArchivedStamp />
+        </div>
+      </main>
+    );
+  }
+
   const items = bill.items ?? [];
   const claims = bill.claims ?? [];
 
@@ -315,6 +328,7 @@ export default function MemberViewPage({
     !claimantSession ||
     !memberName ||
     isPaying ||
+    !!bill?.archivedAt ||
     payment?.status === "pending" ||
     payment?.status === "settled";
 
