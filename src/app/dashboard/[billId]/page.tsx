@@ -118,6 +118,7 @@ export default function DashboardPage({
   }
 
   const { bill, items } = billData;
+  const isArchived = !!bill.archivedAt;
   const { grandTotalCents } = calculateTotals(
     items,
     bill.applySST,
@@ -161,11 +162,14 @@ export default function DashboardPage({
     });
   }
 
-  // DASH-06: copies share link to clipboard
-  function handleRemind() {
-    navigator.clipboard.writeText(shareUrl).catch((err: unknown) => {
-      console.error("Failed to copy share link:", err);
-    });
+  // BONUS-04 (D-07): per-member WhatsApp nudge for "CLAIMED — UNPAID" members
+  // T-04-04: sanitize claimantName (stored user input) before URL interpolation
+  function handleNudgeMember(memberName: string) {
+    const sanitizedName = memberName.replace(/[<>"]/g, "");
+    const msg = encodeURIComponent(
+      `Eh ${sanitizedName}, still haven't paid for the ${bill.title} chit lah! Tap here to settle: ${shareUrl}`
+    );
+    window.open(`https://wa.me/?text=${msg}`, "_blank");
   }
 
   function handleCopyShareLink() {
@@ -252,6 +256,13 @@ export default function DashboardPage({
           {displayCode}
         </p>
 
+        {/* BONUS-03: ARCHIVED banner — shown when bill.archivedAt is set */}
+        {isArchived && (
+          <div className="w-full bg-stamp text-white text-xs font-bold uppercase tracking-widest py-3 text-center mb-4">
+            BILL ARCHIVED — READ ONLY
+          </div>
+        )}
+
         {/* 2-column layout: left 60%, right 40% on desktop (md+) */}
         <div className="md:grid md:grid-cols-[60%_40%] md:gap-8">
 
@@ -313,9 +324,9 @@ export default function DashboardPage({
                       name={payment.claimantName}
                       status={memberStatus}
                       amountOwed={amountPerMemberCents}
-                      onConfirm={() => handleConfirm(payment._id)}
-                      onReject={() => handleReject(payment._id)}
-                      onRemind={handleRemind}
+                      onConfirm={isArchived ? undefined : () => handleConfirm(payment._id)}
+                      onReject={isArchived ? undefined : () => handleReject(payment._id)}
+                      onRemind={isArchived ? undefined : (memberStatus === "CLAIMED — UNPAID" ? () => handleNudgeMember(payment.claimantName) : undefined)}
                     />
                   );
                 })}
