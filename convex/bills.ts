@@ -161,6 +161,7 @@ export const claimItem = mutation({
     // Verify bill exists
     const bill = await ctx.db.get(billId);
     if (!bill) throw new Error("Bill not found");
+    if (bill.archivedAt !== undefined) throw new Error("Bill is archived");
 
     // Verify item exists and belongs to this bill
     const item = await ctx.db.get(itemId);
@@ -202,6 +203,8 @@ export const unclaimItem = mutation({
   handler: async (ctx, { claimId, claimantSession }) => {
     const claim = await ctx.db.get(claimId);
     if (!claim) throw new Error("Claim not found");
+    const bill = await ctx.db.get(claim.billId);
+    if (bill?.archivedAt !== undefined) throw new Error("Bill is archived");
 
     // Session ownership gate (T-02-02)
     if (claim.claimantSession !== claimantSession) {
@@ -277,6 +280,7 @@ export const setBillReceipt = mutation({
     if (!bill || bill.organizerSecret !== organizerSecret) {
       throw new Error("Unauthorized");
     }
+    if (bill.archivedAt !== undefined) throw new Error("Bill is archived");
     await ctx.db.patch(billId, { receiptStorageId });
   },
 });
