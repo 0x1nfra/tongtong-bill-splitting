@@ -117,7 +117,7 @@ body::before {
 
 /* Chit surface */
 .chit {
-  background-color: #F4EFE6;
+  background-color: var(--color-paper-chit);
   box-shadow: 2px 4px 16px rgba(31, 27, 23, 0.12), 0 1px 3px rgba(31, 27, 23, 0.08);
 }
 
