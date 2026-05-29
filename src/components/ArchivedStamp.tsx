@@ -26,7 +26,7 @@ export function ArchivedStamp() {
           ARCHIVED
         </span>
       </div>
-      <p className="text-xs text-stamp uppercase tracking-widest mt-1">
+      <p className="text-xs text-stamp uppercase tracking-widest mt-5">
         THIS CHIT IS ARCHIVED
       </p>
       <p

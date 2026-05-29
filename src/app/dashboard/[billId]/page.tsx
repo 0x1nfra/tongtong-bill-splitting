@@ -264,7 +264,7 @@ export default function DashboardPage({
 
         {/* BONUS-03: ARCHIVED banner — shown when bill.archivedAt is set */}
         {isArchived && (
-          <div className="w-full bg-stamp text-white text-xs font-bold uppercase tracking-widest py-3 text-center mb-4">
+          <div className="w-full border-2 border-stamp text-stamp text-xs font-bold uppercase tracking-widest py-3 text-center mb-4">
             BILL ARCHIVED — READ ONLY
           </div>
         )}
