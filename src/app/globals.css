@@ -10,7 +10,7 @@
 
 @custom-variant dark (&:where([data-theme=dark], [data-theme=dark] *));
 
-@theme inline {
+@theme {
   /* TongTong color system */
   --color-paper-chit: #F4EFE6;
   --color-paper-table: #EEEAE2;
@@ -39,6 +39,12 @@
 }
 
 @layer base {
+  body {
+    background-color: #EEEAE2;
+    color: #1F1B17;
+    font-family: "JetBrains Mono", monospace;
+    -webkit-font-smoothing: antialiased;
+  }
   [data-theme="dark"] {
     --color-paper-table: #0D1B2A;
     --color-paper-chit: #1A2942;
@@ -56,13 +62,6 @@
     background-color: #0D1B2A;
     color: #A8C0E0;
   }
-}
-
-body {
-  background-color: #EEEAE2;
-  color: #1F1B17;
-  font-family: "JetBrains Mono", monospace;
-  -webkit-font-smoothing: antialiased;
 }
 
 /* Paper grain texture overlay */

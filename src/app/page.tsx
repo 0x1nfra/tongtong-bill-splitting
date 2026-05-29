@@ -20,7 +20,8 @@ export default function Home() {
           fontFamily="'Departure Mono', monospace"
           filter="url(#ink-bleed)"
         >
-          <tspan fill="#1F1B17">tongtong</tspan><tspan fill="#B91C1C">.</tspan>
+          <tspan fill="currentColor">tongtong</tspan>
+          <tspan fill="#B91C1C">.</tspan>
         </text>
       </svg>
 
