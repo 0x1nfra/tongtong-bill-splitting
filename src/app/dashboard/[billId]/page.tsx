@@ -262,18 +262,18 @@ export default function DashboardPage({
           {displayCode}
         </p>
 
-        {/* BONUS-03: ARCHIVED banner — shown when bill.archivedAt is set */}
-        {isArchived && (
-          <div className="w-full border-2 border-stamp text-stamp text-xs font-bold uppercase tracking-widest py-3 text-center mb-4">
-            BILL ARCHIVED — READ ONLY
-          </div>
-        )}
-
         {/* 2-column layout: left 60%, right 40% on desktop (md+) */}
         <div className="md:grid md:grid-cols-[60%_40%] md:gap-8">
 
           {/* LEFT COLUMN */}
           <div>
+            {/* BONUS-03: ARCHIVED banner — inside left column so width matches content */}
+            {isArchived && (
+              <div className="w-full border-2 border-stamp text-stamp text-xs font-bold uppercase tracking-widest py-3 text-center mb-4">
+                BILL ARCHIVED — READ ONLY
+              </div>
+            )}
+
             {/* Progress widget (DASH-01) */}
             <ProgressBar
               collectedCents={collectedCents}
