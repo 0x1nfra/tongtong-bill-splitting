@@ -50,15 +50,6 @@ function useMemberName(
   return [memberName, setMemberName];
 }
 
-/**
- * getRotation — deterministic rotation for claimant name badges.
- * CLAIM-04 / D-09: derive from claimId.charCodeAt(0) for stable, no-useState rotation.
- * Range: −2.0 to +1.9 degrees.
- */
-function getRotation(claimId: string): number {
-  const seed = claimId.charCodeAt(0) % 40; // 0–39
-  return (seed - 20) / 10; // −2.0 to +1.9 degrees
-}
 
 export default function MemberViewPage({
   params,
@@ -332,9 +323,6 @@ export default function MemberViewPage({
     payment?.status === "pending" ||
     payment?.status === "settled";
 
-  // UI-09: deterministic 1–2° rotation derived from billId charCode (one-imperfection rule)
-  const rotationDeg = (billId.charCodeAt(0) % 20) / 10 + 1;
-
   return (
     <main className="min-h-screen bg-paper-table">
       <div className="max-w-[480px] mx-auto px-4 py-6">
@@ -360,7 +348,7 @@ export default function MemberViewPage({
         )}
 
         {/* Interactive items list — CLAIM-01 through CLAIM-05 */}
-        <div className="chit p-4 mb-4" style={{ transform: `rotate(${rotationDeg}deg)` }}>
+        <div className="chit p-4 mb-4">
           <p className="text-xs font-bold uppercase text-ink tracking-widest mb-3 opacity-60">
             ITEMS
           </p>
@@ -430,11 +418,6 @@ export default function MemberViewPage({
                         <span
                           key={claim._id}
                           className={`font-[family-name:var(--font-handwriting)] text-pen text-sm${claim.claimantSession === claimantSession ? " font-bold" : ""}`}
-                          style={{
-                            display: "inline-block",
-                            transform: `rotate(${getRotation(claim._id)}deg)`,
-                            marginRight: "4px",
-                          }}
                         >
                           {claim.claimantName}
                         </span>
