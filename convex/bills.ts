@@ -16,6 +16,7 @@ export const createBill = mutation({
     qrStorageId: v.optional(v.id("_storage")),
     venueName: v.optional(v.string()),
     billDate: v.optional(v.string()), // ISO date string "YYYY-MM-DD"
+    receiptStorageId: v.optional(v.id("_storage")),
     items: v.array(
       v.object({
         name: v.string(),
@@ -42,6 +43,7 @@ export const createBill = mutation({
       qrStorageId: args.qrStorageId,
       venueName: args.venueName,
       billDate: args.billDate,
+      receiptStorageId: args.receiptStorageId,
     });
     for (const item of args.items) {
       await ctx.db.insert("items", { billId, ...item });
@@ -399,6 +401,26 @@ export const setBillReceipt = mutation({
     }
     if (bill.archivedAt !== undefined) throw new Error("Bill is archived");
     await ctx.db.patch(billId, { receiptStorageId });
+  },
+});
+
+/**
+ * updateQR — allows organizer to upload or replace the DuitNow QR after bill creation.
+ * Mirrors setBillReceipt pattern: auth guard + archive freeze check + patch. D-14, D-15.
+ */
+export const updateQR = mutation({
+  args: {
+    billId: v.id("bills"),
+    organizerSecret: v.string(),
+    qrStorageId: v.id("_storage"),
+  },
+  handler: async (ctx, { billId, organizerSecret, qrStorageId }) => {
+    const bill = await ctx.db.get(billId);
+    if (!bill || bill.organizerSecret !== organizerSecret) {
+      throw new Error("Unauthorized");
+    }
+    if (bill.archivedAt !== undefined) throw new Error("Bill is archived");
+    await ctx.db.patch(billId, { qrStorageId });
   },
 });
 
