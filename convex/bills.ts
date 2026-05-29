@@ -1,5 +1,6 @@
 import { mutation, query, internalMutation } from "./_generated/server";
 import { v } from "convex/values";
+import { Id } from "./_generated/dataModel";
 
 /**
  * createBill — atomically inserts bill + all items in one transaction.
@@ -266,6 +267,122 @@ export const getClaimsForBill = query({
     const unclaimedCount = items.filter((i) => !claimedItemIds.has(i._id)).length;
 
     return { claimedCount, unclaimedCount };
+  },
+});
+
+/**
+ * getClaimantsForBill — organizer-authenticated query returning all claimants grouped by session (DASH-03).
+ * Populates the dashboard PEOPLE tab from claims data — shows all members who claimed at least one item,
+ * not just those who submitted payment.
+ * - Groups claims by claimantSession; resolves item details from items table
+ * - Per session, prefers payment priority: settled > pending > rejected (keeps highest-priority payment)
+ * - Sorted by firstClaimAt ascending (earliest claimant first)
+ * WR-06: returns null on auth failure (not a throw).
+ * T-02-04: organizerSecret verified server-side before any claims data is returned.
+ */
+export const getClaimantsForBill = query({
+  args: {
+    billId: v.id("bills"),
+    organizerSecret: v.string(),
+  },
+  handler: async (ctx, { billId, organizerSecret }) => {
+    const bill = await ctx.db.get(billId);
+    // WR-06 + T-02-04: return null on missing bill or secret mismatch — never throw
+    if (!bill || bill.organizerSecret !== organizerSecret) {
+      return null;
+    }
+
+    const claims = await ctx.db
+      .query("claims")
+      .withIndex("by_bill", (q) => q.eq("billId", billId))
+      .collect();
+
+    if (claims.length === 0) return [];
+
+    const items = await ctx.db
+      .query("items")
+      .withIndex("by_bill", (q) => q.eq("billId", billId))
+      .collect();
+
+    const payments = await ctx.db
+      .query("payments")
+      .withIndex("by_bill", (q) => q.eq("billId", billId))
+      .collect();
+
+    // Build item lookup by _id for fast resolution
+    const itemById = new Map(items.map((i) => [i._id, i]));
+
+    // Priority ordering for payment status: settled wins over pending wins over rejected
+    const paymentPriority = { settled: 3, pending: 2, rejected: 1 } as const;
+
+    // Per session: keep only the highest-priority payment
+    const bestPaymentBySession = new Map<
+      string,
+      { _id: string; status: "pending" | "settled" | "rejected" }
+    >();
+    for (const p of payments) {
+      const existing = bestPaymentBySession.get(p.claimantSession);
+      const currentPriority = paymentPriority[p.status];
+      const existingPriority = existing ? paymentPriority[existing.status] : 0;
+      if (currentPriority > existingPriority) {
+        bestPaymentBySession.set(p.claimantSession, {
+          _id: p._id,
+          status: p.status,
+        });
+      }
+    }
+
+    // Group claims by session, track earliest createdAt per session
+    type SessionData = {
+      claimantSession: string;
+      claimantName: string;
+      firstClaimAt: number;
+      itemIds: Id<"items">[];
+    };
+    const sessionMap = new Map<string, SessionData>();
+    for (const claim of claims) {
+      const existing = sessionMap.get(claim.claimantSession);
+      if (existing) {
+        existing.itemIds.push(claim.itemId);
+        if (claim.createdAt < existing.firstClaimAt) {
+          existing.firstClaimAt = claim.createdAt;
+        }
+      } else {
+        sessionMap.set(claim.claimantSession, {
+          claimantSession: claim.claimantSession,
+          claimantName: claim.claimantName,
+          firstClaimAt: claim.createdAt,
+          itemIds: [claim.itemId],
+        });
+      }
+    }
+
+    // Build result array, resolve item details, sort by firstClaimAt ascending
+    const result = [...sessionMap.values()]
+      .sort((a, b) => a.firstClaimAt - b.firstClaimAt)
+      .map(({ claimantSession, claimantName, itemIds }) => {
+        const claimedItems = itemIds
+          .map((id) => {
+            const item = itemById.get(id);
+            if (!item) return null;
+            return {
+              _id: item._id as string,
+              name: item.name,
+              price: item.price,
+              quantity: item.quantity,
+            };
+          })
+          .filter((i): i is NonNullable<typeof i> => i !== null);
+
+        return {
+          claimantSession,
+          claimantName,
+          claimedItems,
+          payment: bestPaymentBySession.get(claimantSession) ?? null,
+        };
+      });
+
+    return result;
   },
 });
 
