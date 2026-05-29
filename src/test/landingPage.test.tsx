@@ -50,7 +50,8 @@ describe('Landing page — logotype and content (UI-08)', () => {
 describe('Landing page — benefits and how-it-works sections (Phase 5)', () => {
   it('benefits section renders 3 benefit rows', () => {
     render(<Home />)
-    expect(screen.getByText(/No more chasing/i)).toBeInTheDocument()
+    // Use getAllByText for "No more chasing" since it also appears in step 03 sub-copy
+    expect(screen.getAllByText(/No more chasing/i).length).toBeGreaterThanOrEqual(1)
     expect(screen.getByText(/See your exact share/i)).toBeInTheDocument()
     expect(screen.getByText(/DuitNow QR/i)).toBeInTheDocument()
   })

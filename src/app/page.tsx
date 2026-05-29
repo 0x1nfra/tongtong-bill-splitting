@@ -43,6 +43,78 @@ export default function Home() {
         Everyone tandakan. Beres.
       </p>
 
+      <div className="perforation my-6" />
+
+      <div className="chit p-6 w-full max-w-[320px] mx-auto rotate-[0.3deg]">
+        <p
+          className="text-xs uppercase tracking-widest text-ink opacity-60 mb-3"
+          style={{ fontFamily: "var(--font-display)" }}
+        >
+          WHY TONGTONG?
+        </p>
+        <div className="dot-leader py-1.5">
+          <span className="text-sm text-ink">No more chasing lah</span>
+          <span className="text-sm text-ink opacity-70">✓</span>
+        </div>
+        <div className="dot-leader py-1.5">
+          <span className="text-sm text-ink">See your exact share, live</span>
+          <span className="text-sm text-ink opacity-70">✓</span>
+        </div>
+        <div className="dot-leader py-1.5">
+          <span className="text-sm text-ink">Pay with DuitNow QR</span>
+          <span className="text-sm text-ink opacity-70">✓</span>
+        </div>
+      </div>
+
+      <div className="perforation my-6" />
+
+      <div className="chit p-6 w-full max-w-[320px] mx-auto rotate-[-0.2deg]">
+        <p
+          className="text-xs uppercase tracking-widest text-ink opacity-60 mb-3"
+          style={{ fontFamily: "var(--font-display)" }}
+        >
+          HOW IT WORKS
+        </p>
+        <div className="flex gap-3 items-start py-2">
+          <span
+            className="text-2xl font-bold text-pen shrink-0"
+            style={{ fontFamily: "var(--font-display)" }}
+          >
+            01.
+          </span>
+          <div>
+            <p className="text-sm text-ink font-bold uppercase">Create your chit</p>
+            <p className="text-xs text-ink opacity-70">Add items, upload QR. Takes 2 minutes.</p>
+          </div>
+        </div>
+        <hr className="rule-hairline my-1" />
+        <div className="flex gap-3 items-start py-2">
+          <span
+            className="text-2xl font-bold text-pen shrink-0"
+            style={{ fontFamily: "var(--font-display)" }}
+          >
+            02.
+          </span>
+          <div>
+            <p className="text-sm text-ink font-bold uppercase">Share the link</p>
+            <p className="text-xs text-ink opacity-70">Everyone claims what they ordered lah.</p>
+          </div>
+        </div>
+        <hr className="rule-hairline my-1" />
+        <div className="flex gap-3 items-start py-2">
+          <span
+            className="text-2xl font-bold text-pen shrink-0"
+            style={{ fontFamily: "var(--font-display)" }}
+          >
+            03.
+          </span>
+          <div>
+            <p className="text-sm text-ink font-bold uppercase">Stamp settled</p>
+            <p className="text-xs text-ink opacity-70">Confirm payments. No more chasing.</p>
+          </div>
+        </div>
+      </div>
+
       <Link
         href="/create"
         className="mt-6 block w-full max-w-[320px] bg-pen text-white uppercase font-bold text-xs tracking-widest min-h-[48px] flex items-center justify-center"
