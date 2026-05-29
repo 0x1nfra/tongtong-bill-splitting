@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import { StatusBadge } from "./StatusBadge";
 import type { StatusValue } from "./StatusBadge";
 
@@ -7,6 +8,7 @@ type MemberRowProps = Readonly<{
   name: string;
   status: StatusValue;
   amountOwed: number; // integer cents
+  claimedItems?: ReadonlyArray<{ name: string; price: number; quantity: number }>;
   onConfirm?: () => void;
   onReject?: () => void;
   onRemind?: () => void;
@@ -16,10 +18,12 @@ export function MemberRow({
   name,
   status,
   amountOwed,
+  claimedItems,
   onConfirm,
   onReject,
   onRemind,
 }: MemberRowProps) {
+  const [expanded, setExpanded] = useState(false);
   const showConfirmReject = status === "AWAITING";
   const showRemind =
     status === "CLAIMED — UNPAID" || status === "UNCLAIMED ❋";
@@ -71,6 +75,28 @@ export function MemberRow({
           >
             SEND REMINDER
           </button>
+        </div>
+      )}
+
+      {/* Row 3: collapsible claimed items toggle */}
+      {claimedItems && claimedItems.length > 0 && (
+        <div>
+          <button
+            type="button"
+            className="bg-transparent border-none text-xs text-ink opacity-60 uppercase tracking-widest cursor-pointer p-0 mt-2"
+            onClick={() => setExpanded((prev) => !prev)}
+          >
+            ITEMS ({claimedItems.length}) {expanded ? "▴" : "▾"}
+          </button>
+          {expanded && (
+            <div className="mt-1 pl-1">
+              {claimedItems.map((item, i) => (
+                <p key={i} className="text-xs text-ink opacity-80 py-0.5">
+                  {item.name} × {item.quantity} — RM{((item.price * item.quantity) / 100).toFixed(2)}
+                </p>
+              ))}
+            </div>
+          )}
         </div>
       )}
     </div>
