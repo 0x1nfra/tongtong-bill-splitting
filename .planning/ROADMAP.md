@@ -9,7 +9,7 @@
 - [x] **Phase 1: Working Bill** - Organizer creates a bill, shares a link, members view it, payment flow and dashboard work end-to-end (functional, unstyled) (completed 2026-05-23)
 - [x] **Phase 2: Item Claiming** - Members tap to claim individual items; multi-claim splits cost; live proportional totals per person (completed 2026-05-24)
 - [x] **Phase 3: TongTong Aesthetic** - Full chit visual theme and landing page applied across every screen (completed 2026-05-25)
-- [x] **Phase 4: Bonus Features** - Auto-archive, reminder nudges, dark mode, and Google OAuth bill history (completed 2026-05-28)
+- [x] **Phase 4: Bonus Features** - Auto-archive, reminder nudges, dark mode, Google OAuth bill history; dashboard people-from-claims + flat cards (in progress) (completed 2026-05-29)
 
 ## Phase Details
 
@@ -129,7 +129,7 @@
   2. Organizer can trigger a reminder nudge from the dashboard that generates a fresh shareable link scoped to unpaid members
   3. A "carbon copy" dark mode theme (blue text on dark blue) toggles cleanly across all screens with no color-token regressions
   4. Signing in with Google persists bill ownership so the organizer can access their dashboard from any device
-**Plans:** 4/4 plans complete
+**Plans:** 5/5 plans complete
 
 **Wave 0** *(Nyquist test stubs — must run first)*
 - [x] 04-01-PLAN.md — Test stubs: archiveStale.test.ts (pure boundary tests), archivedBill.test.tsx (RED — ArchivedStamp not yet created), SignIn.test.tsx (RED — SignInButton not yet created)
@@ -142,6 +142,9 @@
 
 **Wave 3** *(blocked on Wave 2)*
 - [x] 04-04-PLAN.md — Dark mode: next-themes install (after human verification) + @custom-variant dark + carbon-copy token overrides + ThemeProvider + ThemeToggle + SignInButton stub (BONUS-06 + BONUS-05 stub)
+
+**Wave 4** *(blocked on Wave 3)*
+- [x] 04-05-PLAN.md — Dashboard PEOPLE tab from claims (not payments) + collapsible items toggle per member + remove slanted card rotations
 
 **Cross-cutting constraints:**
 - BONUS-05 (Google OAuth) is explicitly deferred per D-08 — only a SignInButton stub is created
@@ -159,4 +162,4 @@
 | 01.1. Tech Debt | 3/3 | Complete | 2026-05-24 |
 | 2. Item Claiming | 4/4 | Complete   | 2026-05-24 |
 | 3. TongTong Aesthetic | 4/4 | Complete   | 2026-05-25 |
-| 4. Bonus Features | 4/4 | Complete   | 2026-05-28 |
+| 4. Bonus Features | 5/5 | Complete   | 2026-05-29 |
