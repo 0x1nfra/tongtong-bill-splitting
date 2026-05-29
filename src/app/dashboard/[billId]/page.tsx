@@ -52,6 +52,12 @@ export default function DashboardPage({
     organizerSecret ? { billId: billId as Id<"bills">, organizerSecret } : "skip"
   );
 
+  // DASH-03: all claimants (members who claimed at least one item) — used for PEOPLE tab
+  const claimants = useQuery(
+    api.bills.getClaimantsForBill,
+    organizerSecret ? { billId: billId as Id<"bills">, organizerSecret } : "skip"
+  );
+
   const confirmPayment = useMutation(api.payments.confirmPayment);
   const rejectPayment = useMutation(api.payments.rejectPayment);
   const generateUploadUrl = useMutation(api.bills.generateUploadUrl);
@@ -126,7 +132,7 @@ export default function DashboardPage({
   );
 
   // Phase 1: equal-split per-member amount (no item claiming yet)
-  const memberCount = payments?.length ?? 0;
+  const memberCount = claimants?.length ?? 0;
   const amountPerMemberCents =
     memberCount > 0 ? Math.round(grandTotalCents / memberCount) : grandTotalCents;
 
@@ -290,14 +296,14 @@ export default function DashboardPage({
               PEOPLE
             </h2>
 
-            {payments?.length === 0 ? (
-              /* Empty state per UI-11 */
+            {!claimants || claimants.length === 0 ? (
+              /* Empty state per UI-11 — shown when no claims yet */
               <div className="chit p-6 text-center">
                 <p className="text-xs font-bold uppercase text-ink tracking-widest mb-1 opacity-60">
                   NOTHING HERE YET
                 </p>
                 <p className="text-sm text-ink opacity-60 mb-4">
-                  Share the link and they&apos;ll appear here.
+                  Share the link — members appear here when they start claiming items.
                 </p>
                 <button
                   type="button"
@@ -308,25 +314,38 @@ export default function DashboardPage({
                 </button>
               </div>
             ) : (
-              /* Payment rows (DASH-03) */
+              /* Claimant rows (DASH-03) — populated from claims, not payments */
               <div>
-                {payments?.map((payment) => {
+                {claimants.map((claimant) => {
                   const memberStatus =
-                    payment.status === "settled"
+                    claimant.payment?.status === "settled"
                       ? ("CONFIRMED" as const)
-                      : payment.status === "pending"
+                      : claimant.payment?.status === "pending"
                         ? ("AWAITING" as const)
                         : ("CLAIMED — UNPAID" as const);
 
                   return (
                     <MemberRow
-                      key={payment._id}
-                      name={payment.claimantName}
+                      key={claimant.claimantSession}
+                      name={claimant.claimantName}
                       status={memberStatus}
                       amountOwed={amountPerMemberCents}
-                      onConfirm={isArchived ? undefined : () => handleConfirm(payment._id)}
-                      onReject={isArchived ? undefined : () => handleReject(payment._id)}
-                      onRemind={isArchived ? undefined : (memberStatus === "CLAIMED — UNPAID" ? () => handleNudgeMember(payment.claimantName) : undefined)}
+                      claimedItems={claimant.claimedItems}
+                      onConfirm={
+                        !isArchived && claimant.payment && memberStatus === "AWAITING"
+                          ? () => handleConfirm(claimant.payment!._id)
+                          : undefined
+                      }
+                      onReject={
+                        !isArchived && claimant.payment && memberStatus === "AWAITING"
+                          ? () => handleReject(claimant.payment!._id)
+                          : undefined
+                      }
+                      onRemind={
+                        !isArchived && memberStatus === "CLAIMED — UNPAID"
+                          ? () => handleNudgeMember(claimant.claimantName)
+                          : undefined
+                      }
                     />
                   );
                 })}
