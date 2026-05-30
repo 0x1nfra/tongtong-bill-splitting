@@ -5,6 +5,7 @@ import { useQuery, useMutation } from "convex/react";
 import { api } from "../../../../convex/_generated/api";
 import type { Id } from "../../../../convex/_generated/dataModel";
 import { BillSummaryCard } from "../../../components/BillSummaryCard";
+import { CopyLinkField } from "../../../components/CopyLinkField";
 import { ProgressBar } from "../../../components/ProgressBar";
 import { StatsBar } from "../../../components/StatsBar";
 import { MemberRow } from "../../../components/MemberRow";
@@ -85,10 +86,10 @@ export default function DashboardPage({
       <main className="min-h-screen bg-paper-table flex items-center justify-center">
         <div className="max-w-[480px] mx-auto px-4 py-12 text-center">
             <h1 className="text-xl font-bold uppercase text-ink tracking-widest mb-3">
-            DASHBOARD NOT ACCESSIBLE
+            WRONG DEVICE LAH
           </h1>
           <p className="text-sm text-ink opacity-60">
-            Dashboard access requires the device you used to create this chit.
+            This dashboard can only be opened from the device that created this chit lah.
           </p>
         </div>
       </main>
@@ -115,10 +116,10 @@ export default function DashboardPage({
       <main className="min-h-screen bg-paper-table flex items-center justify-center">
         <div className="max-w-[480px] mx-auto px-4 py-12 text-center">
           <h1 className="text-xl font-bold uppercase text-ink tracking-widest mb-3">
-            DASHBOARD NOT ACCESSIBLE
+            WRONG DEVICE LAH
           </h1>
           <p className="text-sm text-ink opacity-60">
-            Dashboard access requires the device you used to create this chit.
+            This dashboard can only be opened from the device that created this chit lah.
           </p>
         </div>
       </main>
@@ -288,6 +289,12 @@ export default function DashboardPage({
         <p className="text-xs text-ink opacity-60 mb-6 uppercase">
           {displayCode}
         </p>
+
+        {/* Mobile-only share strip — md+ uses right column quick actions */}
+        <div className="md:hidden mb-6">
+          <p className="uppercase text-xs text-ink opacity-60 mb-2 tracking-widest">SHARE LINK</p>
+          <CopyLinkField url={shareUrl} />
+        </div>
 
         {/* 2-column layout: left 60%, right 40% on desktop (md+) */}
         <div className="md:grid md:grid-cols-[60%_40%] md:gap-8">

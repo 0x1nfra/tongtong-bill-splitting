@@ -46,21 +46,21 @@
     -webkit-font-smoothing: antialiased;
   }
   [data-theme="dark"] {
-    --color-paper-table: #0D1B2A;
-    --color-paper-chit: #203D6A;
-    --color-ink: #A8C0E0;
-    --color-pen: #5B8DD9;
+    --color-paper-table: #1C1510;
+    --color-paper-chit: #2A1E15;
+    --color-ink: #D4C9B8;
+    --color-pen: #7BA7D9;
     /* --color-stamp intentionally omitted — must remain #B91C1C */
   }
   [data-theme="dark"] .chit {
-    box-shadow: 2px 4px 16px rgba(0, 0, 0, 0.4), 0 1px 3px rgba(0, 0, 0, 0.25);
+    box-shadow: 2px 4px 16px rgba(0, 0, 0, 0.5), 0 1px 3px rgba(0, 0, 0, 0.3);
   }
   [data-theme="dark"] body::before {
-    opacity: 0.04;
+    opacity: 0.05;
   }
   [data-theme="dark"] body {
-    background-color: #0D1B2A;
-    color: #A8C0E0;
+    background-color: #1C1510;
+    color: #D4C9B8;
   }
 }
 
@@ -143,13 +143,13 @@ h1, h2, h3 {
     to right,
     transparent,
     transparent 5px,
-    rgba(168, 192, 224, 0.45) 5px,
-    rgba(168, 192, 224, 0.45) 8px
+    rgba(212, 201, 184, 0.4) 5px,
+    rgba(212, 201, 184, 0.4) 8px
   );
 }
 [data-theme="dark"] .rule-hairline {
-  border-color: rgba(168, 192, 224, 0.3);
+  border-color: rgba(212, 201, 184, 0.25);
 }
 [data-theme="dark"] .dot-leader::after {
-  background-image: radial-gradient(circle, rgba(168, 192, 224, 0.55) 1px, transparent 1px);
+  background-image: radial-gradient(circle, rgba(212, 201, 184, 0.5) 1px, transparent 1px);
 }

@@ -186,14 +186,6 @@ export default function CreatePage() {
         </div>
         <div className="perforation my-4" />
 
-        {/* Receipt photo upload */}
-        <div className="mt-6 mb-6">
-          <label className="uppercase text-xs text-ink block mb-2 tracking-widest">
-            RECEIPT PHOTO (OPTIONAL)
-          </label>
-          <QRUpload onUpload={(id) => setReceiptStorageId(id)} />
-        </div>
-
         {/* Items section */}
         <div className="chit p-4 mb-4">
           <h2 className="uppercase text-sm font-bold text-ink mb-2">
@@ -229,14 +221,6 @@ export default function CreatePage() {
         </div>
         <div className="perforation my-4" />
 
-        {/* DuitNow QR upload — BILL-04: optional QR image for payment */}
-        <div className="mt-6">
-          <label className="uppercase text-xs text-ink block mb-2">
-            DUITNOW QR (OPTIONAL)
-          </label>
-          <QRUpload onUpload={(id) => setQrStorageId(id)} />
-        </div>
-
         {/* Tax toggles */}
         <div className="mt-6 space-y-3">
           <label className="flex items-center gap-3 cursor-pointer">
@@ -270,6 +254,22 @@ export default function CreatePage() {
           applyServiceCharge={applyServiceCharge}
         />
 
+        {/* Receipt photo upload — BILL-04: optional, after items so user builds bill first */}
+        <div className="mt-6 mb-4">
+          <label className="uppercase text-xs text-ink block mb-2 tracking-widest">
+            RECEIPT PHOTO (OPTIONAL)
+          </label>
+          <QRUpload onUpload={(id) => setReceiptStorageId(id)} />
+        </div>
+
+        {/* DuitNow QR upload — BILL-04: optional QR image for payment */}
+        <div className="mt-4">
+          <label className="uppercase text-xs text-ink block mb-2 tracking-widest">
+            DUITNOW QR (OPTIONAL)
+          </label>
+          <QRUpload onUpload={(id) => setQrStorageId(id)} />
+        </div>
+
         {/* GENERATE LINK button — primary CTA, blue bg, disabled when no items */}
         <div className="mt-6">
           <button
@@ -287,14 +287,14 @@ export default function CreatePage() {
 
           {/* Inline validation message when no items */}
           {items.length === 0 && (
-            <p className="text-ink opacity-70 text-xs text-center mt-2">
+            <p className="text-stamp font-bold text-xs text-center mt-2">
               ADD AT LEAST ONE ITEM — You cannot share an empty chit.
             </p>
           )}
 
           {/* WR-04: inline validation message for invalid items */}
           {validationError && (
-            <p className="text-ink opacity-70 text-xs text-center mt-2">
+            <p className="text-stamp font-bold text-xs text-center mt-2">
               {validationError}
             </p>
           )}

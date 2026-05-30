@@ -25,11 +25,11 @@ export default function Home() {
         </text>
       </svg>
 
-      <p className="text-xs font-bold uppercase tracking-widest text-ink mb-6 opacity-60">
+      <p className="text-[10px] uppercase tracking-widest text-ink mb-3 opacity-40">
         A CHIT FOR EVERYONE
       </p>
 
-      <p className="text-xs font-bold uppercase tracking-widest text-ink mb-6 text-center max-w-[320px]">
+      <p className="text-lg font-bold uppercase tracking-wider text-ink mb-6 text-center max-w-[320px]">
         SPLIT THE BILL, NOT THE FRIENDSHIP.
       </p>
 

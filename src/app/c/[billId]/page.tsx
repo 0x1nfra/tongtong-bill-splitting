@@ -348,7 +348,7 @@ export default function MemberViewPage({
         )}
 
         {/* Interactive items list — CLAIM-01 through CLAIM-05 */}
-        <div className="chit p-4 mb-4">
+        <div className="chit p-4 mb-4 rotate-[0.3deg]">
           <p className="text-xs font-bold uppercase text-ink tracking-widest mb-3 opacity-60">
             ITEMS
           </p>
@@ -478,7 +478,7 @@ export default function MemberViewPage({
 
         {/* YOUR PORTION panel — static block, visible only when hasClaims (D-07, CALC-04) */}
         {hasClaims ? (
-          <div className="chit border-t-2 border-pen border-l-4 border-l-pen p-4 mb-4">
+          <div className="chit border-t-2 border-pen border-l-4 border-l-pen p-4 mb-4 rotate-[-0.2deg]">
             <p className="text-xs font-bold uppercase tracking-widest text-ink opacity-60 mb-3">
               YOUR PORTION
             </p>
@@ -559,59 +559,54 @@ export default function MemberViewPage({
           </div>
         </div>
 
-        {/* DuitNow QR (PAY-03) */}
-        {bill.qrUrl ? (
-          <div className="mb-4 text-center">
-            <p className="text-xs font-bold uppercase text-ink tracking-widest mb-2 opacity-60">
-              SCAN TO PAY
+        {/* Payment section — QR + I'VE PAID grouped as a unit (PAY-01, PAY-03) */}
+        <div className="chit p-4 mb-4 text-center">
+          {bill.qrUrl ? (
+            <>
+              <p className="text-xs font-bold uppercase text-ink tracking-widest mb-2 opacity-60">
+                SCAN TO PAY
+              </p>
+              <img
+                src={bill.qrUrl}
+                alt="DuitNow QR"
+                className="w-[200px] h-[200px] object-contain mx-auto mb-4"
+              />
+            </>
+          ) : null}
+
+          {/* SettleStamp — shown after payment is submitted (PAY-02, PAY-04) */}
+          {paymentStatus !== null && paymentStatus !== "rejected" ? (
+            <div className="mb-4 flex justify-center">
+              <SettleStamp status={paymentStatus} />
+            </div>
+          ) : null}
+
+          {/* I'VE PAID button (PAY-01) — hidden when pending or settled */}
+          {showPayForm ? (
+            <button
+              type="button"
+              onClick={handlePay}
+              disabled={isButtonDisabled}
+              className="w-full h-12 bg-pen text-white uppercase font-bold text-sm tracking-widest flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              I&apos;VE PAID
+            </button>
+          ) : null}
+
+          {/* AWAITING CONFIRMATION subtext (PAY-02) */}
+          {paymentStatus === "pending" ? (
+            <p className="text-xs text-ink opacity-60 uppercase tracking-widest mt-3">
+              AWAITING CONFIRMATION FROM THE ORGANIZER
             </p>
-            <img
-              src={bill.qrUrl}
-              alt="DuitNow QR"
-              className="w-[200px] h-[200px] object-contain mx-auto"
-            />
-          </div>
-        ) : null}
+          ) : null}
 
-        {/* SettleStamp — shown after payment is submitted (PAY-02, PAY-04) */}
-        {paymentStatus !== null && paymentStatus !== "rejected" ? (
-          <div className="relative mb-6 flex justify-center">
-            <SettleStamp status={paymentStatus} />
-          </div>
-        ) : null}
-
-        {/* I'VE PAID button (PAY-01) — hidden when pending or settled */}
-        {showPayForm ? (
-          <button
-            type="button"
-            onClick={handlePay}
-            disabled={isButtonDisabled}
-            className="w-full h-12 bg-pen text-white uppercase font-bold text-sm tracking-widest flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed"
-          >
-            I&apos;VE PAID
-          </button>
-        ) : null}
-
-        {/* AWAITING CONFIRMATION subtext (PAY-02) */}
-        {paymentStatus === "pending" ? (
-          <p className="text-xs text-center text-ink opacity-60 uppercase tracking-widest mt-4">
-            AWAITING CONFIRMATION FROM THE ORGANIZER
-          </p>
-        ) : null}
-
-        {/* HAVE A GOOD ONE! confirmation copy (PAY-04) */}
-        {paymentStatus === "settled" ? (
-          <p className="text-sm text-center font-bold text-pen uppercase tracking-widest mt-4">
-            PAYMENT CONFIRMED — HAVE A GOOD ONE!
-          </p>
-        ) : null}
-
-        {/* Rejection note — member can re-tap I'VE PAID */}
-        {paymentStatus === "rejected" ? (
-          <p className="text-xs text-center text-ink opacity-60 uppercase tracking-widest mt-2">
-            PAYMENT WAS NOT CONFIRMED. PLEASE TRY AGAIN.
-          </p>
-        ) : null}
+          {/* Rejection note — member can re-tap I'VE PAID */}
+          {paymentStatus === "rejected" ? (
+            <p className="text-xs text-ink opacity-60 uppercase tracking-widest mt-2">
+              PAYMENT WAS NOT CONFIRMED. PLEASE TRY AGAIN.
+            </p>
+          ) : null}
+        </div>
       </div>
     </main>
   );

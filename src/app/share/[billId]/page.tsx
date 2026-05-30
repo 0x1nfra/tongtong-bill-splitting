@@ -100,7 +100,7 @@ export default function SharePage({
         <button
           type="button"
           onClick={() => router.push(`/dashboard/${billId}`)}
-          className="mt-4 w-full text-center text-sm text-pen underline py-2"
+          className="mt-3 w-full border border-ink text-ink h-10 uppercase text-xs font-bold tracking-widest cursor-pointer"
         >
           VIEW MY DASHBOARD
         </button>
