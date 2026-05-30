@@ -40,10 +40,10 @@ export default function SharePage({
       <main className="min-h-screen bg-paper-table flex items-center justify-center">
         <div className="max-w-[480px] mx-auto px-4 py-12 text-center">
           <h1 className="text-xl font-bold uppercase text-ink tracking-widest mb-3">
-            THIS CHIT HAS BEEN TORN UP
+            THIS BILL HAS BEEN TORN UP
           </h1>
           <p className="text-sm text-ink-muted">
-            The link may have expired or the chit was closed.
+            The link may have expired or the bill was closed.
           </p>
         </div>
       </main>
@@ -54,7 +54,7 @@ export default function SharePage({
   const displayCode = `#TT-${billId.slice(0, 4).toUpperCase()}`;
 
   // WhatsApp share URL — SHARE-04: pre-filled Manglish message (BONUS-02)
-  const manglishMessage = `Eh, join the chit lah! ${bill.title} — tap here to claim your items and see how much you owe:\n${shareUrl}\n\nSettle dulu k`;
+  const manglishMessage = `Eh, join the bill lah! ${bill.title} — tap here to claim your items and see how much you owe:\n${shareUrl}\n\nSettle dulu k`;
   const whatsAppUrl = `https://wa.me/?text=${encodeURIComponent(manglishMessage)}`;
 
   return (
@@ -62,7 +62,7 @@ export default function SharePage({
       <div className="max-w-[480px] mx-auto px-4 py-8">
         {/* Page heading — SHARE-02 */}
         <h1 className="text-2xl font-bold uppercase text-ink tracking-widest mb-6">
-          SHARE THIS CHIT LAH
+          SHARE THIS BILL LAH
         </h1>
 
         {/* Bill summary card — SHARE-02: displays bill title, item count, grand total */}

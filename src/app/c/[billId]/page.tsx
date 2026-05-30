@@ -224,7 +224,7 @@ export default function MemberViewPage({
             </div>
           </div>
           <h2 className="text-lg font-bold text-ink uppercase tracking-widest mt-6 mb-2">
-            This chit has been torn up
+            This bill has been torn up
           </h2>
           <p className="text-sm text-ink-muted">
             The bill you&apos;re looking for doesn&apos;t exist.
@@ -266,10 +266,10 @@ export default function MemberViewPage({
             </div>
           </div>
           <h1 className="text-xl font-bold uppercase text-ink tracking-widest mb-3">
-            THIS CHIT HAS BEEN TORN UP
+            THIS BILL HAS BEEN TORN UP
           </h1>
           <p className="text-sm text-ink-muted">
-            The link may have expired or the chit was closed.
+            The link may have expired or the bill was closed.
           </p>
         </div>
       </main>
@@ -342,6 +342,8 @@ export default function MemberViewPage({
             <img
               src={bill.receiptUrl}
               alt="Bill receipt uploaded by organizer"
+              width={320}
+              height={427}
               className="w-full max-w-[320px] border border-ink"
             />
           </div>
@@ -525,7 +527,7 @@ export default function MemberViewPage({
         ) : null}
 
         {/* Bill grand total section */}
-        <div className="bg-paper-chit p-4 mb-6">
+        <div className="chit p-4 mb-6">
           <p className="text-xs font-bold uppercase text-ink-muted tracking-widest mb-3">
             BILL TOTAL
           </p>
@@ -579,6 +581,9 @@ export default function MemberViewPage({
               <img
                 src={bill.qrUrl}
                 alt="DuitNow QR"
+                width={200}
+                height={200}
+                loading="lazy"
                 className="w-[200px] h-[200px] object-contain mx-auto mb-4"
               />
             </>

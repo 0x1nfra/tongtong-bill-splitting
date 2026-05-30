@@ -26,7 +26,7 @@ export default function Home() {
       </svg>
 
       <p className="text-[10px] uppercase tracking-widest text-ink-muted mb-3">
-        A CHIT FOR EVERYONE
+        A BILL FOR EVERYONE
       </p>
 
       <p className="text-lg font-bold uppercase tracking-wider text-ink mb-6 text-center max-w-[320px]">
@@ -46,7 +46,7 @@ export default function Home() {
         className="mt-6 text-sm text-ink-muted text-center max-w-[280px]"
         style={{ fontFamily: "var(--font-handwriting)" }}
       >
-        Eh ya, no more &ldquo;you transfer ah?&rdquo; drama lah. One chit.
+        Eh ya, no more &ldquo;you transfer ah?&rdquo; drama lah. One bill.
         Everyone tandakan. Beres.
       </p>
 
@@ -68,7 +68,7 @@ export default function Home() {
           </span>
           <div>
             <p className="text-sm text-ink font-bold uppercase">
-              Create your chit
+              Create your bill
             </p>
             <p className="text-xs text-ink-muted">
               Add items, upload QR. Takes 2 minutes.

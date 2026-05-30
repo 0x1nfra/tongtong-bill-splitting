@@ -89,7 +89,7 @@ export default function DashboardPage({
             WRONG DEVICE LAH
           </h1>
           <p className="text-sm text-ink-muted">
-            This dashboard can only be opened from the device that created this chit lah.
+            This dashboard can only be opened from the device that created this bill lah.
           </p>
         </div>
       </main>
@@ -119,7 +119,7 @@ export default function DashboardPage({
             WRONG DEVICE LAH
           </h1>
           <p className="text-sm text-ink-muted">
-            This dashboard can only be opened from the device that created this chit lah.
+            This dashboard can only be opened from the device that created this bill lah.
           </p>
         </div>
       </main>
@@ -176,7 +176,7 @@ export default function DashboardPage({
   function handleNudgeMember(memberName: string) {
     const sanitizedName = memberName.replace(/[<>"]/g, "");
     const msg = encodeURIComponent(
-      `Eh ${sanitizedName}, still haven't paid for the ${bill.title} chit lah! Tap here to settle: ${shareUrl}`
+      `Eh ${sanitizedName}, still haven't paid for the ${bill.title} bill lah! Tap here to settle: ${shareUrl}`
     );
     window.open(`https://wa.me/?text=${msg}`, "_blank");
   }
@@ -518,23 +518,23 @@ export default function DashboardPage({
                 onClick={() => setShowCloseConfirm(true)}
                 className="w-full border border-stamp text-stamp h-10 uppercase text-sm tracking-widest cursor-pointer"
               >
-                CLOSE CHIT EARLY
+                CLOSE BILL EARLY
               </button>
             ) : (
               <div className="border border-stamp p-3">
                 <p className="text-xs text-stamp uppercase mb-2 font-bold">
-                  Close this chit? Members will no longer be able to pay.
+                  Close this bill? Members will no longer be able to pay.
                 </p>
                 <div className="flex gap-2">
                   <button
                     type="button"
                     onClick={() => {
-                      alert("Close chit feature coming soon.");
+                      alert("Close bill feature coming soon.");
                       setShowCloseConfirm(false);
                     }}
                     className="border border-stamp text-stamp text-xs h-8 px-3 uppercase tracking-widest cursor-pointer"
                   >
-                    CLOSE CHIT
+                    CLOSE BILL
                   </button>
                   <button
                     type="button"
@@ -623,23 +623,23 @@ export default function DashboardPage({
                 onClick={() => setShowCloseConfirm(true)}
                 className="w-full border border-stamp text-stamp h-10 uppercase text-sm tracking-widest cursor-pointer"
               >
-                CLOSE CHIT EARLY
+                CLOSE BILL EARLY
               </button>
             ) : (
               <div className="border border-stamp p-3">
                 <p className="text-xs text-stamp uppercase mb-2 font-bold">
-                  Close this chit? Members will no longer be able to pay.
+                  Close this bill? Members will no longer be able to pay.
                 </p>
                 <div className="flex gap-2">
                   <button
                     type="button"
                     onClick={() => {
-                      alert("Close chit feature coming soon.");
+                      alert("Close bill feature coming soon.");
                       setShowCloseConfirm(false);
                     }}
                     className="border border-stamp text-stamp text-xs h-8 px-3 uppercase tracking-widest cursor-pointer"
                   >
-                    CLOSE CHIT
+                    CLOSE BILL
                   </button>
                   <button
                     type="button"

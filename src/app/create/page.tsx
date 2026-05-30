@@ -136,7 +136,7 @@ export default function CreatePage() {
       <div className="max-w-[480px] mx-auto px-4 py-8">
         {/* Page heading */}
         <h1 className="text-2xl font-bold uppercase text-ink tracking-widest mb-6">
-          CREATE NEW CHIT
+          CREATE NEW BILL
         </h1>
 
         {/* Bill details section */}

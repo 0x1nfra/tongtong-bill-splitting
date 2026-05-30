@@ -41,7 +41,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" suppressHydrationWarning className={`${jetBrainsMono.variable} ${bungee.variable} ${shadowsIntoLightTwo.variable} h-full`}>
+    <html lang="en-MY" suppressHydrationWarning className={`${jetBrainsMono.variable} ${bungee.variable} ${shadowsIntoLightTwo.variable} h-full`}>
       <body className="min-h-full flex flex-col">
         <svg id="filters" aria-hidden="true">
           <defs>

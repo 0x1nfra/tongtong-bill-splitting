@@ -32,7 +32,7 @@ export function BillSummaryCard({
 
       {/* Bill title */}
       <p className="text-base font-bold text-ink uppercase tracking-wide mb-1">
-        {title || "UNTITLED CHIT"}
+        {title || "UNTITLED BILL"}
       </p>
 
       {/* Item count */}

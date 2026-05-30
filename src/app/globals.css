@@ -47,6 +47,11 @@
     font-family: "JetBrains Mono", monospace;
     -webkit-font-smoothing: antialiased;
   }
+
+  :focus-visible {
+    outline: 2px solid var(--color-pen);
+    outline-offset: 2px;
+  }
   [data-theme="dark"] {
     --color-paper-table: #1C1510;
     --color-paper-chit: #2A1E15;

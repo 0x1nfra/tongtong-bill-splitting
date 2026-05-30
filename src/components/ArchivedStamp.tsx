@@ -27,10 +27,10 @@ export function ArchivedStamp() {
         </span>
       </div>
       <p className="text-xs text-stamp uppercase tracking-widest mt-5">
-        THIS CHIT IS ARCHIVED
+        THIS BILL IS ARCHIVED
       </p>
       <p className="text-xs text-ink-muted mt-2">
-        This chit was automatically archived after 30 days of inactivity.
+        This bill was automatically archived after 30 days of inactivity.
       </p>
     </div>
   );
