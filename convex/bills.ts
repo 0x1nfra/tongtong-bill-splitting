@@ -1,5 +1,6 @@
-import { mutation, query } from "./_generated/server";
+import { mutation, query, internalMutation } from "./_generated/server";
 import { v } from "convex/values";
+import { Id } from "./_generated/dataModel";
 
 /**
  * createBill — atomically inserts bill + all items in one transaction.
@@ -15,6 +16,7 @@ export const createBill = mutation({
     qrStorageId: v.optional(v.id("_storage")),
     venueName: v.optional(v.string()),
     billDate: v.optional(v.string()), // ISO date string "YYYY-MM-DD"
+    receiptStorageId: v.optional(v.id("_storage")),
     items: v.array(
       v.object({
         name: v.string(),
@@ -41,6 +43,7 @@ export const createBill = mutation({
       qrStorageId: args.qrStorageId,
       venueName: args.venueName,
       billDate: args.billDate,
+      receiptStorageId: args.receiptStorageId,
     });
     for (const item of args.items) {
       await ctx.db.insert("items", { billId, ...item });
@@ -89,13 +92,17 @@ export const getBillForMember = query({
       ? await ctx.storage.getUrl(bill.qrStorageId)
       : null;
 
+    const receiptUrl = bill.receiptStorageId
+      ? await ctx.storage.getUrl(bill.receiptStorageId)
+      : null;
+
     // Explicitly exclude organizerSecret — members must not see it (T-01-04)
     const {
       organizerSecret: _excluded,
       ...billWithoutSecret
     } = bill;
 
-    return { ...billWithoutSecret, items, claims, qrUrl };
+    return { ...billWithoutSecret, items, claims, qrUrl, receiptUrl };
   },
 });
 
@@ -132,7 +139,11 @@ export const getBillForOrganizer = query({
       ? await ctx.storage.getUrl(bill.qrStorageId)
       : null;
 
-    return { bill, items, payments, qrUrl };
+    const receiptUrl = bill.receiptStorageId
+      ? await ctx.storage.getUrl(bill.receiptStorageId)
+      : null;
+
+    return { bill, items, payments, qrUrl, receiptUrl };
   },
 });
 
@@ -153,6 +164,7 @@ export const claimItem = mutation({
     // Verify bill exists
     const bill = await ctx.db.get(billId);
     if (!bill) throw new Error("Bill not found");
+    if (bill.archivedAt !== undefined) throw new Error("Bill is archived");
 
     // Verify item exists and belongs to this bill
     const item = await ctx.db.get(itemId);
@@ -194,6 +206,8 @@ export const unclaimItem = mutation({
   handler: async (ctx, { claimId, claimantSession }) => {
     const claim = await ctx.db.get(claimId);
     if (!claim) throw new Error("Claim not found");
+    const bill = await ctx.db.get(claim.billId);
+    if (bill?.archivedAt !== undefined) throw new Error("Bill is archived");
 
     // Session ownership gate (T-02-02)
     if (claim.claimantSession !== claimantSession) {
@@ -255,5 +269,180 @@ export const getClaimsForBill = query({
     const unclaimedCount = items.filter((i) => !claimedItemIds.has(i._id)).length;
 
     return { claimedCount, unclaimedCount };
+  },
+});
+
+/**
+ * getClaimantsForBill — organizer-authenticated query returning all claimants grouped by session (DASH-03).
+ * Populates the dashboard PEOPLE tab from claims data — shows all members who claimed at least one item,
+ * not just those who submitted payment.
+ * - Groups claims by claimantSession; resolves item details from items table
+ * - Per session, prefers payment priority: settled > pending > rejected (keeps highest-priority payment)
+ * - Sorted by firstClaimAt ascending (earliest claimant first)
+ * WR-06: returns null on auth failure (not a throw).
+ * T-02-04: organizerSecret verified server-side before any claims data is returned.
+ */
+export const getClaimantsForBill = query({
+  args: {
+    billId: v.id("bills"),
+    organizerSecret: v.string(),
+  },
+  handler: async (ctx, { billId, organizerSecret }) => {
+    const bill = await ctx.db.get(billId);
+    // WR-06 + T-02-04: return null on missing bill or secret mismatch — never throw
+    if (!bill || bill.organizerSecret !== organizerSecret) {
+      return null;
+    }
+
+    const claims = await ctx.db
+      .query("claims")
+      .withIndex("by_bill", (q) => q.eq("billId", billId))
+      .collect();
+
+    if (claims.length === 0) return [];
+
+    const items = await ctx.db
+      .query("items")
+      .withIndex("by_bill", (q) => q.eq("billId", billId))
+      .collect();
+
+    const payments = await ctx.db
+      .query("payments")
+      .withIndex("by_bill", (q) => q.eq("billId", billId))
+      .collect();
+
+    // Build item lookup by _id for fast resolution
+    const itemById = new Map(items.map((i) => [i._id, i]));
+
+    // Priority ordering for payment status: settled wins over pending wins over rejected
+    const paymentPriority = { settled: 3, pending: 2, rejected: 1 } as const;
+
+    // Per session: keep only the highest-priority payment
+    const bestPaymentBySession = new Map<
+      string,
+      { _id: string; status: "pending" | "settled" | "rejected" }
+    >();
+    for (const p of payments) {
+      const existing = bestPaymentBySession.get(p.claimantSession);
+      const currentPriority = paymentPriority[p.status];
+      const existingPriority = existing ? paymentPriority[existing.status] : 0;
+      if (currentPriority > existingPriority) {
+        bestPaymentBySession.set(p.claimantSession, {
+          _id: p._id,
+          status: p.status,
+        });
+      }
+    }
+
+    // Group claims by session, track earliest createdAt per session
+    type SessionData = {
+      claimantSession: string;
+      claimantName: string;
+      firstClaimAt: number;
+      itemIds: Id<"items">[];
+    };
+    const sessionMap = new Map<string, SessionData>();
+    for (const claim of claims) {
+      const existing = sessionMap.get(claim.claimantSession);
+      if (existing) {
+        existing.itemIds.push(claim.itemId);
+        if (claim.createdAt < existing.firstClaimAt) {
+          existing.firstClaimAt = claim.createdAt;
+        }
+      } else {
+        sessionMap.set(claim.claimantSession, {
+          claimantSession: claim.claimantSession,
+          claimantName: claim.claimantName,
+          firstClaimAt: claim.createdAt,
+          itemIds: [claim.itemId],
+        });
+      }
+    }
+
+    // Build result array, resolve item details, sort by firstClaimAt ascending
+    const result = [...sessionMap.values()]
+      .sort((a, b) => a.firstClaimAt - b.firstClaimAt)
+      .map(({ claimantSession, claimantName, itemIds }) => {
+        const claimedItems = itemIds
+          .map((id) => {
+            const item = itemById.get(id);
+            if (!item) return null;
+            return {
+              _id: item._id as string,
+              name: item.name,
+              price: item.price,
+              quantity: item.quantity,
+            };
+          })
+          .filter((i): i is NonNullable<typeof i> => i !== null);
+
+        return {
+          claimantSession,
+          claimantName,
+          claimedItems,
+          payment: bestPaymentBySession.get(claimantSession) ?? null,
+        };
+      });
+
+    return result;
+  },
+});
+
+export const setBillReceipt = mutation({
+  args: {
+    billId: v.id("bills"),
+    organizerSecret: v.string(),
+    receiptStorageId: v.id("_storage"),
+  },
+  handler: async (ctx, { billId, organizerSecret, receiptStorageId }) => {
+    const bill = await ctx.db.get(billId);
+    if (!bill || bill.organizerSecret !== organizerSecret) {
+      throw new Error("Unauthorized");
+    }
+    if (bill.archivedAt !== undefined) throw new Error("Bill is archived");
+    await ctx.db.patch(billId, { receiptStorageId });
+  },
+});
+
+/**
+ * updateQR — allows organizer to upload or replace the DuitNow QR after bill creation.
+ * Mirrors setBillReceipt pattern: auth guard + archive freeze check + patch. D-14, D-15.
+ */
+export const updateQR = mutation({
+  args: {
+    billId: v.id("bills"),
+    organizerSecret: v.string(),
+    qrStorageId: v.id("_storage"),
+  },
+  handler: async (ctx, { billId, organizerSecret, qrStorageId }) => {
+    const bill = await ctx.db.get(billId);
+    if (!bill || bill.organizerSecret !== organizerSecret) {
+      throw new Error("Unauthorized");
+    }
+    if (bill.archivedAt !== undefined) throw new Error("Bill is archived");
+    await ctx.db.patch(billId, { qrStorageId });
+  },
+});
+
+/**
+ * archiveStale — internalMutation called by the daily cron job (BONUS-03).
+ * Archives bills older than 30 days by setting archivedAt timestamp.
+ * Uses JS-side filter instead of Convex q.eq filter on optional field to avoid
+ * undefined field edge cases (Pitfall 1 from RESEARCH.md).
+ * Declared as internalMutation — not callable via public api.* namespace (T-04-03).
+ */
+export const archiveStale = internalMutation({
+  args: {},
+  handler: async (ctx) => {
+    const thirtyDaysAgo = Date.now() - 30 * 24 * 60 * 60 * 1000;
+    // Safe approach: collect all bills and JS-filter — avoids undefined optional field
+    // filter edge cases in Convex (do NOT use Convex filter on archivedAt)
+    const allBills = await ctx.db.query("bills").collect();
+    const staleBills = allBills.filter(
+      (b) => !b.archivedAt && b._creationTime < thirtyDaysAgo
+    );
+    for (const bill of staleBills) {
+      await ctx.db.patch(bill._id, { archivedAt: Date.now() });
+    }
   },
 });

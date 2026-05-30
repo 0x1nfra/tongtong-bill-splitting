@@ -10,21 +10,17 @@ import { render, screen } from '@testing-library/react'
 import Home from '@/app/page'
 
 describe('Landing page — logotype and content (UI-08)', () => {
-  it('"tongtong" text is visible in the h1 heading', () => {
+  it('tongtong. logotype SVG is visible', () => {
     render(<Home />)
-    const heading = screen.getByRole('heading', { level: 1 })
-    expect(heading).toBeInTheDocument()
-    expect(heading.textContent).toContain('tongtong')
+    const svg = screen.getByRole('img', { name: 'tongtong.' })
+    expect(svg).toBeInTheDocument()
   })
 
-  it('the red period "." inside h1 has text-stamp class', () => {
+  it('the red period "." in the logotype SVG has fill="#B91C1C"', () => {
     const { container } = render(<Home />)
-    const h1 = container.querySelector('h1')
-    expect(h1).not.toBeNull()
-    const span = h1?.querySelector('span')
-    expect(span).not.toBeNull()
-    expect(span?.className).toContain('text-stamp')
-    expect(span?.textContent).toBe('.')
+    const redPeriod = container.querySelector('tspan[fill="#B91C1C"]')
+    expect(redPeriod).not.toBeNull()
+    expect(redPeriod?.textContent).toBe('.')
   })
 
   it('"A CHIT FOR EVERYONE" tagline is visible', () => {
@@ -48,5 +44,43 @@ describe('Landing page — logotype and content (UI-08)', () => {
     const link = screen.getByText('START NEW BILL').closest('a')
     expect(link).not.toBeNull()
     expect(link?.getAttribute('href')).toBe('/create')
+  })
+})
+
+describe('Landing page — benefits and how-it-works sections (Phase 5)', () => {
+  it('benefits section renders 3 benefit rows', () => {
+    render(<Home />)
+    // Use getAllByText for "No more chasing" since it also appears in step 03 sub-copy
+    expect(screen.getAllByText(/No more chasing/i).length).toBeGreaterThanOrEqual(1)
+    expect(screen.getByText(/See your exact share/i)).toBeInTheDocument()
+    expect(screen.getByText(/DuitNow QR/i)).toBeInTheDocument()
+  })
+
+  it('how-it-works section renders 3 numbered steps', () => {
+    const { container } = render(<Home />)
+    const text = container.textContent ?? ''
+    expect(text).toContain('01.')
+    expect(text).toContain('02.')
+    expect(text).toContain('03.')
+  })
+
+  it('DemoChit appears before benefits section in DOM order', () => {
+    const { container } = render(<Home />)
+    const text = container.textContent ?? ''
+    const grandTotalPos = text.indexOf('GRAND TOTAL')
+    const whyTongtongPos = text.indexOf('WHY TONGTONG')
+    expect(grandTotalPos).toBeGreaterThan(-1)
+    expect(whyTongtongPos).toBeGreaterThan(-1)
+    expect(grandTotalPos).toBeLessThan(whyTongtongPos)
+  })
+
+  it('START NEW BILL CTA appears after how-it-works in DOM order', () => {
+    const { container } = render(<Home />)
+    const text = container.textContent ?? ''
+    const howItWorksPos = text.indexOf('HOW IT WORKS')
+    const startNewBillPos = text.lastIndexOf('START NEW BILL')
+    expect(howItWorksPos).toBeGreaterThan(-1)
+    expect(startNewBillPos).toBeGreaterThan(-1)
+    expect(howItWorksPos).toBeLessThan(startNewBillPos)
   })
 })

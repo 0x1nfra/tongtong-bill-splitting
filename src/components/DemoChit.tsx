@@ -14,7 +14,6 @@ export function DemoChit() {
   return (
     <div
       className="chit p-6 w-full max-w-[320px] mx-auto"
-      style={{ transform: "rotate(1.5deg)" }}
     >
       <p className="text-xs font-bold uppercase tracking-widest text-ink opacity-60 mb-3">
         #TT-DEMO

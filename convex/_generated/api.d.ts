@@ -9,6 +9,7 @@
  */
 
 import type * as bills from "../bills.js";
+import type * as crons from "../crons.js";
 import type * as payments from "../payments.js";
 
 import type {
@@ -19,6 +20,7 @@ import type {
 
 declare const fullApi: ApiFromModules<{
   bills: typeof bills;
+  crons: typeof crons;
   payments: typeof payments;
 }>;
 

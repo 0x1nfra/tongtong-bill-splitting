@@ -46,6 +46,7 @@ export default function CreatePage() {
 
   // QR upload state — BILL-04: storageId from Convex file storage
   const [qrStorageId, setQrStorageId] = useState<string | undefined>(undefined);
+  const [receiptStorageId, setReceiptStorageId] = useState<string | undefined>(undefined);
 
   // Submission guard — prevents double-tap
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -109,6 +110,7 @@ export default function CreatePage() {
         applySST,
         applyServiceCharge,
         qrStorageId: qrStorageId as Id<"_storage"> | undefined,
+        receiptStorageId: receiptStorageId as Id<"_storage"> | undefined,
         venueName: venueName || undefined,
         billDate: billDate || undefined,
         items: items.map((item, index) => ({
@@ -183,6 +185,14 @@ export default function CreatePage() {
           </div>
         </div>
         <div className="perforation my-4" />
+
+        {/* Receipt photo upload */}
+        <div className="mt-6 mb-6">
+          <label className="uppercase text-xs text-ink block mb-2 tracking-widest">
+            RECEIPT PHOTO (OPTIONAL)
+          </label>
+          <QRUpload onUpload={(id) => setReceiptStorageId(id)} />
+        </div>
 
         {/* Items section */}
         <div className="chit p-4 mb-4">

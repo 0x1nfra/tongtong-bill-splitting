@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
 import { JetBrains_Mono, Bungee, Shadows_Into_Light_Two } from "next/font/google";
 import { ConvexClientProvider } from "@/components/ConvexClientProvider";
+import { ThemeProvider } from "@/components/ThemeProvider";
+import { ThemeToggle } from "@/components/ThemeToggle";
 import "./globals.css";
 
 const jetBrainsMono = JetBrains_Mono({
@@ -39,7 +41,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className={`${jetBrainsMono.variable} ${bungee.variable} ${shadowsIntoLightTwo.variable} h-full`}>
+    <html lang="en" suppressHydrationWarning className={`${jetBrainsMono.variable} ${bungee.variable} ${shadowsIntoLightTwo.variable} h-full`}>
       <body className="min-h-full flex flex-col">
         <svg id="filters" aria-hidden="true">
           <defs>
@@ -49,7 +51,10 @@ export default function RootLayout({
             </filter>
           </defs>
         </svg>
-        <ConvexClientProvider>{children}</ConvexClientProvider>
+        <ThemeProvider>
+          <ThemeToggle />
+          <ConvexClientProvider>{children}</ConvexClientProvider>
+        </ThemeProvider>
       </body>
     </html>
   );

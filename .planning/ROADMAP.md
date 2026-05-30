@@ -1,7 +1,7 @@
 # TongTong — Roadmap
 
 **Project:** TongTong
-**Total Phases:** 3
+**Total Phases:** 4
 **v1 Requirements:** 52 (BILL×6, AUTH×3, SHARE×4, CLAIM×6, CALC×5, PAY×5, DASH×7, UI×13, LAND×3)
 
 ## Phases
@@ -9,6 +9,7 @@
 - [x] **Phase 1: Working Bill** - Organizer creates a bill, shares a link, members view it, payment flow and dashboard work end-to-end (functional, unstyled) (completed 2026-05-23)
 - [x] **Phase 2: Item Claiming** - Members tap to claim individual items; multi-claim splits cost; live proportional totals per person (completed 2026-05-24)
 - [x] **Phase 3: TongTong Aesthetic** - Full chit visual theme and landing page applied across every screen (completed 2026-05-25)
+- [x] **Phase 4: Bonus Features** - Auto-archive, reminder nudges, dark mode, Google OAuth bill history; dashboard people-from-claims + flat cards (in progress) (completed 2026-05-29)
 
 ## Phase Details
 
@@ -118,6 +119,41 @@
 - One-imperfection rule (UI-09): outer .chit rotation OR crease — never both on same element
 **UI hint**: yes
 
+### Phase 4: Bonus Features
+**Goal:** Ship remaining bonus capabilities — bill auto-archive, organizer reminder nudges, dark mode carbon-copy theme, and Google OAuth for bill history
+**Mode:** mvp
+**Depends on:** Phase 3
+**Requirements:** BONUS-03, BONUS-04, BONUS-05, BONUS-06
+**Success Criteria** (what must be TRUE):
+  1. Bills with no activity for 30 days are automatically archived and show an ARCHIVED stamp to any visitor
+  2. Organizer can trigger a reminder nudge from the dashboard that generates a fresh shareable link scoped to unpaid members
+  3. A "carbon copy" dark mode theme (blue text on dark blue) toggles cleanly across all screens with no color-token regressions
+  4. Signing in with Google persists bill ownership so the organizer can access their dashboard from any device
+**Plans:** 5/5 plans complete
+
+**Wave 0** *(Nyquist test stubs — must run first)*
+- [x] 04-01-PLAN.md — Test stubs: archiveStale.test.ts (pure boundary tests), archivedBill.test.tsx (RED — ArchivedStamp not yet created), SignIn.test.tsx (RED — SignInButton not yet created)
+
+**Wave 1** *(blocked on Wave 0)*
+- [x] 04-02-PLAN.md — Convex backend: convex/crons.ts (daily archive job) + archiveStale internalMutation + freeze checks on 6 write mutations (bills.ts + payments.ts)
+
+**Wave 2** *(blocked on Wave 1)*
+- [x] 04-03-PLAN.md — Frontend features: ArchivedStamp component + ARCHIVED overlay on member view + ARCHIVED banner on dashboard + per-member NUDGE WhatsApp handler (BONUS-03 UI + BONUS-04)
+
+**Wave 3** *(blocked on Wave 2)*
+- [x] 04-04-PLAN.md — Dark mode: next-themes install (after human verification) + @custom-variant dark + carbon-copy token overrides + ThemeProvider + ThemeToggle + SignInButton stub (BONUS-06 + BONUS-05 stub)
+
+**Wave 4** *(blocked on Wave 3)*
+- [x] 04-05-PLAN.md — Dashboard PEOPLE tab from claims (not payments) + collapsible items toggle per member + remove slanted card rotations
+
+**Cross-cutting constraints:**
+- BONUS-05 (Google OAuth) is explicitly deferred per D-08 — only a SignInButton stub is created
+- archiveStale must be internalMutation — never mutation (T-04-03)
+- claimantName sanitized with .replace(/[<>"]/g, '') before WhatsApp URL construction (T-04-04)
+- next-themes requires human verification checkpoint before install (package audit [ASSUMED])
+- --color-stamp (#B91C1C) must NOT appear in dark mode token overrides (red brand constraint)
+- suppressHydrationWarning on html tag required when ThemeProvider is added
+
 ## Progress
 
 | Phase | Plans Complete | Status | Completed |
@@ -126,3 +162,34 @@
 | 01.1. Tech Debt | 3/3 | Complete | 2026-05-24 |
 | 2. Item Claiming | 4/4 | Complete   | 2026-05-24 |
 | 3. TongTong Aesthetic | 4/4 | Complete   | 2026-05-25 |
+| 4. Bonus Features | 5/5 | Complete   | 2026-05-29 |
+
+### Phase 5: bonus additions: Departure Mono headings + landing page enhancements (benefits, how-it-works guide)
+
+**Goal:** Apply Departure Mono to all page-level h1 elements, add landing page benefits and how-it-works sections, add receipt upload to create flow, and add QR upload quick action to dashboard
+**Requirements:** TBD (bonus additions — no formal requirement IDs)
+**Depends on:** Phase 4
+**Plans:** 4/4 plans executed
+
+Plans:
+- [x] 05-01-PLAN.md — Wave 0: Fix broken landing page tests + create RED stubs for benefits/how-it-works + updateQR boundary tests
+- [x] 05-02-PLAN.md — Wave 1: Convex backend — updateQR mutation + createBill receiptStorageId extension
+- [x] 05-03-PLAN.md — Wave 1: Landing page benefits + how-it-works sections + member view h1 Departure Mono (parallel with 05-02)
+- [x] 05-04-PLAN.md — Wave 2: Create page h1 + receipt upload flow + dashboard h1 + QR upload quick action
+
+**Wave 0**
+- [x] 05-01-PLAN.md — Fix broken heading tests in landingPage.test.tsx; add RED stubs for benefits and how-it-works; create updateQR.test.ts with pure predicate boundary tests
+
+**Wave 1** *(05-02 and 05-03 run in parallel — both blocked on Wave 0)*
+- [x] 05-02-PLAN.md — convex/bills.ts: updateQR public mutation (mirrors setBillReceipt) + createBill args/insert extended with receiptStorageId
+- [x] 05-03-PLAN.md — src/app/page.tsx benefits + how-it-works sections (D-04–D-09) + src/app/c/[billId]/page.tsx h1 style props (D-01, D-02)
+
+**Wave 2** *(blocked on Wave 1)*
+- [ ] 05-04-PLAN.md — src/app/create/page.tsx h1 style + receipt upload above items + receiptStorageId state/arg; src/app/dashboard/[billId]/page.tsx h1 style on all 3 h1s + updateQR useMutation + handleQRUpload + UPLOAD QR/REPLACE QR button
+
+**Cross-cutting constraints:**
+- Departure Mono MUST use style={{ fontFamily: "var(--font-display)" }} — never a Tailwind class (D-02)
+- Red (text-stamp) MUST NOT appear in benefits or how-it-works section copy (color constraint)
+- receiptStorageId state in create page MUST be distinct from qrStorageId state — never shared setter (Pitfall 4)
+- updateQR must be a public mutation — NOT internalMutation (RESEARCH anti-pattern)
+- Benefits .chit and how-it-works .chit MAY have one rotation (UI-09) — never both rotation AND crease

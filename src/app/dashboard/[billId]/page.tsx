@@ -19,6 +19,8 @@ export default function DashboardPage({
   const [organizerSecret, setOrganizerSecret] = useState<string | null>(null);
   const [shareUrl, setShareUrl] = useState<string>("");
   const [showCloseConfirm, setShowCloseConfirm] = useState(false);
+  const [isUploadingReceipt, setIsUploadingReceipt] = useState(false);
+  const [isUploadingQR, setIsUploadingQR] = useState(false);
 
   useEffect(() => {
     const stored = localStorage.getItem("tongtong_organizer_secret");
@@ -51,8 +53,17 @@ export default function DashboardPage({
     organizerSecret ? { billId: billId as Id<"bills">, organizerSecret } : "skip"
   );
 
+  // DASH-03: all claimants (members who claimed at least one item) — used for PEOPLE tab
+  const claimants = useQuery(
+    api.bills.getClaimantsForBill,
+    organizerSecret ? { billId: billId as Id<"bills">, organizerSecret } : "skip"
+  );
+
   const confirmPayment = useMutation(api.payments.confirmPayment);
   const rejectPayment = useMutation(api.payments.rejectPayment);
+  const generateUploadUrl = useMutation(api.bills.generateUploadUrl);
+  const setBillReceipt = useMutation(api.bills.setBillReceipt);
+  const updateQR = useMutation(api.bills.updateQR);
 
   // organizerSecret is null while localStorage hasn't been read yet (SSR-safe)
   if (organizerSecret === null) {
@@ -73,7 +84,7 @@ export default function DashboardPage({
     return (
       <main className="min-h-screen bg-paper-table flex items-center justify-center">
         <div className="max-w-[480px] mx-auto px-4 py-12 text-center">
-          <h1 className="text-xl font-bold uppercase text-ink tracking-widest mb-3">
+            <h1 className="text-xl font-bold uppercase text-ink tracking-widest mb-3">
             DASHBOARD NOT ACCESSIBLE
           </h1>
           <p className="text-sm text-ink opacity-60">
@@ -115,6 +126,7 @@ export default function DashboardPage({
   }
 
   const { bill, items } = billData;
+  const isArchived = !!bill.archivedAt;
   const { grandTotalCents } = calculateTotals(
     items,
     bill.applySST,
@@ -122,7 +134,7 @@ export default function DashboardPage({
   );
 
   // Phase 1: equal-split per-member amount (no item claiming yet)
-  const memberCount = payments?.length ?? 0;
+  const memberCount = claimants?.length ?? 0;
   const amountPerMemberCents =
     memberCount > 0 ? Math.round(grandTotalCents / memberCount) : grandTotalCents;
 
@@ -158,17 +170,112 @@ export default function DashboardPage({
     });
   }
 
-  // DASH-06: copies share link to clipboard
-  function handleRemind() {
-    navigator.clipboard.writeText(shareUrl).catch((err: unknown) => {
-      console.error("Failed to copy share link:", err);
-    });
+  // BONUS-04 (D-07): per-member WhatsApp nudge for "CLAIMED — UNPAID" members
+  // T-04-04: sanitize claimantName (stored user input) before URL interpolation
+  function handleNudgeMember(memberName: string) {
+    const sanitizedName = memberName.replace(/[<>"]/g, "");
+    const msg = encodeURIComponent(
+      `Eh ${sanitizedName}, still haven't paid for the ${bill.title} chit lah! Tap here to settle: ${shareUrl}`
+    );
+    window.open(`https://wa.me/?text=${msg}`, "_blank");
   }
 
   function handleCopyShareLink() {
     navigator.clipboard.writeText(shareUrl).catch((err: unknown) => {
       console.error("Failed to copy share link:", err);
     });
+  }
+
+  function handleExportCSV() {
+    const rows = [
+      ["TongTong Bill Export"],
+      ["Title", bill.title],
+      ["Venue", bill.venueName ?? ""],
+      ["Date", bill.billDate ?? ""],
+      ["SST", bill.applySST ? "Yes" : "No"],
+      ["Service Charge", bill.applyServiceCharge ? "Yes" : "No"],
+      [],
+      ["ITEMS"],
+      ["Name", "Price (RM)", "Qty", "Subtotal (RM)"],
+      ...items.map((i) => [
+        i.name,
+        (i.price / 100).toFixed(2),
+        String(i.quantity),
+        ((i.price * i.quantity) / 100).toFixed(2),
+      ]),
+      [],
+      ["PAYMENTS"],
+      ["Name", "Status", "Paid At"],
+      ...(payments ?? []).map((p) => [
+        p.claimantName,
+        p.status,
+        p.paidAt ? new Date(p.paidAt).toLocaleString() : "",
+      ]),
+      [],
+      ["Grand Total (RM)", (grandTotalCents / 100).toFixed(2)],
+    ];
+    const csv = rows
+      .map((row) =>
+        row.map((cell) => `"${String(cell).replace(/"/g, '""')}"`).join(",")
+      )
+      .join("\n");
+    const blob = new Blob([csv], { type: "text/csv" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `tongtong-${displayCode.replace("#", "")}.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
+  }
+
+  async function handleReceiptUpload(file: File) {
+    if (!organizerSecret) return;
+    setIsUploadingReceipt(true);
+    try {
+      const uploadUrl = await generateUploadUrl({});
+      const result = await fetch(uploadUrl, {
+        method: "POST",
+        headers: { "Content-Type": file.type },
+        body: file,
+      });
+      if (!result.ok) throw new Error(`Upload failed: ${result.status}`);
+      const { storageId } = (await result.json()) as { storageId: string };
+      if (!storageId) throw new Error("Upload response missing storageId");
+      await setBillReceipt({
+        billId: billId as Id<"bills">,
+        organizerSecret,
+        receiptStorageId: storageId as Id<"_storage">,
+      });
+    } catch (err) {
+      console.error("Failed to upload receipt:", err);
+    } finally {
+      setIsUploadingReceipt(false);
+    }
+  }
+
+  async function handleQRUpload(file: File) {
+    if (!organizerSecret) return;
+    setIsUploadingQR(true);
+    try {
+      const uploadUrl = await generateUploadUrl({});
+      const result = await fetch(uploadUrl, {
+        method: "POST",
+        headers: { "Content-Type": file.type },
+        body: file,
+      });
+      if (!result.ok) throw new Error(`Upload failed: ${result.status}`);
+      const { storageId } = (await result.json()) as { storageId: string };
+      if (!storageId) throw new Error("Upload response missing storageId");
+      await updateQR({
+        billId: billId as Id<"bills">,
+        organizerSecret,
+        qrStorageId: storageId as Id<"_storage">,
+      });
+    } catch (err) {
+      console.error("Failed to upload QR:", err);
+    } finally {
+      setIsUploadingQR(false);
+    }
   }
 
   return (
@@ -187,6 +294,13 @@ export default function DashboardPage({
 
           {/* LEFT COLUMN */}
           <div>
+            {/* BONUS-03: ARCHIVED banner — inside left column so width matches content */}
+            {isArchived && (
+              <div className="w-full border-2 border-stamp text-stamp text-xs font-bold uppercase tracking-widest py-3 text-center mb-4">
+                BILL ARCHIVED — READ ONLY
+              </div>
+            )}
+
             {/* Progress widget (DASH-01) */}
             <ProgressBar
               collectedCents={collectedCents}
@@ -209,14 +323,14 @@ export default function DashboardPage({
               PEOPLE
             </h2>
 
-            {payments?.length === 0 ? (
-              /* Empty state per UI-11 */
+            {!claimants || claimants.length === 0 ? (
+              /* Empty state per UI-11 — shown when no claims yet */
               <div className="chit p-6 text-center">
                 <p className="text-xs font-bold uppercase text-ink tracking-widest mb-1 opacity-60">
                   NOTHING HERE YET
                 </p>
                 <p className="text-sm text-ink opacity-60 mb-4">
-                  Share the link and they&apos;ll appear here.
+                  Share the link — members appear here when they start claiming items.
                 </p>
                 <button
                   type="button"
@@ -227,25 +341,38 @@ export default function DashboardPage({
                 </button>
               </div>
             ) : (
-              /* Payment rows (DASH-03) */
+              /* Claimant rows (DASH-03) — populated from claims, not payments */
               <div>
-                {payments?.map((payment) => {
+                {claimants.map((claimant) => {
                   const memberStatus =
-                    payment.status === "settled"
+                    claimant.payment?.status === "settled"
                       ? ("CONFIRMED" as const)
-                      : payment.status === "pending"
+                      : claimant.payment?.status === "pending"
                         ? ("AWAITING" as const)
                         : ("CLAIMED — UNPAID" as const);
 
                   return (
                     <MemberRow
-                      key={payment._id}
-                      name={payment.claimantName}
+                      key={claimant.claimantSession}
+                      name={claimant.claimantName}
                       status={memberStatus}
                       amountOwed={amountPerMemberCents}
-                      onConfirm={() => handleConfirm(payment._id)}
-                      onReject={() => handleReject(payment._id)}
-                      onRemind={handleRemind}
+                      claimedItems={claimant.claimedItems}
+                      onConfirm={
+                        !isArchived && claimant.payment && memberStatus === "AWAITING"
+                          ? () => handleConfirm(claimant.payment!._id)
+                          : undefined
+                      }
+                      onReject={
+                        !isArchived && claimant.payment && memberStatus === "AWAITING"
+                          ? () => handleReject(claimant.payment!._id)
+                          : undefined
+                      }
+                      onRemind={
+                        !isArchived && memberStatus === "CLAIMED — UNPAID"
+                          ? () => handleNudgeMember(claimant.claimantName)
+                          : undefined
+                      }
                     />
                   );
                 })}
@@ -280,6 +407,66 @@ export default function DashboardPage({
             >
               COPY SHARE LINK
             </button>
+
+            {/* EXPORT CSV — BONUS-08 */}
+            <button
+              type="button"
+              onClick={handleExportCSV}
+              className="w-full border border-ink text-ink h-10 uppercase text-sm tracking-widest mb-2 cursor-pointer"
+            >
+              EXPORT CSV
+            </button>
+
+            {/* UPLOAD RECEIPT — new bonus feature */}
+            <label className={`w-full border border-ink text-ink h-10 uppercase text-sm tracking-widest mb-2 flex items-center justify-center${isUploadingReceipt ? " opacity-50 cursor-wait" : " cursor-pointer"}`}>
+              {isUploadingReceipt ? "UPLOADING..." : billData.receiptUrl ? "CHANGE RECEIPT" : "UPLOAD RECEIPT"}
+              <input
+                type="file"
+                accept="image/*"
+                className="sr-only"
+                disabled={isUploadingReceipt}
+                onChange={(e) => {
+                  const file = e.target.files?.[0];
+                  if (file) void handleReceiptUpload(file);
+                }}
+              />
+            </label>
+            {billData.receiptUrl && (
+              <a
+                href={billData.receiptUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="w-full border border-ink text-ink h-10 uppercase text-sm tracking-widest mb-2 flex items-center justify-center"
+              >
+                VIEW RECEIPT
+              </a>
+            )}
+
+            {/* UPLOAD QR / REPLACE QR — quick action */}
+            <label className={`w-full border border-ink text-ink h-10 uppercase text-sm tracking-widest mb-2 flex items-center justify-center${isUploadingQR ? " opacity-50 cursor-wait" : " cursor-pointer"}`}>
+              {isUploadingQR ? "UPLOADING..." : billData.qrUrl ? "CHANGE QR" : "UPLOAD QR"}
+              <input
+                type="file"
+                accept="image/*"
+                className="sr-only"
+                disabled={isUploadingQR}
+                onChange={(e) => {
+                  const file = e.target.files?.[0];
+                  if (file) void handleQRUpload(file);
+                }}
+              />
+            </label>
+
+            {billData.qrUrl && (
+              <a
+                href={billData.qrUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="w-full border border-ink text-ink h-10 uppercase text-sm tracking-widest mb-2 flex items-center justify-center"
+              >
+                VIEW QR
+              </a>
+            )}
 
             {/* CLOSE CHIT EARLY — red permitted per UI-SPEC (destructive action) */}
             {!showCloseConfirm ? (

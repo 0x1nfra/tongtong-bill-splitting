@@ -6,6 +6,7 @@ import { useQuery, useMutation } from "convex/react";
 import { api } from "../../../../convex/_generated/api";
 import type { Id } from "../../../../convex/_generated/dataModel";
 import { SettleStamp } from "../../../components/SettleStamp";
+import { ArchivedStamp } from "../../../components/ArchivedStamp";
 import { calculateTotals, calculatePersonTotals } from "@/lib/calculateTotals";
 
 /**
@@ -49,15 +50,6 @@ function useMemberName(
   return [memberName, setMemberName];
 }
 
-/**
- * getRotation — deterministic rotation for claimant name badges.
- * CLAIM-04 / D-09: derive from claimId.charCodeAt(0) for stable, no-useState rotation.
- * Range: −2.0 to +1.9 degrees.
- */
-function getRotation(claimId: string): number {
-  const seed = claimId.charCodeAt(0) % 40; // 0–39
-  return (seed - 20) / 10; // −2.0 to +1.9 degrees
-}
 
 export default function MemberViewPage({
   params,
@@ -150,6 +142,7 @@ export default function MemberViewPage({
    * If name set: fire claim/unclaim immediately (D-03/D-04).
    */
   const handleItemTap = async (itemId: string, myClaimId?: string) => {
+    if (bill?.archivedAt) return; // BONUS-03: archived bills block all claims
     if (!claimantSession) return; // T-02-09: session not yet loaded
     if (pendingItems.has(itemId)) return; // T-02-10: mutation in-flight
 
@@ -283,6 +276,17 @@ export default function MemberViewPage({
     );
   }
 
+  // BONUS-03: early return for archived bills — show ArchivedStamp overlay, no bill content
+  if (bill.archivedAt) {
+    return (
+      <main className="min-h-screen bg-paper-table flex items-center justify-center">
+        <div className="max-w-[480px] mx-auto px-4 py-12">
+          <ArchivedStamp />
+        </div>
+      </main>
+    );
+  }
+
   const items = bill.items ?? [];
   const claims = bill.claims ?? [];
 
@@ -315,11 +319,9 @@ export default function MemberViewPage({
     !claimantSession ||
     !memberName ||
     isPaying ||
+    !!bill?.archivedAt ||
     payment?.status === "pending" ||
     payment?.status === "settled";
-
-  // UI-09: deterministic 1–2° rotation derived from billId charCode (one-imperfection rule)
-  const rotationDeg = (billId.charCodeAt(0) % 20) / 10 + 1;
 
   return (
     <main className="min-h-screen bg-paper-table">
@@ -332,8 +334,21 @@ export default function MemberViewPage({
           {"#TT-" + billId.slice(0, 4).toUpperCase()}
         </p>
 
+        {/* Receipt image — shown when organizer uploaded bill proof */}
+        {bill.receiptUrl && (
+          <div className="mb-4">
+            <p className="uppercase text-xs text-ink opacity-60 mb-2">BILL RECEIPT</p>
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src={bill.receiptUrl}
+              alt="Bill receipt uploaded by organizer"
+              className="w-full max-w-[320px] border border-ink"
+            />
+          </div>
+        )}
+
         {/* Interactive items list — CLAIM-01 through CLAIM-05 */}
-        <div className="chit p-4 mb-4" style={{ transform: `rotate(${rotationDeg}deg)` }}>
+        <div className="chit p-4 mb-4">
           <p className="text-xs font-bold uppercase text-ink tracking-widest mb-3 opacity-60">
             ITEMS
           </p>
@@ -403,11 +418,6 @@ export default function MemberViewPage({
                         <span
                           key={claim._id}
                           className={`font-[family-name:var(--font-handwriting)] text-pen text-sm${claim.claimantSession === claimantSession ? " font-bold" : ""}`}
-                          style={{
-                            display: "inline-block",
-                            transform: `rotate(${getRotation(claim._id)}deg)`,
-                            marginRight: "4px",
-                          }}
                         >
                           {claim.claimantName}
                         </span>

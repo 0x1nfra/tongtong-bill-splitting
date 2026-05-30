@@ -8,7 +8,9 @@
 
 @import "tailwindcss";
 
-@theme inline {
+@custom-variant dark (&:where([data-theme=dark], [data-theme=dark] *));
+
+@theme {
   /* TongTong color system */
   --color-paper-chit: #F4EFE6;
   --color-paper-table: #EEEAE2;
@@ -36,11 +38,30 @@
   }
 }
 
-body {
-  background-color: #EEEAE2;
-  color: #1F1B17;
-  font-family: "JetBrains Mono", monospace;
-  -webkit-font-smoothing: antialiased;
+@layer base {
+  body {
+    background-color: #EEEAE2;
+    color: #1F1B17;
+    font-family: "JetBrains Mono", monospace;
+    -webkit-font-smoothing: antialiased;
+  }
+  [data-theme="dark"] {
+    --color-paper-table: #0D1B2A;
+    --color-paper-chit: #203D6A;
+    --color-ink: #A8C0E0;
+    --color-pen: #5B8DD9;
+    /* --color-stamp intentionally omitted — must remain #B91C1C */
+  }
+  [data-theme="dark"] .chit {
+    box-shadow: 2px 4px 16px rgba(0, 0, 0, 0.4), 0 1px 3px rgba(0, 0, 0, 0.25);
+  }
+  [data-theme="dark"] body::before {
+    opacity: 0.04;
+  }
+  [data-theme="dark"] body {
+    background-color: #0D1B2A;
+    color: #A8C0E0;
+  }
 }
 
 /* Paper grain texture overlay */
@@ -61,6 +82,11 @@ body::before {
     width: 0;
     height: 0;
   }
+}
+
+/* Heading font */
+h1, h2, h3 {
+  font-family: var(--font-display);
 }
 
 /* Dot-leader utility */
@@ -95,7 +121,7 @@ body::before {
 
 /* Chit surface */
 .chit {
-  background-color: #F4EFE6;
+  background-color: var(--color-paper-chit);
   box-shadow: 2px 4px 16px rgba(31, 27, 23, 0.12), 0 1px 3px rgba(31, 27, 23, 0.08);
 }
 
@@ -109,4 +135,21 @@ body::before {
     rgba(31, 27, 23, 0.5) 8px
   );
   height: 2px;
+}
+
+/* Dark mode overrides — outside @layer to beat unlayered utility definitions above */
+[data-theme="dark"] .perforation {
+  background-image: repeating-linear-gradient(
+    to right,
+    transparent,
+    transparent 5px,
+    rgba(168, 192, 224, 0.45) 5px,
+    rgba(168, 192, 224, 0.45) 8px
+  );
+}
+[data-theme="dark"] .rule-hairline {
+  border-color: rgba(168, 192, 224, 0.3);
+}
+[data-theme="dark"] .dot-leader::after {
+  background-image: radial-gradient(circle, rgba(168, 192, 224, 0.55) 1px, transparent 1px);
 }

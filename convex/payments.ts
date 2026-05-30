@@ -16,6 +16,7 @@ export const markPaid = mutation({
     // Verify bill exists before creating any payment record (CR-02)
     const bill = await ctx.db.get(billId);
     if (!bill) throw new Error("Bill not found");
+    if (bill.archivedAt !== undefined) throw new Error("Bill is archived");
 
     // Check for existing pending/settled payment for this session (T-01-03)
     const existing = await ctx.db
@@ -57,6 +58,7 @@ export const confirmPayment = mutation({
     if (!bill || bill.organizerSecret !== organizerSecret) {
       throw new Error("Unauthorized");
     }
+    if (bill.archivedAt !== undefined) throw new Error("Bill is archived");
 
     // WR-01: enforce state machine — only pending payments can be confirmed
     if (payment.status !== "pending") {
@@ -89,6 +91,7 @@ export const rejectPayment = mutation({
     if (!bill || bill.organizerSecret !== organizerSecret) {
       throw new Error("Unauthorized");
     }
+    if (bill.archivedAt !== undefined) throw new Error("Bill is archived");
 
     // WR-01: enforce state machine — only pending payments can be rejected
     if (payment.status !== "pending") {

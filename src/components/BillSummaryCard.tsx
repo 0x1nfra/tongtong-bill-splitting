@@ -36,9 +36,23 @@ export function BillSummaryCard({
       </p>
 
       {/* Item count */}
-      <p className="text-xs text-ink opacity-60 mb-3">
+      <p className="text-xs text-ink opacity-60 mb-2">
         {items.length} {items.length === 1 ? "ITEM" : "ITEMS"}
       </p>
+
+      {/* Item list */}
+      <div className="mb-3">
+        {items.map((item, i) => (
+          <div key={i} className="dot-leader items-center mb-1">
+            <span className="text-xs text-ink">
+              {item.name}{item.quantity > 1 ? ` ×${item.quantity}` : ""}
+            </span>
+            <span className="text-xs text-ink">
+              RM{((item.price * item.quantity) / 100).toFixed(2)}
+            </span>
+          </div>
+        ))}
+      </div>
 
       {/* Grand total */}
       <div className="border-t border-ink pt-3">
