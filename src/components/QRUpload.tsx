@@ -65,7 +65,7 @@ export function QRUpload({ onUpload }: QRUploadProps) {
         className="w-40 h-40 border-2 border-dashed border-ink flex items-center justify-center"
         aria-label="Uploading QR image"
       >
-        <span className="uppercase text-xs text-ink opacity-60">
+        <span className="uppercase text-xs text-ink-muted">
           UPLOADING...
         </span>
       </div>
@@ -95,7 +95,7 @@ export function QRUpload({ onUpload }: QRUploadProps) {
           />
         </label>
         {uploadError && (
-          <p className="text-xs text-ink opacity-70">{uploadError}</p>
+          <p className="text-xs text-warning">{uploadError}</p>
         )}
       </div>
     );
@@ -105,10 +105,10 @@ export function QRUpload({ onUpload }: QRUploadProps) {
   return (
     <div className="flex flex-col items-start gap-2">
       <label className="cursor-pointer flex flex-col items-center justify-center w-40 h-40 border-2 border-dashed border-ink gap-3">
-        <span className="uppercase text-xs text-ink opacity-60">
+        <span className="uppercase text-xs text-ink-muted">
           DUITNOW QR
         </span>
-        <span className="uppercase text-xs bg-ink text-white px-3 py-1.5 rounded">
+        <span className="uppercase text-xs bg-ink text-white px-3 py-1.5">
           UPLOAD QR IMAGE
         </span>
         <input
@@ -119,7 +119,7 @@ export function QRUpload({ onUpload }: QRUploadProps) {
         />
       </label>
       {uploadError && (
-        <p className="text-xs text-ink opacity-70">{uploadError}</p>
+        <p className="text-xs text-warning">{uploadError}</p>
       )}
     </div>
   );

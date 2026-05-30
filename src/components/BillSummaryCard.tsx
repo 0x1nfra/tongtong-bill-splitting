@@ -26,7 +26,7 @@ export function BillSummaryCard({
   return (
     <div className="chit p-4">
       {/* Display code — short human-readable bill code */}
-      <p className="uppercase text-xs text-ink opacity-60 mb-1">
+      <p className="uppercase text-xs text-ink-muted mb-1">
         {displayCode}
       </p>
 
@@ -36,7 +36,7 @@ export function BillSummaryCard({
       </p>
 
       {/* Item count */}
-      <p className="text-xs text-ink opacity-60 mb-2">
+      <p className="text-xs text-ink-muted mb-2">
         {items.length} {items.length === 1 ? "ITEM" : "ITEMS"}
       </p>
 

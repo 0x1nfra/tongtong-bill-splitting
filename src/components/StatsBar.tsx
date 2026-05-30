@@ -21,11 +21,11 @@ export function StatsBar({
   ];
 
   return (
-    <div className="flex border-t border-b border-ink border-opacity-20 py-3 mt-4">
+    <div className="flex border-t border-b border-ink/20 py-3 mt-4">
       {stats.map(({ count, label }) => (
         <div key={label} className="flex-1 text-center">
           <div className="text-lg font-bold text-ink">{count}</div>
-          <div className="text-xs uppercase text-ink opacity-60 mt-0.5">
+          <div className="text-xs uppercase text-ink-muted mt-0.5">
             {label}
           </div>
         </div>

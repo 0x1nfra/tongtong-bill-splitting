@@ -15,7 +15,7 @@ export function DemoChit() {
     <div
       className="chit p-6 w-full max-w-[320px] mx-auto rotate-[0.4deg]"
     >
-      <p className="text-xs font-bold uppercase tracking-widest text-ink opacity-60 mb-3">
+      <p className="text-xs font-bold uppercase tracking-widest text-ink-muted mb-3">
         #TT-DEMO
       </p>
 
@@ -24,7 +24,7 @@ export function DemoChit() {
           <span className="text-sm text-ink">
             {item.name}
             {item.quantity > 1 && (
-              <span className="opacity-60 ml-1 text-xs">x{item.quantity}</span>
+              <span className="text-ink-muted ml-1 text-xs">x{item.quantity}</span>
             )}
           </span>
           <span className="text-sm text-ink">
@@ -42,7 +42,7 @@ export function DemoChit() {
 
       <div className="text-center mt-4">
         <div
-          className="inline-block border-2 border-stamp rounded px-4 py-2"
+          className="inline-block border-2 border-stamp px-4 py-2"
           style={{ transform: "rotate(-6deg)", filter: "url(#ink-bleed)" }}
         >
           <span

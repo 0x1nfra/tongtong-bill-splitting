@@ -17,6 +17,8 @@
   --color-ink: #1F1B17;
   --color-pen: #1E40AF;
   --color-stamp: #B91C1C;
+  --color-warning: #B45309;   /* amber — "attention needed", distinct from stamp celebration */
+  --color-ink-muted: #7A6F65; /* warm brown — replaces opacity hacks on paper surfaces */
 
   /* Tailwind shorthand aliases */
   --color-background: var(--color-paper-table);
@@ -51,6 +53,8 @@
     --color-ink: #D4C9B8;
     --color-pen: #7BA7D9;
     /* --color-stamp intentionally omitted — must remain #B91C1C */
+    --color-warning: #D97706;   /* lighter amber for dark bg */
+    --color-ink-muted: #9E9188; /* lighter warm brown for dark bg */
   }
   [data-theme="dark"] .chit {
     box-shadow: 2px 4px 16px rgba(0, 0, 0, 0.5), 0 1px 3px rgba(0, 0, 0, 0.3);

@@ -226,7 +226,7 @@ export default function MemberViewPage({
           <h2 className="text-lg font-bold text-ink uppercase tracking-widest mt-6 mb-2">
             This chit has been torn up
           </h2>
-          <p className="text-sm text-ink opacity-60">
+          <p className="text-sm text-ink-muted">
             The bill you&apos;re looking for doesn&apos;t exist.
           </p>
         </div>
@@ -238,11 +238,11 @@ export default function MemberViewPage({
     return (
       <main className="min-h-screen bg-paper-table flex items-center justify-center">
         <div className="chit max-w-[480px] w-full mx-4 p-4 animate-pulse">
-          <div className="h-4 bg-ink opacity-10 rounded mb-3 w-1/3"></div>
-          <div className="h-3 bg-ink opacity-10 rounded mb-2 w-full"></div>
-          <div className="h-3 bg-ink opacity-10 rounded mb-2 w-4/5"></div>
-          <div className="h-3 bg-ink opacity-10 rounded mb-2 w-full"></div>
-          <div className="h-3 bg-ink opacity-10 rounded w-3/4"></div>
+          <div className="h-4 bg-ink opacity-10 mb-3 w-1/3"></div>
+          <div className="h-3 bg-ink opacity-10 mb-2 w-full"></div>
+          <div className="h-3 bg-ink opacity-10 mb-2 w-4/5"></div>
+          <div className="h-3 bg-ink opacity-10 mb-2 w-full"></div>
+          <div className="h-3 bg-ink opacity-10 w-3/4"></div>
         </div>
       </main>
     );
@@ -268,7 +268,7 @@ export default function MemberViewPage({
           <h1 className="text-xl font-bold uppercase text-ink tracking-widest mb-3">
             THIS CHIT HAS BEEN TORN UP
           </h1>
-          <p className="text-sm text-ink opacity-60">
+          <p className="text-sm text-ink-muted">
             The link may have expired or the chit was closed.
           </p>
         </div>
@@ -330,14 +330,14 @@ export default function MemberViewPage({
         <h1 className="text-xl font-bold uppercase text-ink tracking-widest mb-1">
           {bill.title}
         </h1>
-        <p className="text-xs text-ink opacity-60 mb-6 uppercase tracking-widest">
+        <p className="text-xs text-ink-muted mb-6 uppercase tracking-widest">
           {"#TT-" + billId.slice(0, 4).toUpperCase()}
         </p>
 
         {/* Receipt image — shown when organizer uploaded bill proof */}
         {bill.receiptUrl && (
           <div className="mb-4">
-            <p className="uppercase text-xs text-ink opacity-60 mb-2">BILL RECEIPT</p>
+            <p className="text-xs text-ink-muted mb-2">Bill receipt</p>
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
               src={bill.receiptUrl}
@@ -349,7 +349,7 @@ export default function MemberViewPage({
 
         {/* Interactive items list — CLAIM-01 through CLAIM-05 */}
         <div className="chit p-4 mb-4 rotate-[0.3deg]">
-          <p className="text-xs font-bold uppercase text-ink tracking-widest mb-3 opacity-60">
+          <p className="text-xs font-bold uppercase text-ink-muted tracking-widest mb-3">
             ITEMS
           </p>
           <div className="perforation mb-3"></div>
@@ -393,11 +393,11 @@ export default function MemberViewPage({
                       className={`flex-1 flex items-center gap-1 text-sm text-ink${isMine ? " font-bold" : ""}`}
                     >
                       {totalClaimants === 0 ? (
-                        <span className="text-stamp mr-0.5">❋</span>
+                        <span className="text-warning mr-0.5">❋</span>
                       ) : null}
                       {item.name}
                       {item.quantity > 1 ? (
-                        <span className="opacity-60 ml-1 text-xs">
+                        <span className="text-ink-muted ml-1 text-xs">
                           x{item.quantity}
                         </span>
                       ) : null}
@@ -428,7 +428,7 @@ export default function MemberViewPage({
                   {/* Inline "CLAIM" prompt — unclaimed and not expanded (D-10, CLAIM-05) */}
                   {totalClaimants === 0 && !isExpanded ? (
                     <p
-                      className="text-xs text-stamp uppercase tracking-widest pb-1 pl-0 cursor-pointer"
+                      className="text-xs text-warning uppercase tracking-widest pb-1 pl-0 cursor-pointer"
                       onClick={() => handleItemTap(item._id, myClaimOnItem?._id)}
                     >
                       CLAIM
@@ -441,13 +441,13 @@ export default function MemberViewPage({
                   >
                     <div className="bg-paper-chit px-2 py-2 flex gap-2 items-center">
                       <label
-                        htmlFor="claimantNameInput"
+                        htmlFor={`claimantName-${item._id}`}
                         className="text-xs font-bold uppercase tracking-widest text-ink shrink-0"
                       >
                         YOUR NAME
                       </label>
                       <input
-                        id="claimantNameInput"
+                        id={`claimantName-${item._id}`}
                         type="text"
                         value={nameInput}
                         onChange={(e) => setNameInput(e.target.value)}
@@ -455,12 +455,12 @@ export default function MemberViewPage({
                         onKeyDown={(e) => {
                           if (e.key === "Enter") handleNameSubmit(item._id);
                         }}
-                        className="flex-1 border border-ink bg-paper-chit text-ink text-sm px-2 py-1 focus:outline-none focus:ring-1 focus:ring-pen min-w-0"
+                        className="flex-1 border border-ink bg-paper-chit text-ink text-sm px-2 py-2 focus:outline-none focus:ring-1 focus:ring-pen min-w-0"
                       />
                       <button
                         type="button"
                         onClick={() => handleNameSubmit(item._id)}
-                        className="bg-pen text-white text-xs uppercase font-bold tracking-widest px-3 py-1 shrink-0"
+                        className="bg-pen text-white text-xs uppercase font-bold tracking-widest px-3 py-2 shrink-0 min-h-[44px]"
                       >
                         CLAIM
                       </button>
@@ -479,13 +479,13 @@ export default function MemberViewPage({
         {/* YOUR PORTION panel — static block, visible only when hasClaims (D-07, CALC-04) */}
         {hasClaims ? (
           <div className="chit border-t-2 border-pen border-l-4 border-l-pen p-4 mb-4 rotate-[-0.2deg]">
-            <p className="text-xs font-bold uppercase tracking-widest text-ink opacity-60 mb-3">
+            <p className="text-xs font-bold uppercase tracking-widest text-ink-muted mb-3">
               YOUR PORTION
             </p>
 
             {/* Subtotal row */}
             <div className="dot-leader flex justify-between text-sm text-ink mb-1">
-              <span className="opacity-60">Subtotal</span>
+              <span className="text-ink-muted">Subtotal</span>
               <span>
                 RM{((personTotals?.personSubtotalCents ?? 0) / 100).toFixed(2)}
               </span>
@@ -494,7 +494,7 @@ export default function MemberViewPage({
             {/* Service charge row (conditional) */}
             {bill.applyServiceCharge ? (
               <div className="dot-leader flex justify-between text-sm text-ink mb-1">
-                <span className="opacity-60">Service Charge (10%)</span>
+                <span className="text-ink-muted">Service Charge (10%)</span>
                 <span>
                   RM
                   {((personTotals?.personServiceChargeCents ?? 0) / 100).toFixed(
@@ -507,7 +507,7 @@ export default function MemberViewPage({
             {/* SST row (conditional) */}
             {bill.applySST ? (
               <div className="dot-leader flex justify-between text-sm text-ink mb-1">
-                <span className="opacity-60">SST (6%)</span>
+                <span className="text-ink-muted">SST (6%)</span>
                 <span>
                   RM{((personTotals?.personSSTCents ?? 0) / 100).toFixed(2)}
                 </span>
@@ -526,20 +526,20 @@ export default function MemberViewPage({
 
         {/* Bill grand total section */}
         <div className="bg-paper-chit p-4 mb-6">
-          <p className="text-xs font-bold uppercase text-ink tracking-widest mb-3 opacity-60">
+          <p className="text-xs font-bold uppercase text-ink-muted tracking-widest mb-3">
             BILL TOTAL
           </p>
 
           {/* Subtotal row */}
           <div className="flex justify-between text-sm text-ink mb-1">
-            <span className="opacity-60">Subtotal</span>
+            <span className="text-ink-muted">Subtotal</span>
             <span>RM{(totals.subtotalCents / 100).toFixed(2)}</span>
           </div>
 
           {/* Service charge row (shown only if applicable) */}
           {bill.applyServiceCharge ? (
             <div className="flex justify-between text-sm text-ink mb-1">
-              <span className="opacity-60">Service Charge (10%)</span>
+              <span className="text-ink-muted">Service Charge (10%)</span>
               <span>RM{(totals.serviceChargeCents / 100).toFixed(2)}</span>
             </div>
           ) : null}
@@ -547,7 +547,7 @@ export default function MemberViewPage({
           {/* SST row (shown only if applicable) */}
           {bill.applySST ? (
             <div className="flex justify-between text-sm text-ink mb-1">
-              <span className="opacity-60">SST (6%)</span>
+              <span className="text-ink-muted">SST (6%)</span>
               <span>RM{(totals.sstCents / 100).toFixed(2)}</span>
             </div>
           ) : null}
@@ -560,10 +560,20 @@ export default function MemberViewPage({
         </div>
 
         {/* Payment section — QR + I'VE PAID grouped as a unit (PAY-01, PAY-03) */}
-        <div className="chit p-4 mb-4 text-center">
+        {!hasClaims && (
+          <div className="chit p-4 mb-4 text-center">
+            <p className="text-xs font-bold uppercase tracking-widest text-ink-muted mb-2">
+              ALMOST THERE
+            </p>
+            <p className="text-sm text-ink-muted">
+              Tap items above to claim what you ordered — your portion and payment will appear here.
+            </p>
+          </div>
+        )}
+        <div className={`chit p-4 mb-4 text-center${!hasClaims ? " hidden" : ""}`}>
           {bill.qrUrl ? (
             <>
-              <p className="text-xs font-bold uppercase text-ink tracking-widest mb-2 opacity-60">
+              <p className="text-xs font-bold uppercase text-ink-muted tracking-widest mb-2">
                 SCAN TO PAY
               </p>
               <img
@@ -595,15 +605,15 @@ export default function MemberViewPage({
 
           {/* AWAITING CONFIRMATION subtext (PAY-02) */}
           {paymentStatus === "pending" ? (
-            <p className="text-xs text-ink opacity-60 uppercase tracking-widest mt-3">
-              AWAITING CONFIRMATION FROM THE ORGANIZER
+            <p className="text-xs text-ink-muted uppercase tracking-widest mt-3">
+              Tunggu kejap — organizer tengah semak
             </p>
           ) : null}
 
           {/* Rejection note — member can re-tap I'VE PAID */}
           {paymentStatus === "rejected" ? (
-            <p className="text-xs text-ink opacity-60 uppercase tracking-widest mt-2">
-              PAYMENT WAS NOT CONFIRMED. PLEASE TRY AGAIN.
+            <p className="text-xs text-ink-muted uppercase tracking-widest mt-2">
+              Tak confirm lah. Cuba lagi k?
             </p>
           ) : null}
         </div>

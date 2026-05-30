@@ -25,10 +25,10 @@ describe('StatusBadge', () => {
     expect(badge?.className).not.toContain('text-ink')
   })
 
-  it('"N/A" renders with opacity-40 class', () => {
+  it('"N/A" renders with text-ink-muted class', () => {
     const { container } = render(<StatusBadge status="N/A" />)
     const badge = container.querySelector('span')
-    expect(badge?.className).toContain('opacity-40')
+    expect(badge?.className).toContain('text-ink-muted')
   })
 
   it('"N/A" does NOT use --color-stamp (red forbidden for N/A)', () => {
@@ -42,7 +42,7 @@ describe('StatusBadge', () => {
     const badge = container.querySelector('span')
     expect(badge?.className).toContain('text-ink')
     expect(badge?.className).not.toContain('--color-stamp')
-    expect(badge?.className).not.toContain('opacity-40')
+    expect(badge?.className).not.toContain('text-ink-muted')
   })
 
   it('"AWAITING" renders with --color-ink class (no red)', () => {

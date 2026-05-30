@@ -28,12 +28,12 @@ export function ProgressBar({ collectedCents, totalCents }: ProgressBarProps) {
 
       {/* Progress track */}
       <div
-        className="w-full h-2 rounded"
+        className="w-full h-2"
         style={{ backgroundColor: "color-mix(in srgb, var(--color-ink) 20%, transparent)" }}
       >
         {/* Blue fill — DASH-01 */}
         <div
-          className="h-2 bg-pen rounded transition-all duration-300"
+          className="h-2 bg-pen transition-all duration-300"
           style={{ width: `${pct}%` }}
         />
       </div>

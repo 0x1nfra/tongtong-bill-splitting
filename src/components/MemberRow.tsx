@@ -29,7 +29,7 @@ export function MemberRow({
     status === "CLAIMED — UNPAID" || status === "UNCLAIMED ❋";
 
   return (
-    <div className="border-b border-ink border-opacity-20 py-3">
+    <div className="border-b border-ink/20 py-3">
       {/* Row 1: name + amount + status badge */}
       <div className="flex items-center gap-2">
         <span className="text-sm font-bold text-ink uppercase flex-1 min-w-0 truncate">
@@ -83,7 +83,7 @@ export function MemberRow({
         <div>
           <button
             type="button"
-            className="bg-transparent border-none text-xs text-ink opacity-60 uppercase tracking-widest cursor-pointer p-0 mt-2"
+            className="bg-transparent border-none text-xs text-ink-muted uppercase tracking-widest cursor-pointer p-0 mt-2"
             onClick={() => setExpanded((prev) => !prev)}
           >
             ITEMS ({claimedItems.length}) {expanded ? "▴" : "▾"}
@@ -91,7 +91,7 @@ export function MemberRow({
           {expanded && (
             <div className="mt-1 pl-1">
               {claimedItems.map((item, i) => (
-                <p key={i} className="text-xs text-ink opacity-80 py-0.5">
+                <p key={i} className="text-xs text-ink py-0.5">
                   {item.name} × {item.quantity} — RM{((item.price * item.quantity) / 100).toFixed(2)}
                 </p>
               ))}

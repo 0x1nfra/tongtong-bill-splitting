@@ -14,9 +14,9 @@ type StatusBadgeProps = Readonly<{
 export function StatusBadge({ status }: StatusBadgeProps) {
   const colorClass =
     status === "UNCLAIMED ❋"
-      ? "text-stamp" // #B91C1C — permitted red per UI-SPEC
+      ? "text-warning" // amber — attention state, not celebratory
       : status === "N/A"
-        ? "text-ink opacity-40"
+        ? "text-ink-muted"
         : "text-ink";
 
   return (

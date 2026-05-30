@@ -144,8 +144,8 @@ export default function CreatePage() {
           <div className="space-y-4">
             {/* Bill title */}
             <div className="flex flex-col gap-1">
-              <label className="uppercase text-xs text-ink">
-                Bill Title
+              <label className="text-xs text-ink">
+                Bill title
               </label>
               <input
                 type="text"
@@ -158,8 +158,8 @@ export default function CreatePage() {
 
             {/* Venue / restaurant name (optional) */}
             <div className="flex flex-col gap-1">
-              <label className="uppercase text-xs text-ink">
-                Restaurant / Venue
+              <label className="text-xs text-ink">
+                Restaurant / venue
               </label>
               <input
                 type="text"
@@ -172,7 +172,7 @@ export default function CreatePage() {
 
             {/* Date (optional) */}
             <div className="flex flex-col gap-1">
-              <label className="uppercase text-xs text-ink">
+              <label className="text-xs text-ink">
                 Date
               </label>
               <input
@@ -194,8 +194,8 @@ export default function CreatePage() {
 
           {/* Item list */}
           {items.length === 0 ? (
-            <p className="text-ink opacity-60 text-sm text-center py-4">
-              ADD YOUR FIRST ITEM
+            <p className="text-ink-muted text-sm text-center py-4">
+              Belum ada barang lagi — tekan + untuk tambah
             </p>
           ) : (
             <div className="space-y-1">
@@ -221,51 +221,52 @@ export default function CreatePage() {
         </div>
         <div className="perforation my-4" />
 
-        {/* Tax toggles */}
-        <div className="mt-6 space-y-3">
-          <label className="flex items-center gap-3 cursor-pointer">
-            <input
-              type="checkbox"
-              checked={applyServiceCharge}
-              onChange={(e) => setApplyServiceCharge(e.target.checked)}
-              className="w-4 h-4 accent-ink"
-            />
-            <span className="text-sm text-ink uppercase">
-              Service Charge (10%)
-            </span>
-          </label>
-          <label className="flex items-center gap-3 cursor-pointer">
-            <input
-              type="checkbox"
-              checked={applySST}
-              onChange={(e) => setApplySST(e.target.checked)}
-              className="w-4 h-4 accent-ink"
-            />
-            <span className="text-sm text-ink uppercase">
-              SST (6%)
-            </span>
-          </label>
-        </div>
+        {/* Tax toggles + running totals — wrapped in chit to stay within receipt metaphor */}
+        <div className="chit p-4 mt-4">
+          <div className="space-y-3 mb-4">
+            <label className="flex items-center gap-3 cursor-pointer">
+              <input
+                type="checkbox"
+                checked={applyServiceCharge}
+                onChange={(e) => setApplyServiceCharge(e.target.checked)}
+                className="w-4 h-4 accent-ink"
+              />
+              <span className="text-sm text-ink">
+                Service charge (10%)
+              </span>
+            </label>
+            <label className="flex items-center gap-3 cursor-pointer">
+              <input
+                type="checkbox"
+                checked={applySST}
+                onChange={(e) => setApplySST(e.target.checked)}
+                className="w-4 h-4 accent-ink"
+              />
+              <span className="text-sm text-ink">
+                SST (6%)
+              </span>
+            </label>
+          </div>
 
-        {/* Running totals */}
-        <RunningTotal
-          items={items}
-          applySST={applySST}
-          applyServiceCharge={applyServiceCharge}
-        />
+          <RunningTotal
+            items={items}
+            applySST={applySST}
+            applyServiceCharge={applyServiceCharge}
+          />
+        </div>
 
         {/* Receipt photo upload — BILL-04: optional, after items so user builds bill first */}
         <div className="mt-6 mb-4">
-          <label className="uppercase text-xs text-ink block mb-2 tracking-widest">
-            RECEIPT PHOTO (OPTIONAL)
+          <label className="text-xs text-ink block mb-2">
+            Receipt photo (optional)
           </label>
           <QRUpload onUpload={(id) => setReceiptStorageId(id)} />
         </div>
 
         {/* DuitNow QR upload — BILL-04: optional QR image for payment */}
         <div className="mt-4">
-          <label className="uppercase text-xs text-ink block mb-2 tracking-widest">
-            DUITNOW QR (OPTIONAL)
+          <label className="text-xs text-ink block mb-2">
+            DuitNow QR (optional)
           </label>
           <QRUpload onUpload={(id) => setQrStorageId(id)} />
         </div>
@@ -287,14 +288,14 @@ export default function CreatePage() {
 
           {/* Inline validation message when no items */}
           {items.length === 0 && (
-            <p className="text-stamp font-bold text-xs text-center mt-2">
-              ADD AT LEAST ONE ITEM — You cannot share an empty chit.
+            <p className="text-warning font-bold text-xs text-center mt-2">
+              Kosong lah — tambah barang dulu baru boleh share
             </p>
           )}
 
           {/* WR-04: inline validation message for invalid items */}
           {validationError && (
-            <p className="text-stamp font-bold text-xs text-center mt-2">
+            <p className="text-warning font-bold text-xs text-center mt-2">
               {validationError}
             </p>
           )}
