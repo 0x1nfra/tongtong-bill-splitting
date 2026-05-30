@@ -20,6 +20,7 @@ export default function DashboardPage({
   const [shareUrl, setShareUrl] = useState<string>("");
   const [showCloseConfirm, setShowCloseConfirm] = useState(false);
   const [isUploadingReceipt, setIsUploadingReceipt] = useState(false);
+  const [isUploadingQR, setIsUploadingQR] = useState(false);
 
   useEffect(() => {
     const stored = localStorage.getItem("tongtong_organizer_secret");
@@ -62,6 +63,7 @@ export default function DashboardPage({
   const rejectPayment = useMutation(api.payments.rejectPayment);
   const generateUploadUrl = useMutation(api.bills.generateUploadUrl);
   const setBillReceipt = useMutation(api.bills.setBillReceipt);
+  const updateQR = useMutation(api.bills.updateQR);
 
   // organizerSecret is null while localStorage hasn't been read yet (SSR-safe)
   if (organizerSecret === null) {
@@ -82,7 +84,7 @@ export default function DashboardPage({
     return (
       <main className="min-h-screen bg-paper-table flex items-center justify-center">
         <div className="max-w-[480px] mx-auto px-4 py-12 text-center">
-          <h1 className="text-xl font-bold uppercase text-ink tracking-widest mb-3">
+            <h1 className="text-xl font-bold uppercase text-ink tracking-widest mb-3">
             DASHBOARD NOT ACCESSIBLE
           </h1>
           <p className="text-sm text-ink opacity-60">
@@ -251,6 +253,31 @@ export default function DashboardPage({
     }
   }
 
+  async function handleQRUpload(file: File) {
+    if (!organizerSecret) return;
+    setIsUploadingQR(true);
+    try {
+      const uploadUrl = await generateUploadUrl({});
+      const result = await fetch(uploadUrl, {
+        method: "POST",
+        headers: { "Content-Type": file.type },
+        body: file,
+      });
+      if (!result.ok) throw new Error(`Upload failed: ${result.status}`);
+      const { storageId } = (await result.json()) as { storageId: string };
+      if (!storageId) throw new Error("Upload response missing storageId");
+      await updateQR({
+        billId: billId as Id<"bills">,
+        organizerSecret,
+        qrStorageId: storageId as Id<"_storage">,
+      });
+    } catch (err) {
+      console.error("Failed to upload QR:", err);
+    } finally {
+      setIsUploadingQR(false);
+    }
+  }
+
   return (
     <main className="min-h-screen bg-paper-table">
       <div className="max-w-[960px] mx-auto px-4 py-8">
@@ -409,9 +436,35 @@ export default function DashboardPage({
                 href={billData.receiptUrl}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="block w-full text-center text-xs text-pen underline mb-2"
+                className="w-full border border-ink text-ink h-10 uppercase text-sm tracking-widest mb-2 flex items-center justify-center"
               >
                 VIEW RECEIPT
+              </a>
+            )}
+
+            {/* UPLOAD QR / REPLACE QR — quick action */}
+            <label className={`w-full border border-ink text-ink h-10 uppercase text-sm tracking-widest mb-2 flex items-center justify-center${isUploadingQR ? " opacity-50 cursor-wait" : " cursor-pointer"}`}>
+              {isUploadingQR ? "UPLOADING..." : billData.qrUrl ? "CHANGE QR" : "UPLOAD QR"}
+              <input
+                type="file"
+                accept="image/*"
+                className="sr-only"
+                disabled={isUploadingQR}
+                onChange={(e) => {
+                  const file = e.target.files?.[0];
+                  if (file) void handleQRUpload(file);
+                }}
+              />
+            </label>
+
+            {billData.qrUrl && (
+              <a
+                href={billData.qrUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="w-full border border-ink text-ink h-10 uppercase text-sm tracking-widest mb-2 flex items-center justify-center"
+              >
+                VIEW QR
               </a>
             )}
 

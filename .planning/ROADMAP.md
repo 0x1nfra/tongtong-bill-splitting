@@ -163,3 +163,33 @@
 | 2. Item Claiming | 4/4 | Complete   | 2026-05-24 |
 | 3. TongTong Aesthetic | 4/4 | Complete   | 2026-05-25 |
 | 4. Bonus Features | 5/5 | Complete   | 2026-05-29 |
+
+### Phase 5: bonus additions: Departure Mono headings + landing page enhancements (benefits, how-it-works guide)
+
+**Goal:** Apply Departure Mono to all page-level h1 elements, add landing page benefits and how-it-works sections, add receipt upload to create flow, and add QR upload quick action to dashboard
+**Requirements:** TBD (bonus additions — no formal requirement IDs)
+**Depends on:** Phase 4
+**Plans:** 4/4 plans executed
+
+Plans:
+- [x] 05-01-PLAN.md — Wave 0: Fix broken landing page tests + create RED stubs for benefits/how-it-works + updateQR boundary tests
+- [x] 05-02-PLAN.md — Wave 1: Convex backend — updateQR mutation + createBill receiptStorageId extension
+- [x] 05-03-PLAN.md — Wave 1: Landing page benefits + how-it-works sections + member view h1 Departure Mono (parallel with 05-02)
+- [x] 05-04-PLAN.md — Wave 2: Create page h1 + receipt upload flow + dashboard h1 + QR upload quick action
+
+**Wave 0**
+- [x] 05-01-PLAN.md — Fix broken heading tests in landingPage.test.tsx; add RED stubs for benefits and how-it-works; create updateQR.test.ts with pure predicate boundary tests
+
+**Wave 1** *(05-02 and 05-03 run in parallel — both blocked on Wave 0)*
+- [x] 05-02-PLAN.md — convex/bills.ts: updateQR public mutation (mirrors setBillReceipt) + createBill args/insert extended with receiptStorageId
+- [x] 05-03-PLAN.md — src/app/page.tsx benefits + how-it-works sections (D-04–D-09) + src/app/c/[billId]/page.tsx h1 style props (D-01, D-02)
+
+**Wave 2** *(blocked on Wave 1)*
+- [ ] 05-04-PLAN.md — src/app/create/page.tsx h1 style + receipt upload above items + receiptStorageId state/arg; src/app/dashboard/[billId]/page.tsx h1 style on all 3 h1s + updateQR useMutation + handleQRUpload + UPLOAD QR/REPLACE QR button
+
+**Cross-cutting constraints:**
+- Departure Mono MUST use style={{ fontFamily: "var(--font-display)" }} — never a Tailwind class (D-02)
+- Red (text-stamp) MUST NOT appear in benefits or how-it-works section copy (color constraint)
+- receiptStorageId state in create page MUST be distinct from qrStorageId state — never shared setter (Pitfall 4)
+- updateQR must be a public mutation — NOT internalMutation (RESEARCH anti-pattern)
+- Benefits .chit and how-it-works .chit MAY have one rotation (UI-09) — never both rotation AND crease

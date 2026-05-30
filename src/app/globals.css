@@ -84,6 +84,11 @@ body::before {
   }
 }
 
+/* Heading font */
+h1, h2, h3 {
+  font-family: var(--font-display);
+}
+
 /* Dot-leader utility */
 .dot-leader {
   display: flex;

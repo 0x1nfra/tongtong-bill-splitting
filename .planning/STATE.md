@@ -2,30 +2,30 @@
 gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
-current_phase: 04
-status: executing
-stopped_at: Phase 4 context gathered
-last_updated: "2026-05-29T09:07:58.134Z"
+current_phase: 05
+status: complete
+stopped_at: Phase 5 complete — all 4 plans executed
+last_updated: "2026-05-30T00:00:00.000Z"
 progress:
-  total_phases: 5
-  completed_phases: 5
-  total_plans: 23
-  completed_plans: 23
+  total_phases: 6
+  completed_phases: 6
+  total_plans: 27
+  completed_plans: 27
   percent: 100
 ---
 
 # TongTong — Project State
 
 **Initialized:** 2026-05-22
-**Current Phase:** 04
-**Status:** Ready to execute
+**Current Phase:** 05
+**Status:** Executing Phase 05
 
 ## Project Reference
 
 See: .planning/PROJECT.md
 
 **Core value:** Share a link — friends claim items, see what they owe, confirm payment. Organizer stops chasing.
-**Current focus:** Phase 04 — bonus-features
+**Current focus:** Phase 05 — bonus-additions-departure-mono-headings-landing-page-enhance
 
 ## Roadmap Summary
 
@@ -35,8 +35,8 @@ See: .planning/PROJECT.md
 
 ## Current Position
 
-Phase: 04 (bonus-features) — EXECUTING
-Plan: 2 of 5
+Phase: 05 (bonus-additions-departure-mono-headings-landing-page-enhance) — EXECUTING
+Plan: 1 of 4
 **Phase:** 2 — Item Claiming
 **Plans:** 0/? plans complete
 **Progress:** [██████████] 100%
@@ -53,6 +53,7 @@ Plan: 2 of 5
 - Phase 01.1 inserted after Phase 1: Tech debt: DASH-04 label fix + calculateTotals extraction (URGENT)
 - Phase 4 added: Bonus Features (BONUS-03 auto-archive, BONUS-04 reminder nudges, BONUS-05 Google OAuth, BONUS-06 dark mode)
 - Phase 4 plan 05 added (2026-05-29): dashboard PEOPLE tab from claims + collapsible items toggle + remove slanted card rotations
+- Phase 5 added: bonus additions — Departure Mono headings + landing page enhancements (benefits, how-it-works guide)
 
 ### Decisions
 
@@ -83,6 +84,6 @@ Plan: 2 of 5
 
 ## Session Continuity
 
-Last session: 2026-05-29T09:07:58.127Z
-Stopped at: Phase 4 context gathered
-Resume file: None
+Last session: 2026-05-29T15:39:10.173Z
+Stopped at: Phase 5 UI-SPEC approved
+Resume file: .planning/phases/05-bonus-additions-departure-mono-headings-landing-page-enhance/05-UI-SPEC.md

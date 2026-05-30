@@ -265,7 +265,7 @@ export default function MemberViewPage({
               </span>
             </div>
           </div>
-          <h1 className="text-xl font-bold uppercase text-ink tracking-widest mb-3" style={{ fontFamily: "var(--font-display)" }}>
+          <h1 className="text-xl font-bold uppercase text-ink tracking-widest mb-3">
             THIS CHIT HAS BEEN TORN UP
           </h1>
           <p className="text-sm text-ink opacity-60">
@@ -327,7 +327,7 @@ export default function MemberViewPage({
     <main className="min-h-screen bg-paper-table">
       <div className="max-w-[480px] mx-auto px-4 py-6">
         {/* Bill header */}
-        <h1 className="text-xl font-bold uppercase text-ink tracking-widest mb-1" style={{ fontFamily: "var(--font-display)" }}>
+        <h1 className="text-xl font-bold uppercase text-ink tracking-widest mb-1">
           {bill.title}
         </h1>
         <p className="text-xs text-ink opacity-60 mb-6 uppercase tracking-widest">
