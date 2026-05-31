@@ -52,7 +52,7 @@ export default function Home() {
 
       <div className="perforation my-6" />
 
-      <div className="chit p-6 w-full max-w-[320px] mx-auto rotate-[-0.2deg]">
+      <div className="chit p-6 w-full max-w-[320px] mx-auto">
         <p
           className="text-xs uppercase tracking-widest text-ink-muted mb-3"
           style={{ fontFamily: "var(--font-display)" }}

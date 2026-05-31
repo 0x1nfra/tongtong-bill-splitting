@@ -40,3 +40,8 @@ yarn-error.log*
 *.tsbuildinfo
 next-env.d.ts
 .planning/
+
+# agent
+.claude
+.impeccable.*
+.impeccable

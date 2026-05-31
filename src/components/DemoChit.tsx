@@ -13,9 +13,9 @@ const grandTotal = DEMO_ITEMS.reduce(
 export function DemoChit() {
   return (
     <div
-      className="chit p-6 w-full max-w-[320px] mx-auto rotate-[0.4deg]"
+      className="chit p-6 w-full max-w-[320px] mx-auto"
     >
-      <p className="text-xs font-bold uppercase tracking-widest text-ink-muted mb-3">
+      <p className="text-xs font-bold uppercase tracking-widest text-ink-muted mb-3" style={{ fontFamily: 'var(--font-display)' }}>
         #TT-DEMO
       </p>
 
