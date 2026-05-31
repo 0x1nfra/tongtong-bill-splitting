@@ -1,9 +1,27 @@
 import Link from "next/link";
 import { DemoChit } from "@/components/DemoChit";
 
+const HOW_IT_WORKS = [
+  {
+    num: "01.",
+    title: "CREATE YOUR BILL",
+    benefit: "Add items, upload QR. Takes 2 minutes, not 20.",
+  },
+  {
+    num: "02.",
+    title: "SHARE THE LINK",
+    benefit: "Everyone claims what they ordered. No confusion.",
+  },
+  {
+    num: "03.",
+    title: "COLLECT PAYMENT",
+    benefit: "Confirm via DuitNow. No more chasing.",
+  },
+] as const;
+
 export default function Home() {
   return (
-    <main className="min-h-screen flex flex-col items-center justify-center bg-paper-table px-4 py-12">
+    <main className="min-h-screen flex flex-col items-center bg-paper-table px-4 py-12">
       <svg
         viewBox="0 0 168 36"
         width="168"
@@ -42,15 +60,7 @@ export default function Home() {
 
       <DemoChit />
 
-      <p
-        className="mt-6 text-sm text-ink-muted text-center max-w-[280px]"
-        style={{ fontFamily: "var(--font-handwriting)" }}
-      >
-        Eh ya, no more &ldquo;you transfer ah?&rdquo; drama lah. One bill.
-        Everyone tandakan. Beres.
-      </p>
-
-      <div className="perforation my-6" />
+      <div className="perforation my-6 w-full max-w-[320px]" />
 
       <div className="chit p-6 w-full max-w-[320px] mx-auto">
         <p
@@ -59,64 +69,29 @@ export default function Home() {
         >
           HOW IT WORKS
         </p>
-        <div className="flex gap-3 items-start py-2">
-          <span
-            className="text-2xl font-bold text-pen shrink-0"
-            style={{ fontFamily: "var(--font-display)" }}
-          >
-            01.
-          </span>
-          <div>
-            <p className="text-sm text-ink font-bold uppercase">
-              Create your bill
-            </p>
-            <p className="text-xs text-ink-muted">
-              Add items, upload QR. Takes 2 minutes.
-            </p>
-          </div>
-        </div>
-        <hr className="rule-hairline my-1" />
-        <div className="flex gap-3 items-start py-2">
-          <span
-            className="text-2xl font-bold text-pen shrink-0"
-            style={{ fontFamily: "var(--font-display)" }}
-          >
-            02.
-          </span>
-          <div>
-            <p className="text-sm text-ink font-bold uppercase">
-              Share the link
-            </p>
-            <p className="text-xs text-ink-muted">
-              Everyone claims what they ordered lah.
-            </p>
-          </div>
-        </div>
-        <hr className="rule-hairline my-1" />
-        <div className="flex gap-3 items-start py-2">
-          <span
-            className="text-2xl font-bold text-pen shrink-0"
-            style={{ fontFamily: "var(--font-display)" }}
-          >
-            03.
-          </span>
-          <div>
-            <p className="text-sm text-ink font-bold uppercase">
-              Stamp settled
-            </p>
-            <p className="text-xs text-ink-muted">
-              Confirm payments. No more chasing.
-            </p>
-          </div>
-        </div>
-      </div>
 
-      <Link
-        href="/create"
-        className="mt-6 block w-full max-w-[320px] border border-pen text-pen uppercase font-bold text-xs tracking-widest min-h-[48px] flex items-center justify-center"
-      >
-        START NEW BILL
-      </Link>
+        {HOW_IT_WORKS.map((step, i) => (
+          <div key={step.num}>
+            <div className="flex gap-3 items-start py-2">
+              <span
+                className="text-2xl font-bold text-pen shrink-0"
+                style={{ fontFamily: "var(--font-display)" }}
+              >
+                {step.num}
+              </span>
+              <div>
+                <p className="text-sm text-ink font-bold uppercase">
+                  {step.title}
+                </p>
+                <p className="text-xs text-ink-muted">{step.benefit}</p>
+              </div>
+            </div>
+            {i < HOW_IT_WORKS.length - 1 && (
+              <hr className="rule-hairline my-1" />
+            )}
+          </div>
+        ))}
+      </div>
     </main>
   );
 }

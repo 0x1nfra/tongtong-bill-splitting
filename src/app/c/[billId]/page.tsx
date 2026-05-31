@@ -343,7 +343,7 @@ export default function MemberViewPage({
             <button
               type="button"
               onClick={() => setReceiptLightboxOpen(true)}
-              className="mb-3 w-full flex items-center gap-3 border border-ink bg-paper-chit px-3 py-2 text-left hover:bg-paper-chit/70 transition-colors"
+              className="mb-3 w-full flex items-center gap-3 border border-ink bg-paper-chit px-3 py-2 text-left hover:bg-paper-chit/70 transition-colors cursor-pointer"
               aria-label="View receipt"
             >
               {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -377,7 +377,7 @@ export default function MemberViewPage({
                   <button
                     type="button"
                     onClick={() => setReceiptLightboxOpen(false)}
-                    className="absolute -top-8 right-0 text-white text-xs uppercase tracking-widest font-bold"
+                    className="absolute -top-8 right-0 text-white text-xs uppercase tracking-widest font-bold cursor-pointer"
                     aria-label="Close receipt"
                   >
                     CLOSE ✕
@@ -528,7 +528,7 @@ export default function MemberViewPage({
                       <button
                         type="button"
                         onClick={() => handleNameSubmit(item._id)}
-                        className="bg-pen text-white text-xs uppercase font-bold tracking-widest px-3 py-2 shrink-0 min-h-[44px]"
+                        className="bg-pen text-white text-xs uppercase font-bold tracking-widest px-3 py-2 shrink-0 min-h-[44px] cursor-pointer"
                       >
                         CLAIM
                       </button>
@@ -667,7 +667,7 @@ export default function MemberViewPage({
                     type="button"
                     onClick={handlePay}
                     disabled={isButtonDisabled}
-                    className="w-full h-12 bg-pen text-white uppercase font-bold text-sm tracking-widest flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="w-full h-12 bg-pen text-white uppercase font-bold text-sm tracking-widest flex items-center justify-center cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     I&apos;VE PAID
                   </button>

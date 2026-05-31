@@ -54,6 +54,14 @@ export default function RootLayout({
         <ThemeProvider>
           <ThemeToggle />
           <ConvexClientProvider>{children}</ConvexClientProvider>
+          <footer className="py-4 text-center">
+            <p
+              className="text-[10px] uppercase tracking-widest text-ink-muted"
+              style={{ fontFamily: "var(--font-display)" }}
+            >
+              POWERED BY VESSL TECH
+            </p>
+          </footer>
         </ThemeProvider>
       </body>
     </html>

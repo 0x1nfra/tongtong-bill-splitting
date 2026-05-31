@@ -224,7 +224,7 @@ export default function CreatePage() {
           <button
             type="button"
             onClick={addItem}
-            className="mt-3 w-full h-11 border border-ink text-ink uppercase text-sm font-medium hover:opacity-70 transition-opacity"
+            className="mt-3 w-full h-11 border border-ink text-ink uppercase text-sm font-medium hover:opacity-70 transition-opacity cursor-pointer"
           >
             + ADD ITEM
           </button>
@@ -295,7 +295,7 @@ export default function CreatePage() {
             type="button"
             onClick={handleGenerate}
             disabled={isGenerateDisabled}
-            className="w-full h-12 bg-pen text-white uppercase font-bold text-sm tracking-widest flex items-center justify-center transition-opacity disabled:opacity-50 disabled:cursor-not-allowed"
+            className="w-full h-12 bg-pen text-white uppercase font-bold text-sm tracking-widest flex items-center justify-center transition-opacity cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {isSubmitting ? "GENERATING..." : "GENERATE LINK →"}
           </button>

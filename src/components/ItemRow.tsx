@@ -56,7 +56,7 @@ export function ItemRow({ item, onUpdate, onDelete }: ItemRowProps) {
       <button
         type="button"
         onClick={() => onDelete(item.id)}
-        className="flex items-center justify-center min-w-[44px] min-h-[44px] text-ink text-lg font-bold hover:opacity-60 transition-opacity"
+        className="flex items-center justify-center min-w-[44px] min-h-[44px] text-ink text-lg font-bold hover:opacity-60 transition-opacity cursor-pointer"
         aria-label="Delete item"
       >
         ×
