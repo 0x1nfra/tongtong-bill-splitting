@@ -133,66 +133,79 @@ export default function CreatePage() {
 
   return (
     <main className="min-h-screen bg-paper-table">
-      <div className="max-w-[480px] mx-auto px-4 py-8">
-        {/* Page heading */}
-        <h1 className="text-2xl font-bold uppercase text-ink tracking-widest mb-6">
-          CREATE NEW BILL
-        </h1>
+      <div className="max-w-[480px] mx-auto px-4 py-6">
+        <div className="chit p-6">
 
-        {/* Bill details section */}
-        <div className="chit p-4 mb-4">
-          <div className="space-y-4">
-            {/* Bill title */}
+          {/* HEADER ZONE */}
+          <p
+            className="text-[10px] font-bold tracking-widest text-ink-muted mb-1"
+            style={{ fontFamily: "var(--font-display)" }}
+          >
+            tongtong.
+          </p>
+          <h1
+            className="text-sm font-bold uppercase text-ink tracking-wide"
+            style={{ fontFamily: "var(--font-display)" }}
+          >
+            New Bill
+          </h1>
+
+          <div className="perforation my-4" />
+
+          {/* BILL DETAILS ZONE */}
+          <p
+            className="text-xs font-bold uppercase text-ink-muted tracking-widest mb-3"
+            style={{ fontFamily: "var(--font-display)" }}
+          >
+            BILL DETAILS
+          </p>
+          <div className="space-y-3">
             <div className="flex flex-col gap-1">
-              <label className="text-xs text-ink">
-                Bill title
+              <label className="text-[10px] uppercase tracking-widest text-ink-muted">
+                Title
               </label>
               <input
                 type="text"
                 value={title}
                 onChange={(e) => setTitle(e.target.value)}
                 placeholder="e.g. Team Lunch"
-                className="w-full border border-ink bg-paper-chit px-3 py-2 text-ink text-sm"
+                className="w-full border border-ink bg-paper-chit px-3 py-2 text-ink text-sm focus:outline-none focus-visible:outline-2 focus-visible:outline-pen focus-visible:outline-offset-2"
               />
             </div>
-
-            {/* Venue / restaurant name (optional) */}
             <div className="flex flex-col gap-1">
-              <label className="text-xs text-ink">
-                Restaurant / venue
+              <label className="text-[10px] uppercase tracking-widest text-ink-muted">
+                Venue
               </label>
               <input
                 type="text"
                 value={venueName}
                 onChange={(e) => setVenueName(e.target.value)}
                 placeholder="e.g. Pak Mat Nasi Lemak"
-                className="w-full border border-ink bg-paper-chit px-3 py-2 text-ink text-sm"
+                className="w-full border border-ink bg-paper-chit px-3 py-2 text-ink text-sm focus:outline-none focus-visible:outline-2 focus-visible:outline-pen focus-visible:outline-offset-2"
               />
             </div>
-
-            {/* Date (optional) */}
             <div className="flex flex-col gap-1">
-              <label className="text-xs text-ink">
+              <label className="text-[10px] uppercase tracking-widest text-ink-muted">
                 Date
               </label>
               <input
                 type="date"
                 value={billDate}
                 onChange={(e) => setBillDate(e.target.value)}
-                className="w-full border border-ink bg-paper-chit px-3 py-2 text-ink text-sm"
+                className="w-full border border-ink bg-paper-chit px-3 py-2 text-ink text-sm focus:outline-none focus-visible:outline-2 focus-visible:outline-pen focus-visible:outline-offset-2"
               />
             </div>
           </div>
-        </div>
-        <div className="perforation my-4" />
 
-        {/* Items section */}
-        <div className="chit p-4 mb-4">
-          <h2 className="uppercase text-sm font-bold text-ink mb-2">
-            Items
-          </h2>
+          <div className="perforation my-4" />
 
-          {/* Item list */}
+          {/* ITEMS ZONE */}
+          <p
+            className="text-xs font-bold uppercase text-ink-muted tracking-widest mb-3"
+            style={{ fontFamily: "var(--font-display)" }}
+          >
+            ITEMS
+          </p>
           {items.length === 0 ? (
             <p className="text-ink-muted text-sm text-center py-4">
               Belum ada barang lagi — tekan + untuk tambah
@@ -209,8 +222,6 @@ export default function CreatePage() {
               ))}
             </div>
           )}
-
-          {/* ADD ITEM button — neutral styling, NOT blue (blue is reserved for primary CTAs) */}
           <button
             type="button"
             onClick={addItem}
@@ -218,11 +229,16 @@ export default function CreatePage() {
           >
             + ADD ITEM
           </button>
-        </div>
-        <div className="perforation my-4" />
 
-        {/* Tax toggles + running totals — wrapped in chit to stay within receipt metaphor */}
-        <div className="chit p-4 mt-4">
+          <div className="perforation my-4" />
+
+          {/* TOTALS ZONE */}
+          <p
+            className="text-xs font-bold uppercase text-ink-muted tracking-widest mb-3"
+            style={{ fontFamily: "var(--font-display)" }}
+          >
+            TOTALS
+          </p>
           <div className="space-y-3 mb-4">
             <label className="flex items-center gap-3 cursor-pointer">
               <input
@@ -231,9 +247,7 @@ export default function CreatePage() {
                 onChange={(e) => setApplyServiceCharge(e.target.checked)}
                 className="w-4 h-4 accent-ink"
               />
-              <span className="text-sm text-ink">
-                Service charge (10%)
-              </span>
+              <span className="text-sm text-ink">Service Charge (10%)</span>
             </label>
             <label className="flex items-center gap-3 cursor-pointer">
               <input
@@ -242,63 +256,62 @@ export default function CreatePage() {
                 onChange={(e) => setApplySST(e.target.checked)}
                 className="w-4 h-4 accent-ink"
               />
-              <span className="text-sm text-ink">
-                SST (6%)
-              </span>
+              <span className="text-sm text-ink">SST (6%)</span>
             </label>
           </div>
-
           <RunningTotal
             items={items}
             applySST={applySST}
             applyServiceCharge={applyServiceCharge}
           />
-        </div>
 
-        {/* Receipt photo upload — BILL-04: optional, after items so user builds bill first */}
-        <div className="mt-6 mb-4">
-          <label className="text-xs text-ink block mb-2">
-            Receipt photo (optional)
-          </label>
-          <QRUpload onUpload={(id) => setReceiptStorageId(id)} />
-        </div>
+          <div className="perforation my-4" />
 
-        {/* DuitNow QR upload — BILL-04: optional QR image for payment */}
-        <div className="mt-4">
-          <label className="text-xs text-ink block mb-2">
-            DuitNow QR (optional)
-          </label>
-          <QRUpload onUpload={(id) => setQrStorageId(id)} />
-        </div>
+          {/* ATTACHMENTS ZONE */}
+          <p
+            className="text-xs font-bold uppercase text-ink-muted tracking-widest mb-3"
+            style={{ fontFamily: "var(--font-display)" }}
+          >
+            ATTACHMENTS
+          </p>
+          <div className="space-y-4">
+            <div>
+              <p className="text-[10px] uppercase tracking-widest text-ink-muted mb-2">
+                Receipt photo (optional)
+              </p>
+              <QRUpload onUpload={(id) => setReceiptStorageId(id)} />
+            </div>
+            <div>
+              <p className="text-[10px] uppercase tracking-widest text-ink-muted mb-2">
+                DuitNow QR (optional)
+              </p>
+              <QRUpload onUpload={(id) => setQrStorageId(id)} />
+            </div>
+          </div>
 
-        {/* GENERATE LINK button — primary CTA, blue bg, disabled when no items */}
-        <div className="mt-6">
+          <div className="perforation my-4" />
+
+          {/* GENERATE LINK — primary CTA, blue, disabled when no items */}
           <button
             type="button"
             onClick={handleGenerate}
             disabled={isGenerateDisabled}
-            className={`w-full h-12 bg-pen text-white uppercase font-bold text-base transition-opacity ${
-              isGenerateDisabled
-                ? "opacity-50 cursor-not-allowed pointer-events-none"
-                : "hover:opacity-90 cursor-pointer"
-            }`}
+            className="w-full h-12 bg-pen text-white uppercase font-bold text-sm tracking-widest flex items-center justify-center transition-opacity disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {isSubmitting ? "GENERATING..." : "GENERATE LINK →"}
           </button>
 
-          {/* Inline validation message when no items */}
           {items.length === 0 && (
             <p className="text-warning font-bold text-xs text-center mt-2">
               Kosong lah — tambah barang dulu baru boleh share
             </p>
           )}
-
-          {/* WR-04: inline validation message for invalid items */}
           {validationError && (
             <p className="text-warning font-bold text-xs text-center mt-2">
               {validationError}
             </p>
           )}
+
         </div>
       </div>
     </main>

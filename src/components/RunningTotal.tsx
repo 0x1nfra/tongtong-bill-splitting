@@ -43,32 +43,28 @@ export function RunningTotal({
   );
 
   return (
-    <div className="border-t border-ink pt-4 mt-4 space-y-2">
-      {/* Subtotal row */}
-      <div className="flex justify-between items-center text-sm text-ink">
-        <span className="uppercase">Subtotal</span>
+    <div>
+      <div className="dot-leader flex justify-between text-sm text-ink mb-1">
+        <span className="text-ink-muted">Subtotal</span>
         <span>RM{(subtotal / 100).toFixed(2)}</span>
       </div>
 
-      {/* Service charge row — only shown when enabled */}
       {applyServiceCharge && (
-        <div className="flex justify-between items-center text-sm text-ink">
-          <span className="uppercase">Service Charge (10%)</span>
+        <div className="dot-leader flex justify-between text-sm text-ink mb-1">
+          <span className="text-ink-muted">Service Charge (10%)</span>
           <span>RM{(serviceCharge / 100).toFixed(2)}</span>
         </div>
       )}
 
-      {/* SST row — only shown when enabled */}
       {applySST && (
-        <div className="flex justify-between items-center text-sm text-ink">
-          <span className="uppercase">SST (6%)</span>
+        <div className="dot-leader flex justify-between text-sm text-ink mb-1">
+          <span className="text-ink-muted">SST (6%)</span>
           <span>RM{(sst / 100).toFixed(2)}</span>
         </div>
       )}
 
-      {/* Grand total row */}
-      <div className="flex justify-between items-center text-lg font-bold text-ink pt-1 border-t border-ink">
-        <span className="uppercase">Total</span>
+      <div className="dot-leader flex justify-between font-bold text-base text-ink border-t border-ink mt-2 pt-2">
+        <span className="uppercase tracking-widest">GRAND TOTAL</span>
         <span>RM{(grandTotal / 100).toFixed(2)}</span>
       </div>
     </div>

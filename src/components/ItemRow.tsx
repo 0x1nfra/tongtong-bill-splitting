@@ -22,7 +22,7 @@ export function ItemRow({ item, onUpdate, onDelete }: ItemRowProps) {
         placeholder="Item name"
         value={item.name}
         onChange={(e) => onUpdate(item.id, "name", e.target.value)}
-        className="flex-1 border border-ink rounded px-2 py-1 bg-paper-chit text-ink text-sm"
+        className="flex-1 border border-ink px-2 py-1 bg-paper-chit text-ink text-sm"
       />
 
       {/* Price with RM prefix */}
@@ -37,7 +37,7 @@ export function ItemRow({ item, onUpdate, onDelete }: ItemRowProps) {
             const raw = e.target.value.replace(/[^0-9.]/g, "");
             onUpdate(item.id, "price", raw);
           }}
-          className="w-20 border border-ink rounded px-2 py-1 bg-paper-chit text-ink text-sm"
+          className="w-20 border border-ink px-2 py-1 bg-paper-chit text-ink text-sm"
         />
       </div>
 
@@ -49,7 +49,7 @@ export function ItemRow({ item, onUpdate, onDelete }: ItemRowProps) {
         onChange={(e) =>
           onUpdate(item.id, "quantity", parseInt(e.target.value) || 1)
         }
-        className="w-12 border border-ink rounded px-2 py-1 bg-paper-chit text-ink text-sm text-center"
+        className="w-12 border border-ink px-2 py-1 bg-paper-chit text-ink text-sm text-center"
       />
 
       {/* Delete button — min 44×44px touch target, NOT red (red reserved for stamp/❋ only) */}
