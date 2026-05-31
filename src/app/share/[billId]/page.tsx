@@ -61,12 +61,12 @@ export default function SharePage({
   const whatsAppUrl = `https://wa.me/?text=${encodeURIComponent(manglishMessage)}`;
 
   return (
-    <main className="min-h-screen bg-paper-table">
+    <main id="main-content" className="min-h-screen bg-paper-table">
       <div className="max-w-[480px] mx-auto px-4 py-6">
 
         {/* PAGE HEADER — on table surface */}
         <p
-          className="text-[10px] font-bold tracking-widest text-ink-muted mb-0.5"
+          className="text-[0.625rem] font-bold tracking-widest text-ink-muted mb-0.5"
           style={{ fontFamily: "var(--font-display)" }}
         >
           tongtong.
@@ -93,7 +93,7 @@ export default function SharePage({
             </p>
           )}
           <p
-            className="text-[10px] text-ink-muted mt-0.5"
+            className="text-[0.625rem] text-ink-muted mt-0.5"
             style={{ fontFamily: "var(--font-display)" }}
           >
             {displayCode}

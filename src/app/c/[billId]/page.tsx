@@ -1,6 +1,6 @@
 "use client";
 
-import { use, useEffect, useState } from "react";
+import { use, useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useQuery, useMutation } from "convex/react";
 import { api } from "../../../../convex/_generated/api";
@@ -70,6 +70,19 @@ export default function MemberViewPage({
   const [pendingItems, setPendingItems] = useState<Set<string>>(new Set());
 
   const [receiptLightboxOpen, setReceiptLightboxOpen] = useState(false);
+  const receiptTriggerRef = useRef<HTMLButtonElement>(null);
+
+  useEffect(() => {
+    if (!receiptLightboxOpen) return;
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") {
+        setReceiptLightboxOpen(false);
+        receiptTriggerRef.current?.focus();
+      }
+    };
+    document.addEventListener("keydown", handleKeyDown);
+    return () => document.removeEventListener("keydown", handleKeyDown);
+  }, [receiptLightboxOpen]);
 
   // T-05-05: read organizer secret to check if this device owns this specific bill
   const [organizerSecret, setOrganizerSecret] = useState<string | null>(null);
@@ -320,12 +333,12 @@ export default function MemberViewPage({
     payment?.status === "settled";
 
   return (
-    <main className="min-h-screen bg-paper-table">
+    <main id="main-content" className="min-h-screen bg-paper-table">
       <div className="max-w-[480px] mx-auto px-4 py-6">
 
         {/* PAGE HEADER — on table surface */}
         <p
-          className="text-[10px] font-bold tracking-widest text-ink-muted mb-0.5"
+          className="text-[0.625rem] font-bold tracking-widest text-ink-muted mb-0.5"
           style={{ fontFamily: "var(--font-display)" }}
         >
           tongtong.
@@ -341,10 +354,12 @@ export default function MemberViewPage({
         {bill.receiptUrl && (
           <>
             <button
+              ref={receiptTriggerRef}
               type="button"
               onClick={() => setReceiptLightboxOpen(true)}
               className="mb-3 w-full flex items-center gap-3 border border-ink bg-paper-chit px-3 py-2 text-left hover:bg-paper-chit/70 transition-colors cursor-pointer"
               aria-label="View receipt"
+              aria-haspopup="dialog"
             >
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
@@ -356,7 +371,7 @@ export default function MemberViewPage({
                 className="w-10 h-14 object-cover border border-ink shrink-0"
               />
               <div>
-                <p className="text-[10px] font-bold uppercase tracking-widest text-ink-muted">
+                <p className="text-[0.625rem] font-bold uppercase tracking-widest text-ink-muted">
                   Receipt attached
                 </p>
                 <p className="text-xs text-ink uppercase tracking-widest">
@@ -367,20 +382,31 @@ export default function MemberViewPage({
 
             {receiptLightboxOpen && (
               <div
-                className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 px-4"
-                onClick={() => setReceiptLightboxOpen(false)}
+                role="dialog"
+                aria-modal="true"
+                aria-label="Receipt"
+                className="fixed inset-0 z-[10000] flex items-center justify-center bg-black/80 px-4"
+                onClick={() => {
+                  setReceiptLightboxOpen(false);
+                  receiptTriggerRef.current?.focus();
+                }}
               >
                 <div
                   className="relative max-w-[480px] w-full"
                   onClick={(e) => e.stopPropagation()}
                 >
                   <button
+                    // eslint-disable-next-line jsx-a11y/no-autofocus
+                    autoFocus
                     type="button"
-                    onClick={() => setReceiptLightboxOpen(false)}
+                    onClick={() => {
+                      setReceiptLightboxOpen(false);
+                      receiptTriggerRef.current?.focus();
+                    }}
                     className="absolute -top-8 right-0 text-white text-xs uppercase tracking-widest font-bold cursor-pointer"
                     aria-label="Close receipt"
                   >
-                    CLOSE ✕
+                    <span aria-hidden="true">CLOSE ✕</span>
                   </button>
                   {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img
@@ -411,7 +437,7 @@ export default function MemberViewPage({
               {bill.venueName}
             </p>
           )}
-          <p className="text-[10px] text-ink-muted uppercase tracking-widest">
+          <p className="text-[0.625rem] text-ink-muted uppercase tracking-widest">
             {"#TT-" + billId.slice(0, 4).toUpperCase()}
           </p>
 
@@ -456,7 +482,7 @@ export default function MemberViewPage({
                   >
                     {/* Left side: unclaimed indicator + item name + qty */}
                     <span
-                      className={`flex items-center gap-1 text-sm text-ink${isMine ? " font-bold" : ""}`}
+                      className={`flex items-center gap-1 text-sm text-ink min-w-0${isMine ? " font-bold" : ""}`}
                     >
                       {totalClaimants === 0 ? (
                         <span className="text-warning mr-0.5">❋</span>
@@ -491,14 +517,9 @@ export default function MemberViewPage({
                     </div>
                   ) : null}
 
-                  {/* Inline "CLAIM" prompt — unclaimed and not expanded (D-10, CLAIM-05) */}
+                  {/* Inline "CLAIM" hint — unclaimed and not expanded; tapping handled by button above */}
                   {totalClaimants === 0 && !isExpanded ? (
-                    <p
-                      className="text-xs text-warning uppercase tracking-widest pb-1 cursor-pointer"
-                      onClick={() =>
-                        handleItemTap(item._id, myClaimOnItem?._id)
-                      }
-                    >
+                    <p className="text-xs text-warning uppercase tracking-widest pb-1" aria-hidden="true">
                       CLAIM
                     </p>
                   ) : null}
@@ -647,10 +668,9 @@ export default function MemberViewPage({
                     {/* eslint-disable-next-line @next/next/no-img-element */}
                     <img
                       src={bill.qrUrl}
-                      alt="DuitNow QR"
+                      alt="DuitNow QR code for payment"
                       width={200}
                       height={200}
-                      loading="lazy"
                       className="w-[200px] h-[200px] object-contain mx-auto mb-4"
                     />
                   </>
@@ -675,7 +695,7 @@ export default function MemberViewPage({
 
                 {paymentStatus === "rejected" ? (
                   <p className="text-xs text-ink-muted uppercase tracking-widest mt-2">
-                    Tak confirm lah. Cuba lagi k?
+                    <span lang="ms">Tak confirm lah. Cuba lagi k?</span>
                   </p>
                 ) : null}
               </div>

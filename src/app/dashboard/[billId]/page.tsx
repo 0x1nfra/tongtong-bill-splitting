@@ -22,6 +22,7 @@ export default function DashboardPage({
   const [showCloseConfirm, setShowCloseConfirm] = useState(false);
   const [isUploadingReceipt, setIsUploadingReceipt] = useState(false);
   const [isUploadingQR, setIsUploadingQR] = useState(false);
+  const [closeBillMsg, setCloseBillMsg] = useState<string | null>(null);
 
   useEffect(() => {
     const stored = localStorage.getItem("tongtong_organizer_secret");
@@ -70,7 +71,7 @@ export default function DashboardPage({
   if (organizerSecret === null) {
     return (
       <main className="min-h-screen bg-paper-table flex items-center justify-center">
-        <div className="chit max-w-[480px] w-full mx-4 p-4 animate-pulse">
+        <div role="status" aria-label="Loading dashboard" className="chit max-w-[480px] w-full mx-4 p-4 animate-pulse">
           <div className="h-4 bg-ink opacity-10 mb-3 w-1/3" />
           <div className="h-3 bg-ink opacity-10 mb-2 w-full" />
           <div className="h-3 bg-ink opacity-10 mb-2 w-4/5" />
@@ -85,7 +86,7 @@ export default function DashboardPage({
     return (
       <main className="min-h-screen bg-paper-table flex items-center justify-center">
         <div className="max-w-[480px] mx-auto px-4 py-12 text-center">
-            <h1 className="text-xl font-bold uppercase text-ink tracking-widest mb-3">
+          <h1 className="text-xl font-bold uppercase text-ink tracking-widest mb-3">
             WRONG DEVICE LAH
           </h1>
           <p className="text-sm text-ink-muted">
@@ -100,7 +101,7 @@ export default function DashboardPage({
   if (billData === undefined) {
     return (
       <main className="min-h-screen bg-paper-table flex items-center justify-center">
-        <div className="chit max-w-[480px] w-full mx-4 p-4 animate-pulse">
+        <div role="status" aria-label="Loading dashboard" className="chit max-w-[480px] w-full mx-4 p-4 animate-pulse">
           <div className="h-4 bg-ink opacity-10 mb-3 w-1/3" />
           <div className="h-3 bg-ink opacity-10 mb-2 w-full" />
           <div className="h-3 bg-ink opacity-10 mb-2 w-4/5" />
@@ -279,12 +280,56 @@ export default function DashboardPage({
     }
   }
 
+  const closeBillSection = (
+    <div className="mt-4 pt-4 border-t border-ink/20">
+      {closeBillMsg && (
+        <p role="status" className="text-xs text-warning uppercase tracking-widest mb-2">
+          {closeBillMsg}
+        </p>
+      )}
+      {!showCloseConfirm ? (
+        <button
+          type="button"
+          onClick={() => { setShowCloseConfirm(true); setCloseBillMsg(null); }}
+          className="w-full border border-stamp text-stamp h-10 uppercase text-sm tracking-widest cursor-pointer"
+        >
+          CLOSE BILL EARLY
+        </button>
+      ) : (
+        <div className="border border-stamp p-3">
+          <p className="text-xs text-stamp uppercase mb-2 font-bold">
+            Close this bill? Members will no longer be able to pay.
+          </p>
+          <div className="flex gap-2">
+            <button
+              type="button"
+              onClick={() => {
+                setCloseBillMsg("COMING SOON — close bill not yet available.");
+                setShowCloseConfirm(false);
+              }}
+              className="border border-stamp text-stamp text-xs min-h-[44px] px-3 uppercase tracking-widest cursor-pointer"
+            >
+              CLOSE BILL
+            </button>
+            <button
+              type="button"
+              onClick={() => setShowCloseConfirm(false)}
+              className="border border-ink text-ink text-xs min-h-[44px] px-3 uppercase tracking-widest cursor-pointer"
+            >
+              CANCEL
+            </button>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+
   return (
-    <main className="min-h-screen bg-paper-table">
+    <main id="main-content" className="min-h-screen bg-paper-table">
       <div className="max-w-[960px] mx-auto px-4 py-8">
         {/* PAGE HEADER */}
         <p
-          className="text-[10px] font-bold tracking-widest text-ink-muted mb-0.5"
+          className="text-[0.625rem] font-bold tracking-widest text-ink-muted mb-0.5"
           style={{ fontFamily: "var(--font-display)" }}
         >
           tongtong.
@@ -296,12 +341,12 @@ export default function DashboardPage({
           Dashboard
         </h1>
         <p
-          className="text-sm font-bold text-ink uppercase tracking-widest mb-0.5"
+          className="text-sm font-bold text-ink uppercase tracking-widest mb-0.5 break-words"
           style={{ fontFamily: "var(--font-display)" }}
         >
           {bill.title}
         </p>
-        <p className="text-[10px] text-ink-muted mb-6 uppercase tracking-widest">
+        <p className="text-[0.625rem] text-ink-muted mb-6 uppercase tracking-widest break-words">
           {bill.venueName ? `${bill.venueName} · ` : ""}{displayCode}
         </p>
 
@@ -527,42 +572,7 @@ export default function DashboardPage({
             </div>
 
             {/* CLOSE CHIT EARLY — destructive, visually separated */}
-            <div className="mt-4 pt-4 border-t border-ink/20">
-            {!showCloseConfirm ? (
-              <button
-                type="button"
-                onClick={() => setShowCloseConfirm(true)}
-                className="w-full border border-stamp text-stamp h-10 uppercase text-sm tracking-widest cursor-pointer"
-              >
-                CLOSE BILL EARLY
-              </button>
-            ) : (
-              <div className="border border-stamp p-3">
-                <p className="text-xs text-stamp uppercase mb-2 font-bold">
-                  Close this bill? Members will no longer be able to pay.
-                </p>
-                <div className="flex gap-2">
-                  <button
-                    type="button"
-                    onClick={() => {
-                      alert("Close bill feature coming soon.");
-                      setShowCloseConfirm(false);
-                    }}
-                    className="border border-stamp text-stamp text-xs h-8 px-3 uppercase tracking-widest cursor-pointer"
-                  >
-                    CLOSE BILL
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setShowCloseConfirm(false)}
-                    className="border border-ink text-ink text-xs h-8 px-3 uppercase tracking-widest cursor-pointer"
-                  >
-                    CANCEL
-                  </button>
-                </div>
-              </div>
-            )}
-            </div>
+            {closeBillSection}
           </div>
         </div>
 
@@ -632,42 +642,7 @@ export default function DashboardPage({
             )}
           </div>
 
-          <div className="mt-4 pt-4 border-t border-ink/20">
-            {!showCloseConfirm ? (
-              <button
-                type="button"
-                onClick={() => setShowCloseConfirm(true)}
-                className="w-full border border-stamp text-stamp h-10 uppercase text-sm tracking-widest cursor-pointer"
-              >
-                CLOSE BILL EARLY
-              </button>
-            ) : (
-              <div className="border border-stamp p-3">
-                <p className="text-xs text-stamp uppercase mb-2 font-bold">
-                  Close this bill? Members will no longer be able to pay.
-                </p>
-                <div className="flex gap-2">
-                  <button
-                    type="button"
-                    onClick={() => {
-                      alert("Close bill feature coming soon.");
-                      setShowCloseConfirm(false);
-                    }}
-                    className="border border-stamp text-stamp text-xs h-8 px-3 uppercase tracking-widest cursor-pointer"
-                  >
-                    CLOSE BILL
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setShowCloseConfirm(false)}
-                    className="border border-ink text-ink text-xs h-8 px-3 uppercase tracking-widest cursor-pointer"
-                  >
-                    CANCEL
-                  </button>
-                </div>
-              </div>
-            )}
-          </div>
+          {closeBillSection}
         </div>
       </div>
     </main>

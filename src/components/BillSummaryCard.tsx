@@ -36,7 +36,7 @@ export function BillSummaryCard({
         </p>
       )}
       <p
-        className="text-[10px] text-ink-muted uppercase tracking-widest mb-3"
+        className="text-[0.625rem] text-ink-muted uppercase tracking-widest mb-3"
         style={{ fontFamily: "var(--font-display)" }}
       >
         {displayCode}

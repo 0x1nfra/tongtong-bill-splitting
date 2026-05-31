@@ -27,7 +27,7 @@ export function DemoChit() {
         PELITA NASI KANDAR
       </p>
       <p
-        className="text-[10px] text-ink-muted mt-0.5"
+        className="text-[0.625rem] text-ink-muted mt-0.5"
         style={{ fontFamily: "var(--font-display)" }}
       >
         #TT-DEMO

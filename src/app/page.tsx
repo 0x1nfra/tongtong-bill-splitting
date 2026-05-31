@@ -21,7 +21,7 @@ const HOW_IT_WORKS = [
 
 export default function Home() {
   return (
-    <main className="min-h-screen flex flex-col items-center bg-paper-table px-4 py-12">
+    <main id="main-content" className="min-h-screen flex flex-col items-center bg-paper-table px-4 py-12">
       <svg
         viewBox="0 0 168 36"
         width="168"
@@ -43,7 +43,7 @@ export default function Home() {
         </text>
       </svg>
 
-      <p className="text-[10px] uppercase tracking-widest text-ink-muted mb-3">
+      <p className="text-[0.625rem] uppercase tracking-widest text-ink-muted mb-3">
         A BILL FOR EVERYONE
       </p>
 

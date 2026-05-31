@@ -19,7 +19,11 @@ export function StatusBadge({ status }: StatusBadgeProps) {
         ? "text-ink-muted"
         : "text-ink";
 
+  const displayText = status === "UNCLAIMED ❋" ? "UNCLAIMED" : status;
   return (
-    <span className={`text-xs uppercase ${colorClass}`}>{status}</span>
+    <span className={`text-xs uppercase ${colorClass}`}>
+      {displayText}
+      {status === "UNCLAIMED ❋" && <span aria-hidden="true"> ❋</span>}
+    </span>
   );
 }

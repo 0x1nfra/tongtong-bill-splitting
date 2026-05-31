@@ -48,7 +48,7 @@ export function SettleStamp({
           AWAITING CONFIRMATION
         </p>
         <p className="text-xs text-ink-muted uppercase tracking-widest mt-1">
-          Tunggu kejap — organizer tengah semak
+          <span lang="ms">Tunggu kejap — organizer tengah semak</span>
         </p>
       </div>
     );
@@ -59,7 +59,7 @@ export function SettleStamp({
   const animClass = isAnimating ? " animate-stamp-land" : "";
   const stampClassName = stampBase + animClass;
   return (
-    <div className="text-center" aria-busy={isAnimating}>
+    <div className="text-center">
       <div
         className={stampClassName}
         style={{ transform: "rotate(-6deg)", filter: "url(#ink-bleed)" }}

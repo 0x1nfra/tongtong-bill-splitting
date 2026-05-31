@@ -132,12 +132,12 @@ export default function CreatePage() {
   const isGenerateDisabled = items.length === 0 || isSubmitting;
 
   return (
-    <main className="min-h-screen bg-paper-table">
+    <main id="main-content" className="min-h-screen bg-paper-table">
       <div className="max-w-[480px] mx-auto px-4 py-6">
 
         {/* PAGE HEADER — on table surface */}
         <p
-          className="text-[10px] font-bold tracking-widest text-ink-muted mb-0.5"
+          className="text-[0.625rem] font-bold tracking-widest text-ink-muted mb-0.5"
           style={{ fontFamily: "var(--font-display)" }}
         >
           tongtong.
@@ -160,10 +160,11 @@ export default function CreatePage() {
           </p>
           <div className="space-y-3">
             <div className="flex flex-col gap-1">
-              <label className="text-[10px] uppercase tracking-widest text-ink-muted">
+              <label htmlFor="bill-title" className="text-[0.625rem] uppercase tracking-widest text-ink-muted">
                 Title
               </label>
               <input
+                id="bill-title"
                 type="text"
                 value={title}
                 onChange={(e) => setTitle(e.target.value)}
@@ -172,10 +173,11 @@ export default function CreatePage() {
               />
             </div>
             <div className="flex flex-col gap-1">
-              <label className="text-[10px] uppercase tracking-widest text-ink-muted">
+              <label htmlFor="bill-venue" className="text-[0.625rem] uppercase tracking-widest text-ink-muted">
                 Venue
               </label>
               <input
+                id="bill-venue"
                 type="text"
                 value={venueName}
                 onChange={(e) => setVenueName(e.target.value)}
@@ -184,10 +186,11 @@ export default function CreatePage() {
               />
             </div>
             <div className="flex flex-col gap-1">
-              <label className="text-[10px] uppercase tracking-widest text-ink-muted">
+              <label htmlFor="bill-date" className="text-[0.625rem] uppercase tracking-widest text-ink-muted">
                 Date
               </label>
               <input
+                id="bill-date"
                 type="date"
                 value={billDate}
                 onChange={(e) => setBillDate(e.target.value)}
@@ -207,7 +210,7 @@ export default function CreatePage() {
           </p>
           {items.length === 0 ? (
             <p className="text-ink-muted text-sm text-center py-4">
-              Belum ada barang lagi — tekan + untuk tambah
+              <span lang="ms">Belum ada barang lagi — tekan + untuk tambah</span>
             </p>
           ) : (
             <div className="space-y-1">
@@ -275,13 +278,13 @@ export default function CreatePage() {
           </p>
           <div className="space-y-4">
             <div>
-              <p className="text-[10px] uppercase tracking-widest text-ink-muted mb-2">
+              <p className="text-[0.625rem] uppercase tracking-widest text-ink-muted mb-2">
                 Receipt photo (optional)
               </p>
               <QRUpload onUpload={(id) => setReceiptStorageId(id)} />
             </div>
             <div>
-              <p className="text-[10px] uppercase tracking-widest text-ink-muted mb-2">
+              <p className="text-[0.625rem] uppercase tracking-widest text-ink-muted mb-2">
                 DuitNow QR (optional)
               </p>
               <QRUpload onUpload={(id) => setQrStorageId(id)} />
@@ -302,7 +305,7 @@ export default function CreatePage() {
 
           {items.length === 0 && (
             <p className="text-warning font-bold text-xs text-center mt-2">
-              Kosong lah — tambah barang dulu baru boleh share
+              <span lang="ms">Kosong lah — tambah barang dulu baru boleh share</span>
             </p>
           )}
           {validationError && (

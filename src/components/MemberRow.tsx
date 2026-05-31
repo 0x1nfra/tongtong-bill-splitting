@@ -32,7 +32,7 @@ export function MemberRow({
     <div className="border-b border-ink/20 py-3">
       {/* Row 1: name + amount + status badge */}
       <div className="flex items-center gap-2">
-        <span className="text-sm font-bold text-ink uppercase flex-1 min-w-0 truncate">
+        <span className="text-sm font-bold text-ink uppercase flex-1 min-w-0 truncate" title={name}>
           {name}
         </span>
         <span className="text-sm text-ink shrink-0">
@@ -46,19 +46,17 @@ export function MemberRow({
       {/* Row 2: action buttons */}
       {showConfirmReject && (
         <div className="flex gap-2 mt-2">
-          {/* STAMP SETTLED — blue primary CTA per DASH-05 */}
           <button
             type="button"
             onClick={onConfirm}
-            className="bg-pen text-white text-xs h-8 px-3 uppercase tracking-widest cursor-pointer"
+            className="bg-pen text-white text-xs min-h-[44px] px-3 uppercase tracking-widest cursor-pointer"
           >
             STAMP SETTLED
           </button>
-          {/* REJECT — neutral border style, no blue/red */}
           <button
             type="button"
             onClick={onReject}
-            className="border border-ink text-ink text-xs h-8 px-3 uppercase tracking-widest cursor-pointer"
+            className="border border-ink text-ink text-xs min-h-[44px] px-3 uppercase tracking-widest cursor-pointer"
           >
             REJECT
           </button>
@@ -67,11 +65,10 @@ export function MemberRow({
 
       {showRemind && (
         <div className="flex gap-2 mt-2">
-          {/* SEND REMINDER — neutral border style, no blue/red */}
           <button
             type="button"
             onClick={onRemind}
-            className="border border-ink text-ink text-xs h-8 px-3 uppercase tracking-widest cursor-pointer"
+            className="border border-ink text-ink text-xs min-h-[44px] px-3 uppercase tracking-widest cursor-pointer"
           >
             SEND REMINDER
           </button>
@@ -83,10 +80,11 @@ export function MemberRow({
         <div>
           <button
             type="button"
+            aria-expanded={expanded}
             className="bg-transparent border-none text-xs text-ink-muted uppercase tracking-widest cursor-pointer p-0 mt-2"
             onClick={() => setExpanded((prev) => !prev)}
           >
-            ITEMS ({claimedItems.length}) {expanded ? "▴" : "▾"}
+            ITEMS ({claimedItems.length}) <span aria-hidden="true">{expanded ? "▴" : "▾"}</span>
           </button>
           {expanded && (
             <div className="mt-1 pl-1">
