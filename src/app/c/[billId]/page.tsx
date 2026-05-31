@@ -463,9 +463,11 @@ export default function MemberViewPage({
               );
               const totalClaimants = itemClaims.length;
               const splitPriceCents =
-                totalClaimants > 0
-                  ? Math.round((item.price * item.quantity) / totalClaimants)
-                  : item.price * item.quantity;
+                item.quantity > 1
+                  ? item.price
+                  : totalClaimants > 0
+                    ? Math.round(item.price / totalClaimants)
+                    : item.price;
               const isExpanded = expandedItemId === item._id;
               const isMine = !!myClaimOnItem;
               const isPending = pendingItems.has(item._id);

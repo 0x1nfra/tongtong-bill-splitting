@@ -84,10 +84,14 @@ export function calculatePersonTotals(
   for (const claim of myClaims) {
     const item = itemMap.get(claim.itemId);
     if (!item) continue;
-    const claimantCount = claimantsPerItem.get(claim.itemId) ?? 1;
-    personSubtotalCents += Math.round(
-      (item.price * item.quantity) / claimantCount
-    );
+    if (item.quantity > 1) {
+      // Multi-qty item: each claim = 1 unit at item.price
+      personSubtotalCents += item.price;
+    } else {
+      // Single item: split cost among all claimants
+      const claimantCount = claimantsPerItem.get(claim.itemId) ?? 1;
+      personSubtotalCents += Math.round(item.price / claimantCount);
+    }
   }
 
   // Distribute bill-level charges proportionally — never recalculate from percentages

@@ -9,7 +9,7 @@ import { CopyLinkField } from "../../../components/CopyLinkField";
 import { ProgressBar } from "../../../components/ProgressBar";
 import { StatsBar } from "../../../components/StatsBar";
 import { MemberRow } from "../../../components/MemberRow";
-import { calculateTotals } from "@/lib/calculateTotals";
+import { calculateTotals, calculatePersonTotals } from "@/lib/calculateTotals";
 
 export default function DashboardPage({
   params,
@@ -129,16 +129,20 @@ export default function DashboardPage({
 
   const { bill, items } = billData;
   const isArchived = !!bill.archivedAt;
-  const { grandTotalCents } = calculateTotals(
-    items,
-    bill.applySST,
-    bill.applyServiceCharge
+  const billTotals = calculateTotals(items, bill.applySST, bill.applyServiceCharge);
+  const { grandTotalCents } = billTotals;
+
+  // Build synthetic claims from claimedItems data for per-member calculation
+  const syntheticClaims = (claimants ?? []).flatMap((c) =>
+    c.claimedItems.map((item) => ({ itemId: item._id, claimantSession: c.claimantSession }))
   );
 
-  // Phase 1: equal-split per-member amount (no item claiming yet)
-  const memberCount = claimants?.length ?? 0;
-  const amountPerMemberCents =
-    memberCount > 0 ? Math.round(grandTotalCents / memberCount) : grandTotalCents;
+  // Pre-compute actual per-member totals based on claimed items
+  const memberTotalsMap = new Map<string, number>();
+  for (const claimant of claimants ?? []) {
+    const pt = calculatePersonTotals(items, syntheticClaims, claimant.claimantSession, billTotals);
+    memberTotalsMap.set(claimant.claimantSession, pt.personTotalCents);
+  }
 
   // Derive stats from payments (CR-04: correct variable semantics)
   const confirmed = payments?.filter((p) => p.status === "settled").length ?? 0;
@@ -148,8 +152,10 @@ export default function DashboardPage({
   const claimed = claimsStats?.claimedCount ?? 0;
   const unclaimed = claimsStats?.unclaimedCount ?? 0;
 
-  // TOTAL COLLECTED: count of settled payments × per-member share
-  const collectedCents = confirmed * amountPerMemberCents;
+  // TOTAL COLLECTED: sum of settled members' actual item-based amounts
+  const collectedCents = (claimants ?? [])
+    .filter((c) => c.payment?.status === "settled")
+    .reduce((sum, c) => sum + (memberTotalsMap.get(c.claimantSession) ?? 0), 0);
 
   // Display code per UI-SPEC: "#TT-XXXX" first 4 chars of Convex ID uppercase
   const displayCode = `#TT-${billId.slice(0, 4).toUpperCase()}`;
@@ -423,7 +429,7 @@ export default function DashboardPage({
                       key={claimant.claimantSession}
                       name={claimant.claimantName}
                       status={memberStatus}
-                      amountOwed={amountPerMemberCents}
+                      amountOwed={memberTotalsMap.get(claimant.claimantSession) ?? 0}
                       claimedItems={claimant.claimedItems}
                       onConfirm={
                         !isArchived && claimant.payment && memberStatus === "AWAITING"

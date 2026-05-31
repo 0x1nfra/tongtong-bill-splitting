@@ -52,14 +52,14 @@ describe('calculatePersonTotals — single claimer per item', () => {
     expect(result.personTotalCents).toBe(1500)
   })
 
-  it('sole claimer with qty > 1 pays price * quantity', () => {
+  it('sole claimer of qty > 1 item pays 1 unit (item.price, not price * quantity)', () => {
     const items = [item('i1', 800, 3)]
     const claims = [claim('i1', 'alice')]
     const billTotals = calculateTotals(items, false, false)
     const result = calculatePersonTotals(items, claims, 'alice', billTotals)
-    // alice sole claimer: Math.round(800 * 3 / 1) = 2400
-    expect(result.personSubtotalCents).toBe(2400)
-    expect(result.personTotalCents).toBe(2400)
+    // alice sole claimer of multi-qty item: pays 1 unit = 800, not 800 * 3
+    expect(result.personSubtotalCents).toBe(800)
+    expect(result.personTotalCents).toBe(800)
   })
 })
 
@@ -278,8 +278,8 @@ describe('calculatePersonTotals — unclaimed items excluded', () => {
     const claims = [claim('i1', 'alice')]
     const billTotals = calculateTotals(items, false, false)
     const result = calculatePersonTotals(items, claims, 'alice', billTotals)
-    // alice sole claimer of i1: Math.round(500 * 2 / 1) = 1000
-    expect(result.personSubtotalCents).toBe(1000)
+    // alice sole claimer of i1 (qty=2): pays 1 unit = 500
+    expect(result.personSubtotalCents).toBe(500)
   })
 })
 
