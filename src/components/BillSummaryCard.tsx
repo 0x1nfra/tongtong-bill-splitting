@@ -4,6 +4,7 @@ import { calculateTotals } from "@/lib/calculateTotals";
 
 type BillSummaryCardProps = Readonly<{
   title: string;
+  venueName?: string;
   items: Array<{ name: string; price: number; quantity: number }>; // price in cents
   applySST: boolean;
   applyServiceCharge: boolean;
@@ -12,6 +13,7 @@ type BillSummaryCardProps = Readonly<{
 
 export function BillSummaryCard({
   title,
+  venueName,
   items,
   applySST,
   applyServiceCharge,
@@ -23,16 +25,21 @@ export function BillSummaryCard({
   return (
     <div className="chit p-4">
       <p
-        className="text-[10px] text-ink-muted mb-0.5 uppercase tracking-widest"
-        style={{ fontFamily: "var(--font-display)" }}
-      >
-        {displayCode}
-      </p>
-      <p
-        className="text-sm font-bold text-ink uppercase tracking-wide mb-3"
+        className="text-sm font-bold text-ink uppercase tracking-wide mb-1"
         style={{ fontFamily: "var(--font-display)" }}
       >
         {title || "UNTITLED BILL"}
+      </p>
+      {venueName && (
+        <p className="text-xs text-ink-muted uppercase tracking-widest mb-0.5">
+          {venueName}
+        </p>
+      )}
+      <p
+        className="text-[10px] text-ink-muted uppercase tracking-widest mb-3"
+        style={{ fontFamily: "var(--font-display)" }}
+      >
+        {displayCode}
       </p>
 
       {/* Item list */}

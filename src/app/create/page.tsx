@@ -134,23 +134,22 @@ export default function CreatePage() {
   return (
     <main className="min-h-screen bg-paper-table">
       <div className="max-w-[480px] mx-auto px-4 py-6">
+
+        {/* PAGE HEADER — on table surface */}
+        <p
+          className="text-[10px] font-bold tracking-widest text-ink-muted mb-0.5"
+          style={{ fontFamily: "var(--font-display)" }}
+        >
+          tongtong.
+        </p>
+        <h1
+          className="text-xl font-bold uppercase text-ink tracking-widest mb-4"
+          style={{ fontFamily: "var(--font-display)" }}
+        >
+          New Bill
+        </h1>
+
         <div className="chit p-6">
-
-          {/* HEADER ZONE */}
-          <p
-            className="text-[10px] font-bold tracking-widest text-ink-muted mb-1"
-            style={{ fontFamily: "var(--font-display)" }}
-          >
-            tongtong.
-          </p>
-          <h1
-            className="text-sm font-bold uppercase text-ink tracking-wide"
-            style={{ fontFamily: "var(--font-display)" }}
-          >
-            New Bill
-          </h1>
-
-          <div className="perforation my-4" />
 
           {/* BILL DETAILS ZONE */}
           <p

@@ -63,21 +63,35 @@ export default function SharePage({
   return (
     <main className="min-h-screen bg-paper-table">
       <div className="max-w-[480px] mx-auto px-4 py-6">
+
+        {/* PAGE HEADER — on table surface */}
+        <p
+          className="text-[10px] font-bold tracking-widest text-ink-muted mb-0.5"
+          style={{ fontFamily: "var(--font-display)" }}
+        >
+          tongtong.
+        </p>
+        <h1
+          className="text-xl font-bold uppercase text-ink tracking-widest mb-4"
+          style={{ fontFamily: "var(--font-display)" }}
+        >
+          Share This Bill
+        </h1>
+
         <div className="chit p-6">
 
-          {/* HEADER ZONE */}
+          {/* BILL IDENTITY — which bill */}
           <p
-            className="text-[10px] font-bold tracking-widest text-ink-muted mb-1"
-            style={{ fontFamily: "var(--font-display)" }}
-          >
-            tongtong.
-          </p>
-          <h1
             className="text-sm font-bold uppercase text-ink tracking-wide"
             style={{ fontFamily: "var(--font-display)" }}
           >
             {bill.title || "UNTITLED BILL"}
-          </h1>
+          </p>
+          {bill.venueName && (
+            <p className="text-xs text-ink-muted mt-0.5 uppercase tracking-widest">
+              {bill.venueName}
+            </p>
+          )}
           <p
             className="text-[10px] text-ink-muted mt-0.5"
             style={{ fontFamily: "var(--font-display)" }}

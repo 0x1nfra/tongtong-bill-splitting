@@ -282,12 +282,27 @@ export default function DashboardPage({
   return (
     <main className="min-h-screen bg-paper-table">
       <div className="max-w-[960px] mx-auto px-4 py-8">
-        {/* Heading */}
-        <h1 className="text-2xl font-bold uppercase text-ink tracking-widest mb-0.5">
-          {bill.title}
+        {/* PAGE HEADER */}
+        <p
+          className="text-[10px] font-bold tracking-widest text-ink-muted mb-0.5"
+          style={{ fontFamily: "var(--font-display)" }}
+        >
+          tongtong.
+        </p>
+        <h1
+          className="text-xl font-bold uppercase text-ink tracking-widest mb-1"
+          style={{ fontFamily: "var(--font-display)" }}
+        >
+          Dashboard
         </h1>
-        <p className="text-xs text-ink-muted mb-6 uppercase">
-          {displayCode}
+        <p
+          className="text-sm font-bold text-ink uppercase tracking-widest mb-0.5"
+          style={{ fontFamily: "var(--font-display)" }}
+        >
+          {bill.title}
+        </p>
+        <p className="text-[10px] text-ink-muted mb-6 uppercase tracking-widest">
+          {bill.venueName ? `${bill.venueName} · ` : ""}{displayCode}
         </p>
 
         {/* Mobile-only share strip — md+ uses right column quick actions */}
@@ -392,6 +407,7 @@ export default function DashboardPage({
             {/* Chit summary */}
             <BillSummaryCard
               title={bill.title}
+              venueName={bill.venueName}
               items={items}
               applySST={bill.applySST}
               applyServiceCharge={bill.applyServiceCharge}

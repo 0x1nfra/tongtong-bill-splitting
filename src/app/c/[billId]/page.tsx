@@ -69,6 +69,8 @@ export default function MemberViewPage({
   // Per-item mutation in-flight guard (Pitfall 3 / T-02-10)
   const [pendingItems, setPendingItems] = useState<Set<string>>(new Set());
 
+  const [receiptLightboxOpen, setReceiptLightboxOpen] = useState(false);
+
   // T-05-05: read organizer secret to check if this device owns this specific bill
   const [organizerSecret, setOrganizerSecret] = useState<string | null>(null);
   useEffect(() => {
@@ -319,41 +321,96 @@ export default function MemberViewPage({
 
   return (
     <main className="min-h-screen bg-paper-table">
-      <div className="max-w-[320px] mx-auto px-4 py-6">
+      <div className="max-w-[480px] mx-auto px-4 py-6">
 
-        {/* Receipt image — above the chit, on the table surface */}
+        {/* PAGE HEADER — on table surface */}
+        <p
+          className="text-[10px] font-bold tracking-widest text-ink-muted mb-0.5"
+          style={{ fontFamily: "var(--font-display)" }}
+        >
+          tongtong.
+        </p>
+        <h1
+          className="text-xl font-bold uppercase text-ink tracking-widest mb-4"
+          style={{ fontFamily: "var(--font-display)" }}
+        >
+          Claim Your Share
+        </h1>
+
+        {/* Receipt thumbnail — tap to open lightbox */}
         {bill.receiptUrl && (
-          <div className="mb-3">
-            <p className="text-[10px] font-bold uppercase tracking-widest text-ink-muted mb-1">
-              Bill receipt
-            </p>
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img
-              src={bill.receiptUrl}
-              alt="Bill receipt uploaded by organizer"
-              width={320}
-              height={427}
-              className="w-full border border-ink"
-            />
-          </div>
+          <>
+            <button
+              type="button"
+              onClick={() => setReceiptLightboxOpen(true)}
+              className="mb-3 w-full flex items-center gap-3 border border-ink bg-paper-chit px-3 py-2 text-left hover:bg-paper-chit/70 transition-colors"
+              aria-label="View receipt"
+            >
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src={bill.receiptUrl}
+                alt=""
+                aria-hidden="true"
+                width={40}
+                height={54}
+                className="w-10 h-14 object-cover border border-ink shrink-0"
+              />
+              <div>
+                <p className="text-[10px] font-bold uppercase tracking-widest text-ink-muted">
+                  Receipt attached
+                </p>
+                <p className="text-xs text-ink uppercase tracking-widest">
+                  Tap to view
+                </p>
+              </div>
+            </button>
+
+            {receiptLightboxOpen && (
+              <div
+                className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 px-4"
+                onClick={() => setReceiptLightboxOpen(false)}
+              >
+                <div
+                  className="relative max-w-[480px] w-full"
+                  onClick={(e) => e.stopPropagation()}
+                >
+                  <button
+                    type="button"
+                    onClick={() => setReceiptLightboxOpen(false)}
+                    className="absolute -top-8 right-0 text-white text-xs uppercase tracking-widest font-bold"
+                    aria-label="Close receipt"
+                  >
+                    CLOSE ✕
+                  </button>
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img
+                    src={bill.receiptUrl}
+                    alt="Bill receipt"
+                    width={480}
+                    height={640}
+                    className="w-full border border-ink"
+                  />
+                </div>
+              </div>
+            )}
+          </>
         )}
 
         {/* Single chit — one receipt surface for all content */}
         <div className="chit p-6">
 
-          {/* HEADER ZONE */}
+          {/* BILL IDENTITY — which bill */}
           <p
-            className="text-[10px] font-bold tracking-widest text-ink-muted mb-1"
-            style={{ fontFamily: "var(--font-display)" }}
-          >
-            tongtong.
-          </p>
-          <h1
             className="text-sm font-bold uppercase text-ink tracking-wide mb-1"
             style={{ fontFamily: "var(--font-display)" }}
           >
             {bill.title}
-          </h1>
+          </p>
+          {bill.venueName && (
+            <p className="text-xs text-ink-muted uppercase tracking-widest mb-0.5">
+              {bill.venueName}
+            </p>
+          )}
           <p className="text-[10px] text-ink-muted uppercase tracking-widest">
             {"#TT-" + billId.slice(0, 4).toUpperCase()}
           </p>
