@@ -23,9 +23,9 @@ describe('Landing page — logotype and content (UI-08)', () => {
     expect(redPeriod?.textContent).toBe('.')
   })
 
-  it('"A CHIT FOR EVERYONE" tagline is visible', () => {
+  it('"A BILL FOR EVERYONE" tagline is visible', () => {
     render(<Home />)
-    expect(screen.getByText('A CHIT FOR EVERYONE')).toBeInTheDocument()
+    expect(screen.getByText('A BILL FOR EVERYONE')).toBeInTheDocument()
   })
 
   it('"SPLIT THE BILL, NOT THE FRIENDSHIP." tagline is visible', () => {

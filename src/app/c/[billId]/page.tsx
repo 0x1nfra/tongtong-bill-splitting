@@ -1,6 +1,6 @@
 "use client";
 
-import { use, useEffect, useState } from "react";
+import { use, useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useQuery, useMutation } from "convex/react";
 import { api } from "../../../../convex/_generated/api";
@@ -34,7 +34,7 @@ function useMemberSession(billId: string): string | null {
  * Returns null if not yet set (first visit).
  */
 function useMemberName(
-  billId: string
+  billId: string,
 ): [string | null, (name: string) => void] {
   const [memberName, setMemberNameState] = useState<string | null>(null);
   useEffect(() => {
@@ -49,7 +49,6 @@ function useMemberName(
   }
   return [memberName, setMemberName];
 }
-
 
 export default function MemberViewPage({
   params,
@@ -70,6 +69,21 @@ export default function MemberViewPage({
   // Per-item mutation in-flight guard (Pitfall 3 / T-02-10)
   const [pendingItems, setPendingItems] = useState<Set<string>>(new Set());
 
+  const [receiptLightboxOpen, setReceiptLightboxOpen] = useState(false);
+  const receiptTriggerRef = useRef<HTMLButtonElement>(null);
+
+  useEffect(() => {
+    if (!receiptLightboxOpen) return;
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") {
+        setReceiptLightboxOpen(false);
+        receiptTriggerRef.current?.focus();
+      }
+    };
+    document.addEventListener("keydown", handleKeyDown);
+    return () => document.removeEventListener("keydown", handleKeyDown);
+  }, [receiptLightboxOpen]);
+
   // T-05-05: read organizer secret to check if this device owns this specific bill
   const [organizerSecret, setOrganizerSecret] = useState<string | null>(null);
   useEffect(() => {
@@ -86,7 +100,7 @@ export default function MemberViewPage({
     api.bills.getBillForOrganizer,
     organizerSecret && isValidBillIdFormat
       ? { billId: billId as Id<"bills">, organizerSecret }
-      : "skip"
+      : "skip",
   );
 
   // T-05-05: redirect to dashboard only when confirmed as this bill's organizer
@@ -98,7 +112,7 @@ export default function MemberViewPage({
 
   const bill = useQuery(
     api.bills.getBillForMember,
-    isValidBillIdFormat ? { billId: billId as Id<"bills"> } : "skip"
+    isValidBillIdFormat ? { billId: billId as Id<"bills"> } : "skip",
   );
 
   // PAY-02: subscribe to member's own payment status for real-time stamp state machine
@@ -106,7 +120,7 @@ export default function MemberViewPage({
     api.payments.getMyPayment,
     claimantSession && isValidBillIdFormat
       ? { billId: billId as Id<"bills">, claimantSession }
-      : "skip"
+      : "skip",
   );
 
   const markPaid = useMutation(api.payments.markPaid);
@@ -224,9 +238,9 @@ export default function MemberViewPage({
             </div>
           </div>
           <h2 className="text-lg font-bold text-ink uppercase tracking-widest mt-6 mb-2">
-            This chit has been torn up
+            This bill has been torn up
           </h2>
-          <p className="text-sm text-ink opacity-60">
+          <p className="text-sm text-ink-muted">
             The bill you&apos;re looking for doesn&apos;t exist.
           </p>
         </div>
@@ -238,11 +252,11 @@ export default function MemberViewPage({
     return (
       <main className="min-h-screen bg-paper-table flex items-center justify-center">
         <div className="chit max-w-[480px] w-full mx-4 p-4 animate-pulse">
-          <div className="h-4 bg-ink opacity-10 rounded mb-3 w-1/3"></div>
-          <div className="h-3 bg-ink opacity-10 rounded mb-2 w-full"></div>
-          <div className="h-3 bg-ink opacity-10 rounded mb-2 w-4/5"></div>
-          <div className="h-3 bg-ink opacity-10 rounded mb-2 w-full"></div>
-          <div className="h-3 bg-ink opacity-10 rounded w-3/4"></div>
+          <div className="h-4 bg-ink opacity-10 mb-3 w-1/3"></div>
+          <div className="h-3 bg-ink opacity-10 mb-2 w-full"></div>
+          <div className="h-3 bg-ink opacity-10 mb-2 w-4/5"></div>
+          <div className="h-3 bg-ink opacity-10 mb-2 w-full"></div>
+          <div className="h-3 bg-ink opacity-10 w-3/4"></div>
         </div>
       </main>
     );
@@ -266,10 +280,10 @@ export default function MemberViewPage({
             </div>
           </div>
           <h1 className="text-xl font-bold uppercase text-ink tracking-widest mb-3">
-            THIS CHIT HAS BEEN TORN UP
+            THIS BILL HAS BEEN TORN UP
           </h1>
-          <p className="text-sm text-ink opacity-60">
-            The link may have expired or the chit was closed.
+          <p className="text-sm text-ink-muted">
+            The link may have expired or the bill was closed.
           </p>
         </div>
       </main>
@@ -290,11 +304,7 @@ export default function MemberViewPage({
   const items = bill.items ?? [];
   const claims = bill.claims ?? [];
 
-  const totals = calculateTotals(
-    items,
-    bill.applySST,
-    bill.applyServiceCharge
-  );
+  const totals = calculateTotals(items, bill.applySST, bill.applyServiceCharge);
 
   // Build claims-by-item map for O(1) lookups (D-05, CALC-01)
   const claimsByItem = new Map<string, typeof claims>();
@@ -313,8 +323,7 @@ export default function MemberViewPage({
       : null;
 
   const paymentStatus = payment?.status ?? null;
-  const showPayForm =
-    paymentStatus === null || paymentStatus === "rejected";
+  const showPayForm = paymentStatus === null || paymentStatus === "rejected";
   const isButtonDisabled =
     !claimantSession ||
     !memberName ||
@@ -324,35 +333,120 @@ export default function MemberViewPage({
     payment?.status === "settled";
 
   return (
-    <main className="min-h-screen bg-paper-table">
+    <main id="main-content" className="min-h-screen bg-paper-table">
       <div className="max-w-[480px] mx-auto px-4 py-6">
-        {/* Bill header */}
-        <h1 className="text-xl font-bold uppercase text-ink tracking-widest mb-1">
-          {bill.title}
-        </h1>
-        <p className="text-xs text-ink opacity-60 mb-6 uppercase tracking-widest">
-          {"#TT-" + billId.slice(0, 4).toUpperCase()}
-        </p>
 
-        {/* Receipt image — shown when organizer uploaded bill proof */}
+        {/* PAGE HEADER — on table surface */}
+        <p
+          className="text-[0.625rem] font-bold tracking-widest text-ink-muted mb-0.5"
+          style={{ fontFamily: "var(--font-display)" }}
+        >
+          tongtong.
+        </p>
+        <h1
+          className="text-xl font-bold uppercase text-ink tracking-widest mb-4"
+          style={{ fontFamily: "var(--font-display)" }}
+        >
+          Claim Your Share
+        </h1>
+
+        {/* Receipt thumbnail — tap to open lightbox */}
         {bill.receiptUrl && (
-          <div className="mb-4">
-            <p className="uppercase text-xs text-ink opacity-60 mb-2">BILL RECEIPT</p>
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img
-              src={bill.receiptUrl}
-              alt="Bill receipt uploaded by organizer"
-              className="w-full max-w-[320px] border border-ink"
-            />
-          </div>
+          <>
+            <button
+              ref={receiptTriggerRef}
+              type="button"
+              onClick={() => setReceiptLightboxOpen(true)}
+              className="mb-3 w-full flex items-center gap-3 border border-ink bg-paper-chit px-3 py-2 text-left hover:bg-paper-chit/70 transition-colors cursor-pointer"
+              aria-label="View receipt"
+              aria-haspopup="dialog"
+            >
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src={bill.receiptUrl}
+                alt=""
+                aria-hidden="true"
+                width={40}
+                height={54}
+                className="w-10 h-14 object-cover border border-ink shrink-0"
+              />
+              <div>
+                <p className="text-[0.625rem] font-bold uppercase tracking-widest text-ink-muted">
+                  Receipt attached
+                </p>
+                <p className="text-xs text-ink uppercase tracking-widest">
+                  Tap to view
+                </p>
+              </div>
+            </button>
+
+            {receiptLightboxOpen && (
+              <div
+                role="dialog"
+                aria-modal="true"
+                aria-label="Receipt"
+                className="fixed inset-0 z-[10000] flex items-center justify-center bg-black/80 px-4"
+                onClick={() => {
+                  setReceiptLightboxOpen(false);
+                  receiptTriggerRef.current?.focus();
+                }}
+              >
+                <div
+                  className="relative max-w-[480px] w-full"
+                  onClick={(e) => e.stopPropagation()}
+                >
+                  <button
+                    // eslint-disable-next-line jsx-a11y/no-autofocus
+                    autoFocus
+                    type="button"
+                    onClick={() => {
+                      setReceiptLightboxOpen(false);
+                      receiptTriggerRef.current?.focus();
+                    }}
+                    className="absolute -top-8 right-0 text-white text-xs uppercase tracking-widest font-bold cursor-pointer"
+                    aria-label="Close receipt"
+                  >
+                    <span aria-hidden="true">CLOSE ✕</span>
+                  </button>
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img
+                    src={bill.receiptUrl}
+                    alt="Bill receipt"
+                    width={480}
+                    height={640}
+                    className="w-full border border-ink"
+                  />
+                </div>
+              </div>
+            )}
+          </>
         )}
 
-        {/* Interactive items list — CLAIM-01 through CLAIM-05 */}
-        <div className="chit p-4 mb-4">
-          <p className="text-xs font-bold uppercase text-ink tracking-widest mb-3 opacity-60">
+        {/* Single chit — one receipt surface for all content */}
+        <div className="chit p-6">
+
+          {/* BILL IDENTITY — which bill */}
+          <p
+            className="text-sm font-bold uppercase text-ink tracking-wide mb-1"
+            style={{ fontFamily: "var(--font-display)" }}
+          >
+            {bill.title}
+          </p>
+          {bill.venueName && (
+            <p className="text-xs text-ink-muted uppercase tracking-widest mb-0.5">
+              {bill.venueName}
+            </p>
+          )}
+          <p className="text-[0.625rem] text-ink-muted uppercase tracking-widest">
+            {"#TT-" + billId.slice(0, 4).toUpperCase()}
+          </p>
+
+          <div className="perforation my-4"></div>
+
+          {/* ITEMS ZONE */}
+          <p className="text-xs font-bold uppercase text-ink-muted tracking-widest mb-3" style={{ fontFamily: "var(--font-display)" }}>
             ITEMS
           </p>
-          <div className="perforation mb-3"></div>
           {items.map(
             (
               item: {
@@ -361,11 +455,11 @@ export default function MemberViewPage({
                 price: number;
                 quantity: number;
               },
-              index: number
+              index: number,
             ) => {
               const itemClaims = claimsByItem.get(item._id) ?? [];
               const myClaimOnItem = itemClaims.find(
-                (c) => c.claimantSession === claimantSession
+                (c) => c.claimantSession === claimantSession,
               );
               const totalClaimants = itemClaims.length;
               const splitPriceCents =
@@ -381,23 +475,21 @@ export default function MemberViewPage({
                   {/* Tappable item row */}
                   <button
                     type="button"
-                    className={`dot-leader w-full min-h-[48px] flex justify-between items-center text-left px-0 py-2 cursor-pointer hover:bg-paper-chit/50 transition-colors${isMine ? " bg-paper-chit border-l-4 border-pen pl-2" : ""} disabled:opacity-50 disabled:cursor-wait`}
+                    className="dot-leader w-full min-h-[48px] flex items-center text-left px-0 py-2 cursor-pointer hover:bg-paper-chit/50 transition-colors disabled:opacity-50 disabled:cursor-wait"
                     disabled={isPending}
                     aria-label={`${item.name} — tap to ${isMine ? "unclaim" : totalClaimants > 0 ? "co-claim" : "claim"}`}
-                    onClick={() =>
-                      handleItemTap(item._id, myClaimOnItem?._id)
-                    }
+                    onClick={() => handleItemTap(item._id, myClaimOnItem?._id)}
                   >
                     {/* Left side: unclaimed indicator + item name + qty */}
                     <span
-                      className={`flex-1 flex items-center gap-1 text-sm text-ink${isMine ? " font-bold" : ""}`}
+                      className={`flex items-center gap-1 text-sm text-ink min-w-0${isMine ? " font-bold" : ""}`}
                     >
                       {totalClaimants === 0 ? (
-                        <span className="text-stamp mr-0.5">❋</span>
+                        <span className="text-warning mr-0.5">❋</span>
                       ) : null}
                       {item.name}
                       {item.quantity > 1 ? (
-                        <span className="opacity-60 ml-1 text-xs">
+                        <span className="text-ink-muted ml-1 text-xs">
                           x{item.quantity}
                         </span>
                       ) : null}
@@ -413,7 +505,7 @@ export default function MemberViewPage({
 
                   {/* Claimant names row (CLAIM-04) */}
                   {totalClaimants > 0 ? (
-                    <div className="flex flex-wrap gap-1 px-0 pb-1 pl-2">
+                    <div className="flex flex-wrap gap-1 px-0 pb-1">
                       {itemClaims.map((claim) => (
                         <span
                           key={claim._id}
@@ -425,12 +517,9 @@ export default function MemberViewPage({
                     </div>
                   ) : null}
 
-                  {/* Inline "CLAIM" prompt — unclaimed and not expanded (D-10, CLAIM-05) */}
+                  {/* Inline "CLAIM" hint — unclaimed and not expanded; tapping handled by button above */}
                   {totalClaimants === 0 && !isExpanded ? (
-                    <p
-                      className="text-xs text-stamp uppercase tracking-widest pb-1 pl-0 cursor-pointer"
-                      onClick={() => handleItemTap(item._id, myClaimOnItem?._id)}
-                    >
+                    <p className="text-xs text-warning uppercase tracking-widest pb-1" aria-hidden="true">
                       CLAIM
                     </p>
                   ) : null}
@@ -441,13 +530,13 @@ export default function MemberViewPage({
                   >
                     <div className="bg-paper-chit px-2 py-2 flex gap-2 items-center">
                       <label
-                        htmlFor="claimantNameInput"
+                        htmlFor={`claimantName-${item._id}`}
                         className="text-xs font-bold uppercase tracking-widest text-ink shrink-0"
                       >
                         YOUR NAME
                       </label>
                       <input
-                        id="claimantNameInput"
+                        id={`claimantName-${item._id}`}
                         type="text"
                         value={nameInput}
                         onChange={(e) => setNameInput(e.target.value)}
@@ -455,12 +544,12 @@ export default function MemberViewPage({
                         onKeyDown={(e) => {
                           if (e.key === "Enter") handleNameSubmit(item._id);
                         }}
-                        className="flex-1 border border-ink bg-paper-chit text-ink text-sm px-2 py-1 focus:outline-none focus:ring-1 focus:ring-pen min-w-0"
+                        className="flex-1 border border-ink bg-paper-chit text-ink text-sm px-2 py-2 focus:outline-none focus-visible:outline-2 focus-visible:outline-pen focus-visible:outline-offset-2 min-w-0"
                       />
                       <button
                         type="button"
                         onClick={() => handleNameSubmit(item._id)}
-                        className="bg-pen text-white text-xs uppercase font-bold tracking-widest px-3 py-1 shrink-0"
+                        className="bg-pen text-white text-xs uppercase font-bold tracking-widest px-3 py-2 shrink-0 min-h-[44px] cursor-pointer"
                       >
                         CLAIM
                       </button>
@@ -471,147 +560,149 @@ export default function MemberViewPage({
                   ) : null}
                 </div>
               );
-            }
+            },
           )}
-          <div className="perforation mt-3"></div>
-        </div>
 
-        {/* YOUR PORTION panel — static block, visible only when hasClaims (D-07, CALC-04) */}
-        {hasClaims ? (
-          <div className="chit border-t-2 border-pen border-l-4 border-l-pen p-4 mb-4">
-            <p className="text-xs font-bold uppercase tracking-widest text-ink opacity-60 mb-3">
-              YOUR PORTION
-            </p>
+          <div className="perforation my-4"></div>
 
-            {/* Subtotal row */}
-            <div className="dot-leader flex justify-between text-sm text-ink mb-1">
-              <span className="opacity-60">Subtotal</span>
-              <span>
-                RM{((personTotals?.personSubtotalCents ?? 0) / 100).toFixed(2)}
-              </span>
-            </div>
-
-            {/* Service charge row (conditional) */}
-            {bill.applyServiceCharge ? (
-              <div className="dot-leader flex justify-between text-sm text-ink mb-1">
-                <span className="opacity-60">Service Charge (10%)</span>
-                <span>
-                  RM
-                  {((personTotals?.personServiceChargeCents ?? 0) / 100).toFixed(
-                    2
-                  )}
-                </span>
-              </div>
-            ) : null}
-
-            {/* SST row (conditional) */}
-            {bill.applySST ? (
-              <div className="dot-leader flex justify-between text-sm text-ink mb-1">
-                <span className="opacity-60">SST (6%)</span>
-                <span>
-                  RM{((personTotals?.personSSTCents ?? 0) / 100).toFixed(2)}
-                </span>
-              </div>
-            ) : null}
-
-            {/* YOUR TOTAL row */}
-            <div className="dot-leader flex justify-between font-bold text-base text-ink border-t border-ink mt-2 pt-2">
-              <span className="uppercase tracking-widest">YOUR TOTAL</span>
-              <span aria-live="polite">
-                RM{((personTotals?.personTotalCents ?? 0) / 100).toFixed(2)}
-              </span>
-            </div>
-          </div>
-        ) : null}
-
-        {/* Bill grand total section */}
-        <div className="bg-paper-chit p-4 mb-6">
-          <p className="text-xs font-bold uppercase text-ink tracking-widest mb-3 opacity-60">
+          {/* BILL TOTAL ZONE */}
+          <p className="text-xs font-bold uppercase text-ink-muted tracking-widest mb-3" style={{ fontFamily: "var(--font-display)" }}>
             BILL TOTAL
           </p>
 
-          {/* Subtotal row */}
-          <div className="flex justify-between text-sm text-ink mb-1">
-            <span className="opacity-60">Subtotal</span>
+          <div className="dot-leader flex justify-between text-sm text-ink mb-1">
+            <span className="text-ink-muted">Subtotal</span>
             <span>RM{(totals.subtotalCents / 100).toFixed(2)}</span>
           </div>
 
-          {/* Service charge row (shown only if applicable) */}
           {bill.applyServiceCharge ? (
-            <div className="flex justify-between text-sm text-ink mb-1">
-              <span className="opacity-60">Service Charge (10%)</span>
+            <div className="dot-leader flex justify-between text-sm text-ink mb-1">
+              <span className="text-ink-muted">Service Charge (10%)</span>
               <span>RM{(totals.serviceChargeCents / 100).toFixed(2)}</span>
             </div>
           ) : null}
 
-          {/* SST row (shown only if applicable) */}
           {bill.applySST ? (
-            <div className="flex justify-between text-sm text-ink mb-1">
-              <span className="opacity-60">SST (6%)</span>
+            <div className="dot-leader flex justify-between text-sm text-ink mb-1">
+              <span className="text-ink-muted">SST (6%)</span>
               <span>RM{(totals.sstCents / 100).toFixed(2)}</span>
             </div>
           ) : null}
 
-          {/* Grand total row */}
-          <div className="flex justify-between font-bold text-base text-ink border-t border-ink mt-2 pt-2">
+          <div className="dot-leader flex justify-between font-bold text-base text-ink border-t border-ink mt-2 pt-2">
             <span className="uppercase tracking-widest">GRAND TOTAL</span>
             <span>RM{(totals.grandTotalCents / 100).toFixed(2)}</span>
           </div>
+
+          <div className="perforation my-4"></div>
+
+          {/* YOUR PORTION ZONE — always rendered */}
+          <p className="text-xs font-bold uppercase tracking-widest text-ink-muted mb-3" style={{ fontFamily: "var(--font-display)" }}>
+            YOUR PORTION
+          </p>
+
+          {hasClaims ? (
+            <>
+              <div className="dot-leader flex justify-between text-sm text-ink mb-1">
+                <span className="text-ink-muted">Subtotal</span>
+                <span>
+                  RM{((personTotals?.personSubtotalCents ?? 0) / 100).toFixed(2)}
+                </span>
+              </div>
+
+              {bill.applyServiceCharge ? (
+                <div className="dot-leader flex justify-between text-sm text-ink mb-1">
+                  <span className="text-ink-muted">Service Charge (10%)</span>
+                  <span>
+                    RM
+                    {(
+                      (personTotals?.personServiceChargeCents ?? 0) / 100
+                    ).toFixed(2)}
+                  </span>
+                </div>
+              ) : null}
+
+              {bill.applySST ? (
+                <div className="dot-leader flex justify-between text-sm text-ink mb-1">
+                  <span className="text-ink-muted">SST (6%)</span>
+                  <span>
+                    RM{((personTotals?.personSSTCents ?? 0) / 100).toFixed(2)}
+                  </span>
+                </div>
+              ) : null}
+
+              <div className="dot-leader flex justify-between font-bold text-base text-ink border-t border-ink mt-2 pt-2">
+                <span className="uppercase tracking-widest">YOUR TOTAL</span>
+                <span aria-live="polite">
+                  RM{((personTotals?.personTotalCents ?? 0) / 100).toFixed(2)}
+                </span>
+              </div>
+            </>
+          ) : (
+            <>
+              <div className="dot-leader flex justify-between text-sm mb-1">
+                <span className="text-ink-muted">Subtotal</span>
+                <span className="text-ink-muted">—</span>
+              </div>
+              <div className="dot-leader flex justify-between font-bold text-base border-t border-ink mt-2 pt-2">
+                <span className="uppercase tracking-widest text-ink-muted">YOUR TOTAL</span>
+                <span className="text-ink-muted">—</span>
+              </div>
+              <p className="text-xs text-ink-muted mt-3">
+                Tap the items you ordered above to see your share.
+              </p>
+            </>
+          )}
+
+          {/* PAYMENT ZONE — only if hasClaims */}
+          {hasClaims && (
+            <>
+              <div className="perforation my-4"></div>
+
+              <div className="text-center">
+                {bill.qrUrl ? (
+                  <>
+                    <p className="text-xs font-bold uppercase text-ink-muted tracking-widest mb-2">
+                      SCAN TO PAY
+                    </p>
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img
+                      src={bill.qrUrl}
+                      alt="DuitNow QR code for payment"
+                      width={200}
+                      height={200}
+                      className="w-[200px] h-[200px] object-contain mx-auto mb-4"
+                    />
+                  </>
+                ) : null}
+
+                {paymentStatus !== null && paymentStatus !== "rejected" ? (
+                  <div className="mb-4 flex justify-center">
+                    <SettleStamp status={paymentStatus} />
+                  </div>
+                ) : null}
+
+                {showPayForm ? (
+                  <button
+                    type="button"
+                    onClick={handlePay}
+                    disabled={isButtonDisabled}
+                    className="w-full h-12 bg-pen text-white uppercase font-bold text-sm tracking-widest flex items-center justify-center cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    I&apos;VE PAID
+                  </button>
+                ) : null}
+
+                {paymentStatus === "rejected" ? (
+                  <p className="text-xs text-ink-muted uppercase tracking-widest mt-2">
+                    <span lang="ms">Tak confirm lah. Cuba lagi k?</span>
+                  </p>
+                ) : null}
+              </div>
+            </>
+          )}
+
         </div>
-
-        {/* DuitNow QR (PAY-03) */}
-        {bill.qrUrl ? (
-          <div className="mb-4 text-center">
-            <p className="text-xs font-bold uppercase text-ink tracking-widest mb-2 opacity-60">
-              SCAN TO PAY
-            </p>
-            <img
-              src={bill.qrUrl}
-              alt="DuitNow QR"
-              className="w-[200px] h-[200px] object-contain mx-auto"
-            />
-          </div>
-        ) : null}
-
-        {/* SettleStamp — shown after payment is submitted (PAY-02, PAY-04) */}
-        {paymentStatus !== null && paymentStatus !== "rejected" ? (
-          <div className="relative mb-6 flex justify-center">
-            <SettleStamp status={paymentStatus} />
-          </div>
-        ) : null}
-
-        {/* I'VE PAID button (PAY-01) — hidden when pending or settled */}
-        {showPayForm ? (
-          <button
-            type="button"
-            onClick={handlePay}
-            disabled={isButtonDisabled}
-            className="w-full h-12 bg-pen text-white uppercase font-bold text-sm tracking-widest flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed"
-          >
-            I&apos;VE PAID
-          </button>
-        ) : null}
-
-        {/* AWAITING CONFIRMATION subtext (PAY-02) */}
-        {paymentStatus === "pending" ? (
-          <p className="text-xs text-center text-ink opacity-60 uppercase tracking-widest mt-4">
-            AWAITING CONFIRMATION FROM THE ORGANIZER
-          </p>
-        ) : null}
-
-        {/* HAVE A GOOD ONE! confirmation copy (PAY-04) */}
-        {paymentStatus === "settled" ? (
-          <p className="text-sm text-center font-bold text-pen uppercase tracking-widest mt-4">
-            PAYMENT CONFIRMED — HAVE A GOOD ONE!
-          </p>
-        ) : null}
-
-        {/* Rejection note — member can re-tap I'VE PAID */}
-        {paymentStatus === "rejected" ? (
-          <p className="text-xs text-center text-ink opacity-60 uppercase tracking-widest mt-2">
-            PAYMENT WAS NOT CONFIRMED. PLEASE TRY AGAIN.
-          </p>
-        ) : null}
       </div>
     </main>
   );

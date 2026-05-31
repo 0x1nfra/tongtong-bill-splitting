@@ -132,78 +132,85 @@ export default function CreatePage() {
   const isGenerateDisabled = items.length === 0 || isSubmitting;
 
   return (
-    <main className="min-h-screen bg-paper-table">
-      <div className="max-w-[480px] mx-auto px-4 py-8">
-        {/* Page heading */}
-        <h1 className="text-2xl font-bold uppercase text-ink tracking-widest mb-6">
-          CREATE NEW CHIT
+    <main id="main-content" className="min-h-screen bg-paper-table">
+      <div className="max-w-[480px] mx-auto px-4 py-6">
+
+        {/* PAGE HEADER — on table surface */}
+        <p
+          className="text-[0.625rem] font-bold tracking-widest text-ink-muted mb-0.5"
+          style={{ fontFamily: "var(--font-display)" }}
+        >
+          tongtong.
+        </p>
+        <h1
+          className="text-xl font-bold uppercase text-ink tracking-widest mb-4"
+          style={{ fontFamily: "var(--font-display)" }}
+        >
+          New Bill
         </h1>
 
-        {/* Bill details section */}
-        <div className="chit p-4 mb-4">
-          <div className="space-y-4">
-            {/* Bill title */}
+        <div className="chit p-6">
+
+          {/* BILL DETAILS ZONE */}
+          <p
+            className="text-xs font-bold uppercase text-ink-muted tracking-widest mb-3"
+            style={{ fontFamily: "var(--font-display)" }}
+          >
+            BILL DETAILS
+          </p>
+          <div className="space-y-3">
             <div className="flex flex-col gap-1">
-              <label className="uppercase text-xs text-ink">
-                Bill Title
+              <label htmlFor="bill-title" className="text-[0.625rem] uppercase tracking-widest text-ink-muted">
+                Title
               </label>
               <input
+                id="bill-title"
                 type="text"
                 value={title}
                 onChange={(e) => setTitle(e.target.value)}
                 placeholder="e.g. Team Lunch"
-                className="w-full border border-ink bg-paper-chit px-3 py-2 text-ink text-sm"
+                className="w-full border border-ink bg-paper-chit px-3 py-2 text-ink text-sm focus:outline-none focus-visible:outline-2 focus-visible:outline-pen focus-visible:outline-offset-2"
               />
             </div>
-
-            {/* Venue / restaurant name (optional) */}
             <div className="flex flex-col gap-1">
-              <label className="uppercase text-xs text-ink">
-                Restaurant / Venue
+              <label htmlFor="bill-venue" className="text-[0.625rem] uppercase tracking-widest text-ink-muted">
+                Venue
               </label>
               <input
+                id="bill-venue"
                 type="text"
                 value={venueName}
                 onChange={(e) => setVenueName(e.target.value)}
                 placeholder="e.g. Pak Mat Nasi Lemak"
-                className="w-full border border-ink bg-paper-chit px-3 py-2 text-ink text-sm"
+                className="w-full border border-ink bg-paper-chit px-3 py-2 text-ink text-sm focus:outline-none focus-visible:outline-2 focus-visible:outline-pen focus-visible:outline-offset-2"
               />
             </div>
-
-            {/* Date (optional) */}
             <div className="flex flex-col gap-1">
-              <label className="uppercase text-xs text-ink">
+              <label htmlFor="bill-date" className="text-[0.625rem] uppercase tracking-widest text-ink-muted">
                 Date
               </label>
               <input
+                id="bill-date"
                 type="date"
                 value={billDate}
                 onChange={(e) => setBillDate(e.target.value)}
-                className="w-full border border-ink bg-paper-chit px-3 py-2 text-ink text-sm"
+                className="w-full border border-ink bg-paper-chit px-3 py-2 text-ink text-sm focus:outline-none focus-visible:outline-2 focus-visible:outline-pen focus-visible:outline-offset-2"
               />
             </div>
           </div>
-        </div>
-        <div className="perforation my-4" />
 
-        {/* Receipt photo upload */}
-        <div className="mt-6 mb-6">
-          <label className="uppercase text-xs text-ink block mb-2 tracking-widest">
-            RECEIPT PHOTO (OPTIONAL)
-          </label>
-          <QRUpload onUpload={(id) => setReceiptStorageId(id)} />
-        </div>
+          <div className="perforation my-4" />
 
-        {/* Items section */}
-        <div className="chit p-4 mb-4">
-          <h2 className="uppercase text-sm font-bold text-ink mb-2">
-            Items
-          </h2>
-
-          {/* Item list */}
+          {/* ITEMS ZONE */}
+          <p
+            className="text-xs font-bold uppercase text-ink-muted tracking-widest mb-3"
+            style={{ fontFamily: "var(--font-display)" }}
+          >
+            ITEMS
+          </p>
           {items.length === 0 ? (
-            <p className="text-ink opacity-60 text-sm text-center py-4">
-              ADD YOUR FIRST ITEM
+            <p className="text-ink-muted text-sm text-center py-4">
+              <span lang="ms">Belum ada barang lagi — tekan + untuk tambah</span>
             </p>
           ) : (
             <div className="space-y-1">
@@ -217,87 +224,96 @@ export default function CreatePage() {
               ))}
             </div>
           )}
-
-          {/* ADD ITEM button — neutral styling, NOT blue (blue is reserved for primary CTAs) */}
           <button
             type="button"
             onClick={addItem}
-            className="mt-3 w-full h-11 border border-ink text-ink uppercase text-sm font-medium hover:opacity-70 transition-opacity"
+            className="mt-3 w-full h-11 border border-ink text-ink uppercase text-sm font-medium hover:opacity-70 transition-opacity cursor-pointer"
           >
             + ADD ITEM
           </button>
-        </div>
-        <div className="perforation my-4" />
 
-        {/* DuitNow QR upload — BILL-04: optional QR image for payment */}
-        <div className="mt-6">
-          <label className="uppercase text-xs text-ink block mb-2">
-            DUITNOW QR (OPTIONAL)
-          </label>
-          <QRUpload onUpload={(id) => setQrStorageId(id)} />
-        </div>
+          <div className="perforation my-4" />
 
-        {/* Tax toggles */}
-        <div className="mt-6 space-y-3">
-          <label className="flex items-center gap-3 cursor-pointer">
-            <input
-              type="checkbox"
-              checked={applyServiceCharge}
-              onChange={(e) => setApplyServiceCharge(e.target.checked)}
-              className="w-4 h-4 accent-ink"
-            />
-            <span className="text-sm text-ink uppercase">
-              Service Charge (10%)
-            </span>
-          </label>
-          <label className="flex items-center gap-3 cursor-pointer">
-            <input
-              type="checkbox"
-              checked={applySST}
-              onChange={(e) => setApplySST(e.target.checked)}
-              className="w-4 h-4 accent-ink"
-            />
-            <span className="text-sm text-ink uppercase">
-              SST (6%)
-            </span>
-          </label>
-        </div>
+          {/* TOTALS ZONE */}
+          <p
+            className="text-xs font-bold uppercase text-ink-muted tracking-widest mb-3"
+            style={{ fontFamily: "var(--font-display)" }}
+          >
+            TOTALS
+          </p>
+          <div className="space-y-3 mb-4">
+            <label className="flex items-center gap-3 cursor-pointer">
+              <input
+                type="checkbox"
+                checked={applyServiceCharge}
+                onChange={(e) => setApplyServiceCharge(e.target.checked)}
+                className="w-4 h-4 accent-ink"
+              />
+              <span className="text-sm text-ink">Service Charge (10%)</span>
+            </label>
+            <label className="flex items-center gap-3 cursor-pointer">
+              <input
+                type="checkbox"
+                checked={applySST}
+                onChange={(e) => setApplySST(e.target.checked)}
+                className="w-4 h-4 accent-ink"
+              />
+              <span className="text-sm text-ink">SST (6%)</span>
+            </label>
+          </div>
+          <RunningTotal
+            items={items}
+            applySST={applySST}
+            applyServiceCharge={applyServiceCharge}
+          />
 
-        {/* Running totals */}
-        <RunningTotal
-          items={items}
-          applySST={applySST}
-          applyServiceCharge={applyServiceCharge}
-        />
+          <div className="perforation my-4" />
 
-        {/* GENERATE LINK button — primary CTA, blue bg, disabled when no items */}
-        <div className="mt-6">
+          {/* ATTACHMENTS ZONE */}
+          <p
+            className="text-xs font-bold uppercase text-ink-muted tracking-widest mb-3"
+            style={{ fontFamily: "var(--font-display)" }}
+          >
+            ATTACHMENTS
+          </p>
+          <div className="space-y-4">
+            <div>
+              <p className="text-[0.625rem] uppercase tracking-widest text-ink-muted mb-2">
+                Receipt photo (optional)
+              </p>
+              <QRUpload onUpload={(id) => setReceiptStorageId(id)} />
+            </div>
+            <div>
+              <p className="text-[0.625rem] uppercase tracking-widest text-ink-muted mb-2">
+                DuitNow QR (optional)
+              </p>
+              <QRUpload onUpload={(id) => setQrStorageId(id)} />
+            </div>
+          </div>
+
+          <div className="perforation my-4" />
+
+          {/* GENERATE LINK — primary CTA, blue, disabled when no items */}
           <button
             type="button"
             onClick={handleGenerate}
             disabled={isGenerateDisabled}
-            className={`w-full h-12 bg-pen text-white uppercase font-bold text-base transition-opacity ${
-              isGenerateDisabled
-                ? "opacity-50 cursor-not-allowed pointer-events-none"
-                : "hover:opacity-90 cursor-pointer"
-            }`}
+            className="w-full h-12 bg-pen text-white uppercase font-bold text-sm tracking-widest flex items-center justify-center transition-opacity cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {isSubmitting ? "GENERATING..." : "GENERATE LINK →"}
           </button>
 
-          {/* Inline validation message when no items */}
           {items.length === 0 && (
-            <p className="text-ink opacity-70 text-xs text-center mt-2">
-              ADD AT LEAST ONE ITEM — You cannot share an empty chit.
+            <p className="text-warning font-bold text-xs text-center mt-2">
+              <span lang="ms">Kosong lah — tambah barang dulu baru boleh share</span>
             </p>
           )}
-
-          {/* WR-04: inline validation message for invalid items */}
           {validationError && (
-            <p className="text-ink opacity-70 text-xs text-center mt-2">
+            <p className="text-warning font-bold text-xs text-center mt-2">
               {validationError}
             </p>
           )}
+
         </div>
       </div>
     </main>

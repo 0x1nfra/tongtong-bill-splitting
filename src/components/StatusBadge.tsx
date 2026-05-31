@@ -14,12 +14,16 @@ type StatusBadgeProps = Readonly<{
 export function StatusBadge({ status }: StatusBadgeProps) {
   const colorClass =
     status === "UNCLAIMED ❋"
-      ? "text-stamp" // #B91C1C — permitted red per UI-SPEC
+      ? "text-warning" // amber — attention state, not celebratory
       : status === "N/A"
-        ? "text-ink opacity-40"
+        ? "text-ink-muted"
         : "text-ink";
 
+  const displayText = status === "UNCLAIMED ❋" ? "UNCLAIMED" : status;
   return (
-    <span className={`text-xs uppercase ${colorClass}`}>{status}</span>
+    <span className={`text-xs uppercase ${colorClass}`}>
+      {displayText}
+      {status === "UNCLAIMED ❋" && <span aria-hidden="true"> ❋</span>}
+    </span>
   );
 }

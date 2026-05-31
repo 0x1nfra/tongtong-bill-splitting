@@ -6,7 +6,7 @@
  *
  * UI contract from 04-UI-SPEC.md "ARCHIVED State":
  *   - Renders "ARCHIVED" stamp text (Bungee font, text-stamp class)
- *   - Renders sub-copy "THIS CHIT IS ARCHIVED"
+ *   - Renders sub-copy "THIS BILL IS ARCHIVED"
  */
 
 import { describe, it, expect } from 'vitest'
@@ -19,8 +19,8 @@ describe('ArchivedStamp', () => {
     expect(screen.getByText('ARCHIVED')).toBeInTheDocument()
   })
 
-  it('renders sub-copy THIS CHIT IS ARCHIVED', () => {
+  it('renders sub-copy THIS BILL IS ARCHIVED', () => {
     render(<ArchivedStamp />)
-    expect(screen.getByText('THIS CHIT IS ARCHIVED')).toBeInTheDocument()
+    expect(screen.getByText('THIS BILL IS ARCHIVED')).toBeInTheDocument()
   })
 })

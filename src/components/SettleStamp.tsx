@@ -43,17 +43,12 @@ export function SettleStamp({
 
   if (status === "pending") {
     return (
-      <div className="text-center opacity-50">
-        <div
-          className="inline-block border-2 border-stamp rounded px-4 py-2"
-          style={{ transform: "rotate(-6deg)", filter: "url(#ink-bleed)" }}
-        >
-          <span className="text-3xl font-bold text-stamp uppercase tracking-widest">
-            SETTLE
-          </span>
-        </div>
-        <p className="text-xs text-stamp uppercase tracking-widest mt-1">
+      <div className="text-center py-2">
+        <p className="text-sm font-bold text-stamp uppercase tracking-widest">
           AWAITING CONFIRMATION
+        </p>
+        <p className="text-xs text-ink-muted uppercase tracking-widest mt-1">
+          <span lang="ms">Tunggu kejap — organizer tengah semak</span>
         </p>
       </div>
     );
@@ -64,16 +59,18 @@ export function SettleStamp({
   const animClass = isAnimating ? " animate-stamp-land" : "";
   const stampClassName = stampBase + animClass;
   return (
-    <div className="text-center" aria-busy={isAnimating}>
+    <div className="text-center">
       <div
         className={stampClassName}
         style={{ transform: "rotate(-6deg)", filter: "url(#ink-bleed)" }}
       >
-        <span className="text-3xl font-bold text-stamp uppercase tracking-widest">
+        <span
+          className="text-3xl font-bold text-stamp uppercase tracking-widest font-[family-name:var(--font-stamp)]"
+        >
           SETTLE
         </span>
       </div>
-      <p className="text-xs text-pen uppercase tracking-widest mt-1">
+      <p className="text-sm font-bold text-pen uppercase tracking-widest mt-4">
         HAVE A GOOD ONE!
       </p>
     </div>

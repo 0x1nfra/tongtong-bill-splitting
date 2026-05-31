@@ -5,6 +5,7 @@ import { useQuery, useMutation } from "convex/react";
 import { api } from "../../../../convex/_generated/api";
 import type { Id } from "../../../../convex/_generated/dataModel";
 import { BillSummaryCard } from "../../../components/BillSummaryCard";
+import { CopyLinkField } from "../../../components/CopyLinkField";
 import { ProgressBar } from "../../../components/ProgressBar";
 import { StatsBar } from "../../../components/StatsBar";
 import { MemberRow } from "../../../components/MemberRow";
@@ -21,6 +22,7 @@ export default function DashboardPage({
   const [showCloseConfirm, setShowCloseConfirm] = useState(false);
   const [isUploadingReceipt, setIsUploadingReceipt] = useState(false);
   const [isUploadingQR, setIsUploadingQR] = useState(false);
+  const [closeBillMsg, setCloseBillMsg] = useState<string | null>(null);
 
   useEffect(() => {
     const stored = localStorage.getItem("tongtong_organizer_secret");
@@ -69,11 +71,11 @@ export default function DashboardPage({
   if (organizerSecret === null) {
     return (
       <main className="min-h-screen bg-paper-table flex items-center justify-center">
-        <div className="chit max-w-[480px] w-full mx-4 p-4 animate-pulse">
-          <div className="h-4 bg-ink opacity-10 rounded mb-3 w-1/3" />
-          <div className="h-3 bg-ink opacity-10 rounded mb-2 w-full" />
-          <div className="h-3 bg-ink opacity-10 rounded mb-2 w-4/5" />
-          <div className="h-3 bg-ink opacity-10 rounded w-3/4" />
+        <div role="status" aria-label="Loading dashboard" className="chit max-w-[480px] w-full mx-4 p-4 animate-pulse">
+          <div className="h-4 bg-ink opacity-10 mb-3 w-1/3" />
+          <div className="h-3 bg-ink opacity-10 mb-2 w-full" />
+          <div className="h-3 bg-ink opacity-10 mb-2 w-4/5" />
+          <div className="h-3 bg-ink opacity-10 w-3/4" />
         </div>
       </main>
     );
@@ -84,11 +86,11 @@ export default function DashboardPage({
     return (
       <main className="min-h-screen bg-paper-table flex items-center justify-center">
         <div className="max-w-[480px] mx-auto px-4 py-12 text-center">
-            <h1 className="text-xl font-bold uppercase text-ink tracking-widest mb-3">
-            DASHBOARD NOT ACCESSIBLE
+          <h1 className="text-xl font-bold uppercase text-ink tracking-widest mb-3">
+            WRONG DEVICE LAH
           </h1>
-          <p className="text-sm text-ink opacity-60">
-            Dashboard access requires the device you used to create this chit.
+          <p className="text-sm text-ink-muted">
+            This dashboard can only be opened from the device that created this bill lah.
           </p>
         </div>
       </main>
@@ -99,11 +101,11 @@ export default function DashboardPage({
   if (billData === undefined) {
     return (
       <main className="min-h-screen bg-paper-table flex items-center justify-center">
-        <div className="chit max-w-[480px] w-full mx-4 p-4 animate-pulse">
-          <div className="h-4 bg-ink opacity-10 rounded mb-3 w-1/3" />
-          <div className="h-3 bg-ink opacity-10 rounded mb-2 w-full" />
-          <div className="h-3 bg-ink opacity-10 rounded mb-2 w-4/5" />
-          <div className="h-3 bg-ink opacity-10 rounded w-3/4" />
+        <div role="status" aria-label="Loading dashboard" className="chit max-w-[480px] w-full mx-4 p-4 animate-pulse">
+          <div className="h-4 bg-ink opacity-10 mb-3 w-1/3" />
+          <div className="h-3 bg-ink opacity-10 mb-2 w-full" />
+          <div className="h-3 bg-ink opacity-10 mb-2 w-4/5" />
+          <div className="h-3 bg-ink opacity-10 w-3/4" />
         </div>
       </main>
     );
@@ -115,10 +117,10 @@ export default function DashboardPage({
       <main className="min-h-screen bg-paper-table flex items-center justify-center">
         <div className="max-w-[480px] mx-auto px-4 py-12 text-center">
           <h1 className="text-xl font-bold uppercase text-ink tracking-widest mb-3">
-            DASHBOARD NOT ACCESSIBLE
+            WRONG DEVICE LAH
           </h1>
-          <p className="text-sm text-ink opacity-60">
-            Dashboard access requires the device you used to create this chit.
+          <p className="text-sm text-ink-muted">
+            This dashboard can only be opened from the device that created this bill lah.
           </p>
         </div>
       </main>
@@ -175,7 +177,7 @@ export default function DashboardPage({
   function handleNudgeMember(memberName: string) {
     const sanitizedName = memberName.replace(/[<>"]/g, "");
     const msg = encodeURIComponent(
-      `Eh ${sanitizedName}, still haven't paid for the ${bill.title} chit lah! Tap here to settle: ${shareUrl}`
+      `Eh ${sanitizedName}, still haven't paid for the ${bill.title} bill lah! Tap here to settle: ${shareUrl}`
     );
     window.open(`https://wa.me/?text=${msg}`, "_blank");
   }
@@ -278,16 +280,81 @@ export default function DashboardPage({
     }
   }
 
-  return (
-    <main className="min-h-screen bg-paper-table">
-      <div className="max-w-[960px] mx-auto px-4 py-8">
-        {/* Heading */}
-        <h1 className="text-2xl font-bold uppercase text-ink tracking-widest mb-0.5">
-          {bill.title}
-        </h1>
-        <p className="text-xs text-ink opacity-60 mb-6 uppercase">
-          {displayCode}
+  const closeBillSection = (
+    <div className="mt-4 pt-4 border-t border-ink/20">
+      {closeBillMsg && (
+        <p role="status" className="text-xs text-warning uppercase tracking-widest mb-2">
+          {closeBillMsg}
         </p>
+      )}
+      {!showCloseConfirm ? (
+        <button
+          type="button"
+          onClick={() => { setShowCloseConfirm(true); setCloseBillMsg(null); }}
+          className="w-full border border-stamp text-stamp h-10 uppercase text-sm tracking-widest cursor-pointer"
+        >
+          CLOSE BILL EARLY
+        </button>
+      ) : (
+        <div className="border border-stamp p-3">
+          <p className="text-xs text-stamp uppercase mb-2 font-bold">
+            Close this bill? Members will no longer be able to pay.
+          </p>
+          <div className="flex gap-2">
+            <button
+              type="button"
+              onClick={() => {
+                setCloseBillMsg("COMING SOON — close bill not yet available.");
+                setShowCloseConfirm(false);
+              }}
+              className="border border-stamp text-stamp text-xs min-h-[44px] px-3 uppercase tracking-widest cursor-pointer"
+            >
+              CLOSE BILL
+            </button>
+            <button
+              type="button"
+              onClick={() => setShowCloseConfirm(false)}
+              className="border border-ink text-ink text-xs min-h-[44px] px-3 uppercase tracking-widest cursor-pointer"
+            >
+              CANCEL
+            </button>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+
+  return (
+    <main id="main-content" className="min-h-screen bg-paper-table">
+      <div className="max-w-[960px] mx-auto px-4 py-8">
+        {/* PAGE HEADER */}
+        <p
+          className="text-[0.625rem] font-bold tracking-widest text-ink-muted mb-0.5"
+          style={{ fontFamily: "var(--font-display)" }}
+        >
+          tongtong.
+        </p>
+        <h1
+          className="text-xl font-bold uppercase text-ink tracking-widest mb-1"
+          style={{ fontFamily: "var(--font-display)" }}
+        >
+          Dashboard
+        </h1>
+        <p
+          className="text-sm font-bold text-ink uppercase tracking-widest mb-0.5 break-words"
+          style={{ fontFamily: "var(--font-display)" }}
+        >
+          {bill.title}
+        </p>
+        <p className="text-[0.625rem] text-ink-muted mb-6 uppercase tracking-widest break-words">
+          {bill.venueName ? `${bill.venueName} · ` : ""}{displayCode}
+        </p>
+
+        {/* Mobile-only share strip — md+ uses right column quick actions */}
+        <div className="md:hidden mb-6">
+          <p className="text-xs text-ink-muted mb-2">Share link</p>
+          <CopyLinkField url={shareUrl} />
+        </div>
 
         {/* 2-column layout: left 60%, right 40% on desktop (md+) */}
         <div className="md:grid md:grid-cols-[60%_40%] md:gap-8">
@@ -326,10 +393,10 @@ export default function DashboardPage({
             {!claimants || claimants.length === 0 ? (
               /* Empty state per UI-11 — shown when no claims yet */
               <div className="chit p-6 text-center">
-                <p className="text-xs font-bold uppercase text-ink tracking-widest mb-1 opacity-60">
+                <p className="text-xs font-bold uppercase text-ink-muted tracking-widest mb-1">
                   NOTHING HERE YET
                 </p>
-                <p className="text-sm text-ink opacity-60 mb-4">
+                <p className="text-sm text-ink-muted mb-4">
                   Share the link — members appear here when they start claiming items.
                 </p>
                 <button
@@ -385,6 +452,7 @@ export default function DashboardPage({
             {/* Chit summary */}
             <BillSummaryCard
               title={bill.title}
+              venueName={bill.venueName}
               items={items}
               applySST={bill.applySST}
               applyServiceCharge={bill.applyServiceCharge}
@@ -399,11 +467,11 @@ export default function DashboardPage({
               QUICK ACTIONS
             </h3>
 
-            {/* COPY SHARE LINK — neutral border */}
+            {/* COPY SHARE LINK — primary action, filled blue */}
             <button
               type="button"
               onClick={handleCopyShareLink}
-              className="w-full border border-ink text-ink h-10 uppercase text-sm tracking-widest mb-2 cursor-pointer"
+              className="w-full bg-pen text-white h-10 uppercase text-sm tracking-widest mb-2 cursor-pointer"
             >
               COPY SHARE LINK
             </button>
@@ -417,8 +485,113 @@ export default function DashboardPage({
               EXPORT CSV
             </button>
 
-            {/* UPLOAD RECEIPT — new bonus feature */}
-            <label className={`w-full border border-ink text-ink h-10 uppercase text-sm tracking-widest mb-2 flex items-center justify-center${isUploadingReceipt ? " opacity-50 cursor-wait" : " cursor-pointer"}`}>
+            {/* UPLOAD RECEIPT */}
+            <div className="mb-2">
+              {billData.receiptUrl ? (
+                <div className="flex gap-1">
+                  <label className={`flex-1 border border-ink text-ink h-10 uppercase text-xs tracking-widest flex items-center justify-center${isUploadingReceipt ? " opacity-50 cursor-wait" : " cursor-pointer"}`}>
+                    {isUploadingReceipt ? "UPLOADING..." : "CHANGE RECEIPT"}
+                    <input
+                      type="file"
+                      accept="image/*"
+                      className="sr-only"
+                      disabled={isUploadingReceipt}
+                      onChange={(e) => {
+                        const file = e.target.files?.[0];
+                        if (file) void handleReceiptUpload(file);
+                      }}
+                    />
+                  </label>
+                  <a
+                    href={billData.receiptUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="border border-ink text-ink h-10 px-4 uppercase text-xs tracking-widest flex items-center justify-center cursor-pointer"
+                  >
+                    VIEW →
+                  </a>
+                </div>
+              ) : (
+                <label className={`w-full border border-ink text-ink h-10 uppercase text-sm tracking-widest flex items-center justify-center${isUploadingReceipt ? " opacity-50 cursor-wait" : " cursor-pointer"}`}>
+                  UPLOAD RECEIPT
+                  <input
+                    type="file"
+                    accept="image/*"
+                    className="sr-only"
+                    disabled={isUploadingReceipt}
+                    onChange={(e) => {
+                      const file = e.target.files?.[0];
+                      if (file) void handleReceiptUpload(file);
+                    }}
+                  />
+                </label>
+              )}
+            </div>
+
+            {/* UPLOAD QR / REPLACE QR */}
+            <div className="mb-2">
+              {billData.qrUrl ? (
+                <div className="flex gap-1">
+                  <label className={`flex-1 border border-ink text-ink h-10 uppercase text-xs tracking-widest flex items-center justify-center${isUploadingQR ? " opacity-50 cursor-wait" : " cursor-pointer"}`}>
+                    {isUploadingQR ? "UPLOADING..." : "CHANGE QR"}
+                    <input
+                      type="file"
+                      accept="image/*"
+                      className="sr-only"
+                      disabled={isUploadingQR}
+                      onChange={(e) => {
+                        const file = e.target.files?.[0];
+                        if (file) void handleQRUpload(file);
+                      }}
+                    />
+                  </label>
+                  <a
+                    href={billData.qrUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="border border-ink text-ink h-10 px-4 uppercase text-xs tracking-widest flex items-center justify-center cursor-pointer"
+                  >
+                    VIEW →
+                  </a>
+                </div>
+              ) : (
+                <label className={`w-full border border-ink text-ink h-10 uppercase text-sm tracking-widest flex items-center justify-center${isUploadingQR ? " opacity-50 cursor-wait" : " cursor-pointer"}`}>
+                  UPLOAD QR
+                  <input
+                    type="file"
+                    accept="image/*"
+                    className="sr-only"
+                    disabled={isUploadingQR}
+                    onChange={(e) => {
+                      const file = e.target.files?.[0];
+                      if (file) void handleQRUpload(file);
+                    }}
+                  />
+                </label>
+              )}
+            </div>
+
+            {/* CLOSE CHIT EARLY — destructive, visually separated */}
+            {closeBillSection}
+          </div>
+        </div>
+
+        {/* Mobile quick actions — desktop right column features surfaced below PEOPLE on mobile */}
+        <div className="md:hidden mt-6">
+          <h3 className="uppercase text-xs font-bold text-ink tracking-widest mb-2">
+            QUICK ACTIONS
+          </h3>
+
+          <button
+            type="button"
+            onClick={handleExportCSV}
+            className="w-full border border-ink text-ink h-10 uppercase text-sm tracking-widest mb-2 cursor-pointer"
+          >
+            EXPORT CSV
+          </button>
+
+          <div className="mb-2">
+            <label className={`w-full border border-ink text-ink h-10 uppercase text-sm tracking-widest flex items-center justify-center${isUploadingReceipt ? " opacity-50 cursor-wait" : " cursor-pointer"}`}>
               {isUploadingReceipt ? "UPLOADING..." : billData.receiptUrl ? "CHANGE RECEIPT" : "UPLOAD RECEIPT"}
               <input
                 type="file"
@@ -436,14 +609,15 @@ export default function DashboardPage({
                 href={billData.receiptUrl}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="w-full border border-ink text-ink h-10 uppercase text-sm tracking-widest mb-2 flex items-center justify-center"
+                className="text-xs text-pen underline cursor-pointer mt-1 inline-block"
               >
-                VIEW RECEIPT
+                View receipt
               </a>
             )}
+          </div>
 
-            {/* UPLOAD QR / REPLACE QR — quick action */}
-            <label className={`w-full border border-ink text-ink h-10 uppercase text-sm tracking-widest mb-2 flex items-center justify-center${isUploadingQR ? " opacity-50 cursor-wait" : " cursor-pointer"}`}>
+          <div className="mb-2">
+            <label className={`w-full border border-ink text-ink h-10 uppercase text-sm tracking-widest flex items-center justify-center${isUploadingQR ? " opacity-50 cursor-wait" : " cursor-pointer"}`}>
               {isUploadingQR ? "UPLOADING..." : billData.qrUrl ? "CHANGE QR" : "UPLOAD QR"}
               <input
                 type="file"
@@ -456,54 +630,19 @@ export default function DashboardPage({
                 }}
               />
             </label>
-
             {billData.qrUrl && (
               <a
                 href={billData.qrUrl}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="w-full border border-ink text-ink h-10 uppercase text-sm tracking-widest mb-2 flex items-center justify-center"
+                className="text-xs text-pen underline cursor-pointer mt-1 inline-block"
               >
-                VIEW QR
+                View QR
               </a>
             )}
-
-            {/* CLOSE CHIT EARLY — red permitted per UI-SPEC (destructive action) */}
-            {!showCloseConfirm ? (
-              <button
-                type="button"
-                onClick={() => setShowCloseConfirm(true)}
-                className="w-full border border-stamp text-stamp h-10 uppercase text-sm tracking-widest cursor-pointer"
-              >
-                CLOSE CHIT EARLY
-              </button>
-            ) : (
-              <div className="border border-stamp p-3">
-                <p className="text-xs text-stamp uppercase mb-2 font-bold">
-                  Close this chit? Members will no longer be able to pay.
-                </p>
-                <div className="flex gap-2">
-                  <button
-                    type="button"
-                    onClick={() => {
-                      alert("Close chit feature coming soon.");
-                      setShowCloseConfirm(false);
-                    }}
-                    className="border border-stamp text-stamp text-xs h-8 px-3 uppercase tracking-widest cursor-pointer"
-                  >
-                    CLOSE CHIT
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setShowCloseConfirm(false)}
-                    className="border border-ink text-ink text-xs h-8 px-3 uppercase tracking-widest cursor-pointer"
-                  >
-                    CANCEL
-                  </button>
-                </div>
-              </div>
-            )}
           </div>
+
+          {closeBillSection}
         </div>
       </div>
     </main>

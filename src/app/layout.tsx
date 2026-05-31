@@ -1,9 +1,18 @@
 import type { Metadata } from "next";
 import { JetBrains_Mono, Bungee, Shadows_Into_Light_Two } from "next/font/google";
+import localFont from "next/font/local";
 import { ConvexClientProvider } from "@/components/ConvexClientProvider";
 import { ThemeProvider } from "@/components/ThemeProvider";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import "./globals.css";
+
+const departureMono = localFont({
+  src: "../../public/fonts/DepartureMono-Regular.woff2",
+  weight: "400",
+  style: "normal",
+  display: "swap",
+  variable: "--font-display",
+});
 
 const jetBrainsMono = JetBrains_Mono({
   weight: "variable",
@@ -41,7 +50,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" suppressHydrationWarning className={`${jetBrainsMono.variable} ${bungee.variable} ${shadowsIntoLightTwo.variable} h-full`}>
+    <html lang="en-MY" suppressHydrationWarning className={`${departureMono.variable} ${jetBrainsMono.variable} ${bungee.variable} ${shadowsIntoLightTwo.variable} h-full`}>
       <body className="min-h-full flex flex-col">
         <svg id="filters" aria-hidden="true">
           <defs>
@@ -52,8 +61,24 @@ export default function RootLayout({
           </defs>
         </svg>
         <ThemeProvider>
+          <nav aria-label="Site navigation">
+            <a
+              href="#main-content"
+              className="sr-only focus:not-sr-only focus:fixed focus:top-4 focus:left-4 focus:z-[10001] focus:px-4 focus:py-2 focus:bg-pen focus:text-white focus:text-sm focus:uppercase focus:tracking-widest"
+            >
+              Skip to content
+            </a>
+          </nav>
           <ThemeToggle />
           <ConvexClientProvider>{children}</ConvexClientProvider>
+          <footer className="py-4 text-center">
+            <p
+              className="text-[0.625rem] uppercase tracking-widest text-ink-muted"
+              style={{ fontFamily: "var(--font-display)" }}
+            >
+              POWERED BY VESSL TECH
+            </p>
+          </footer>
         </ThemeProvider>
       </body>
     </html>
