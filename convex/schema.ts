@@ -27,6 +27,7 @@ export default defineSchema({
     itemId: v.id("items"),
     claimantName: v.string(),
     claimantSession: v.string(),
+    claimQty: v.optional(v.number()), // units claimed; absent = 1 (backward compat)
     createdAt: v.number(),
   })
     .index("by_bill", ["billId"])

@@ -41,7 +41,7 @@ export function calculateTotals(
  */
 export function calculatePersonTotals(
   items: Array<{ _id: string; price: number; quantity: number }>,
-  claims: Array<{ itemId: string; claimantSession: string }>,
+  claims: Array<{ itemId: string; claimantSession: string; claimQty?: number }>,
   claimantSession: string,
   billTotals: ReturnType<typeof calculateTotals>
 ): {
@@ -85,8 +85,8 @@ export function calculatePersonTotals(
     const item = itemMap.get(claim.itemId);
     if (!item) continue;
     if (item.quantity > 1) {
-      // Multi-qty item: each claim = 1 unit at item.price
-      personSubtotalCents += item.price;
+      // Multi-qty item: claimant pays for however many units they claimed
+      personSubtotalCents += item.price * (claim.claimQty ?? 1);
     } else {
       // Single item: split cost among all claimants
       const claimantCount = claimantsPerItem.get(claim.itemId) ?? 1;

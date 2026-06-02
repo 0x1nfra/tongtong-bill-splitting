@@ -8,7 +8,7 @@ type MemberRowProps = Readonly<{
   name: string;
   status: StatusValue;
   amountOwed: number; // integer cents
-  claimedItems?: ReadonlyArray<{ name: string; price: number; quantity: number }>;
+  claimedItems?: ReadonlyArray<{ name: string; price: number; claimedQty: number }>;
   onConfirm?: () => void;
   onReject?: () => void;
   onRemind?: () => void;
@@ -90,7 +90,7 @@ export function MemberRow({
             <div className="mt-1 pl-1">
               {claimedItems.map((item, i) => (
                 <p key={i} className="text-xs text-ink py-0.5">
-                  {item.name} × {item.quantity} — RM{((item.price * item.quantity) / 100).toFixed(2)}
+                  {item.name} × {item.claimedQty} — RM{((item.price * item.claimedQty) / 100).toFixed(2)}
                 </p>
               ))}
             </div>

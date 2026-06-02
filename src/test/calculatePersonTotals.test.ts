@@ -27,6 +27,10 @@ function claim(itemId: string, claimantSession: string) {
   return { itemId, claimantSession }
 }
 
+function claimWithQty(itemId: string, claimantSession: string, claimQty: number) {
+  return { itemId, claimantSession, claimQty }
+}
+
 // ---------------------------------------------------------------------------
 // Test items and bill for most scenarios
 // ---------------------------------------------------------------------------
@@ -52,14 +56,36 @@ describe('calculatePersonTotals — single claimer per item', () => {
     expect(result.personTotalCents).toBe(1500)
   })
 
-  it('sole claimer of qty > 1 item pays 1 unit (item.price, not price * quantity)', () => {
+  it('sole claimer of qty > 1 item with no claimQty pays 1 unit (default)', () => {
     const items = [item('i1', 800, 3)]
     const claims = [claim('i1', 'alice')]
     const billTotals = calculateTotals(items, false, false)
     const result = calculatePersonTotals(items, claims, 'alice', billTotals)
-    // alice sole claimer of multi-qty item: pays 1 unit = 800, not 800 * 3
+    // no claimQty → defaults to 1 unit = 800
     expect(result.personSubtotalCents).toBe(800)
     expect(result.personTotalCents).toBe(800)
+  })
+
+  it('claimant claiming 2 units of a qty>1 item pays 2× the unit price', () => {
+    const items = [item('i1', 800, 5)]
+    const claims = [claimWithQty('i1', 'alice', 2)]
+    const billTotals = calculateTotals(items, false, false)
+    const result = calculatePersonTotals(items, claims, 'alice', billTotals)
+    // alice claims 2 of 5 nasi lemak at 800 each → 1600
+    expect(result.personSubtotalCents).toBe(1600)
+    expect(result.personTotalCents).toBe(1600)
+  })
+
+  it('two people claim different quantities of the same multi-qty item', () => {
+    const items = [item('i1', 1200, 5)]
+    // alice claims 3, bob claims 2 — bill subtotal = 5 * 1200 = 6000
+    const claims = [claimWithQty('i1', 'alice', 3), claimWithQty('i1', 'bob', 2)]
+    const billTotals = calculateTotals(items, false, false)
+    const alice = calculatePersonTotals(items, claims, 'alice', billTotals)
+    const bob = calculatePersonTotals(items, claims, 'bob', billTotals)
+    expect(alice.personSubtotalCents).toBe(3600) // 3 × 1200
+    expect(bob.personSubtotalCents).toBe(2400)   // 2 × 1200
+    expect(alice.personSubtotalCents + bob.personSubtotalCents).toBe(billTotals.subtotalCents)
   })
 })
 

@@ -69,6 +69,9 @@ export default function MemberViewPage({
   // Per-item mutation in-flight guard (Pitfall 3 / T-02-10)
   const [pendingItems, setPendingItems] = useState<Set<string>>(new Set());
 
+  // Per-item selected quantity for multi-qty items (staged before confirming claim)
+  const [pendingQty, setPendingQty] = useState<Map<string, number>>(new Map());
+
   const [receiptLightboxOpen, setReceiptLightboxOpen] = useState(false);
   const receiptTriggerRef = useRef<HTMLButtonElement>(null);
 
@@ -155,17 +158,24 @@ export default function MemberViewPage({
    * If name not set: expand inline name-entry (D-02).
    * If name set: fire claim/unclaim immediately (D-03/D-04).
    */
-  const handleItemTap = async (itemId: string, myClaimId?: string) => {
+  const handleItemTap = async (itemId: string, myClaimId?: string, itemQty?: number) => {
     if (bill?.archivedAt) return; // BONUS-03: archived bills block all claims
     if (!claimantSession) return; // T-02-09: session not yet loaded
     if (pendingItems.has(itemId)) return; // T-02-10: mutation in-flight
 
     if (!memberName) {
-      // D-02: first tap — expand inline name-entry for this item
+      // D-02: first tap — expand inline name-entry (and stepper for multi-qty)
       setExpandedItemId(itemId);
       return;
     }
 
+    // Multi-qty items: expand stepper instead of claiming immediately
+    if (itemQty && itemQty > 1) {
+      setExpandedItemId(expandedItemId === itemId ? null : itemId);
+      return;
+    }
+
+    // Qty=1 items: immediate toggle
     setPendingItems((prev) => new Set(prev).add(itemId));
     try {
       if (myClaimId) {
@@ -194,11 +204,35 @@ export default function MemberViewPage({
     }
   };
 
+  // handleQtyClaim — confirm claim for a multi-qty item with chosen quantity
+  const handleQtyClaim = async (itemId: string, claimQty: number) => {
+    if (!claimantSession || !memberName) return;
+    setExpandedItemId(null);
+    setPendingItems((prev) => new Set(prev).add(itemId));
+    try {
+      await claimItemMutation({
+        billId: billId as Id<"bills">,
+        itemId: itemId as Id<"items">,
+        claimantName: memberName,
+        claimantSession,
+        claimQty,
+      });
+    } catch (err) {
+      console.error("Claim failed:", err);
+    } finally {
+      setPendingItems((prev) => {
+        const next = new Set(prev);
+        next.delete(itemId);
+        return next;
+      });
+    }
+  };
+
   /**
    * handleNameSubmit — D-02: save name, collapse inline entry, fire claim.
    * Guard: if (!claimantSession) return (Pitfall 1 / T-02-09).
    */
-  const handleNameSubmit = async (itemId: string) => {
+  const handleNameSubmit = async (itemId: string, claimQty?: number) => {
     const name = nameInput.trim();
     if (!name) return;
     if (!claimantSession) return; // T-02-09
@@ -214,6 +248,7 @@ export default function MemberViewPage({
         itemId: itemId as Id<"items">,
         claimantName: name,
         claimantSession,
+        claimQty: claimQty ?? 1,
       });
     } catch (err) {
       console.error("Claim failed:", err);
@@ -462,15 +497,24 @@ export default function MemberViewPage({
                 (c) => c.claimantSession === claimantSession,
               );
               const totalClaimants = itemClaims.length;
+              const isMine = !!myClaimOnItem;
+              const isPending = pendingItems.has(item._id);
+              const myClaimedQty = myClaimOnItem ? (myClaimOnItem.claimQty ?? 1) : 0;
+              const totalClaimedQty = item.quantity > 1
+                ? itemClaims.reduce((sum, c) => sum + (c.claimQty ?? 1), 0)
+                : totalClaimants;
+              const othersClaimedQty = totalClaimedQty - myClaimedQty;
+              const remainingForMe = item.quantity - othersClaimedQty;
+              const pendingQtyForItem = pendingQty.get(item._id) ?? (myClaimedQty || 1);
               const splitPriceCents =
                 item.quantity > 1
-                  ? item.price
+                  ? isMine
+                    ? item.price * myClaimedQty
+                    : item.price
                   : totalClaimants > 0
                     ? Math.round(item.price / totalClaimants)
                     : item.price;
               const isExpanded = expandedItemId === item._id;
-              const isMine = !!myClaimOnItem;
-              const isPending = pendingItems.has(item._id);
 
               return (
                 <div key={item._id}>
@@ -479,8 +523,8 @@ export default function MemberViewPage({
                     type="button"
                     className="dot-leader w-full min-h-[48px] flex items-center text-left px-0 py-2 cursor-pointer hover:bg-paper-chit/50 transition-colors disabled:opacity-50 disabled:cursor-wait"
                     disabled={isPending}
-                    aria-label={`${item.name} — tap to ${isMine ? "unclaim" : totalClaimants > 0 ? "co-claim" : "claim"}`}
-                    onClick={() => handleItemTap(item._id, myClaimOnItem?._id)}
+                    aria-label={`${item.name} — tap to ${isMine ? "adjust or unclaim" : totalClaimants > 0 ? "co-claim" : "claim"}`}
+                    onClick={() => handleItemTap(item._id, myClaimOnItem?._id, item.quantity)}
                   >
                     {/* Left side: unclaimed indicator + item name + qty */}
                     <span
@@ -492,7 +536,7 @@ export default function MemberViewPage({
                       {item.name}
                       {item.quantity > 1 ? (
                         <span className="text-ink-muted ml-1 text-xs">
-                          x{item.quantity}
+                          qty:{totalClaimedQty}/{item.quantity}
                         </span>
                       ) : null}
                     </span>
@@ -505,17 +549,34 @@ export default function MemberViewPage({
                     </span>
                   </button>
 
-                  {/* Claimant names row (CLAIM-04) */}
+                  {/* Claimant names row (CLAIM-04) — your name is tappable: tap = unclaim (qty=1) or adjust stepper (multi-qty) */}
                   {totalClaimants > 0 ? (
                     <div className="flex flex-wrap gap-1 px-0 pb-1">
-                      {itemClaims.map((claim) => (
-                        <span
-                          key={claim._id}
-                          className={`font-[family-name:var(--font-handwriting)] text-pen text-sm${claim.claimantSession === claimantSession ? " font-bold" : ""}`}
-                        >
-                          {claim.claimantName}
-                        </span>
-                      ))}
+                      {itemClaims.map((claim) => {
+                        const isMe = claim.claimantSession === claimantSession;
+                        const label = `${claim.claimantName}${(claim.claimQty ?? 1) > 1 ? ` ×${claim.claimQty}` : ""}`;
+                        if (isMe) {
+                          return (
+                            <button
+                              key={claim._id}
+                              type="button"
+                              onClick={() => handleItemTap(item._id, claim._id, item.quantity)}
+                              className="font-[family-name:var(--font-handwriting)] text-pen text-sm font-bold cursor-pointer hover:line-through focus-visible:outline-2 focus-visible:outline-pen focus-visible:outline-offset-1"
+                              aria-label={`Remove your claim for ${item.name}`}
+                            >
+                              {label}
+                            </button>
+                          );
+                        }
+                        return (
+                          <span
+                            key={claim._id}
+                            className="font-[family-name:var(--font-handwriting)] text-pen text-sm"
+                          >
+                            {label}
+                          </span>
+                        );
+                      })}
                     </div>
                   ) : null}
 
@@ -526,35 +587,109 @@ export default function MemberViewPage({
                     </p>
                   ) : null}
 
-                  {/* Inline name-entry expansion (D-02) */}
+                  {/* Inline expansion: name entry + (for multi-qty) stepper (D-02) */}
                   <div
-                    className={`overflow-hidden transition-[max-height] duration-200 ease-out${isExpanded ? " max-h-[80px]" : " max-h-0"}`}
+                    className={`overflow-hidden transition-[max-height] duration-200 ease-out${isExpanded ? " max-h-[240px]" : " max-h-0"}`}
                   >
-                    <div className="bg-paper-chit px-2 py-2 flex gap-2 items-center">
-                      <label
-                        htmlFor={`claimantName-${item._id}`}
-                        className="text-xs font-bold uppercase tracking-widest text-ink shrink-0"
-                      >
-                        YOUR NAME
-                      </label>
-                      <input
-                        id={`claimantName-${item._id}`}
-                        type="text"
-                        value={nameInput}
-                        onChange={(e) => setNameInput(e.target.value)}
-                        placeholder="Enter your name"
-                        onKeyDown={(e) => {
-                          if (e.key === "Enter") handleNameSubmit(item._id);
-                        }}
-                        className="flex-1 border border-ink bg-paper-chit text-ink text-sm px-2 py-2 focus:outline-none focus-visible:outline-2 focus-visible:outline-pen focus-visible:outline-offset-2 min-w-0"
-                      />
-                      <button
-                        type="button"
-                        onClick={() => handleNameSubmit(item._id)}
-                        className="bg-pen text-white text-xs uppercase font-bold tracking-widest px-3 py-2 shrink-0 min-h-[44px] cursor-pointer"
-                      >
-                        CLAIM
-                      </button>
+                    <div className="bg-paper-chit px-2 py-2 flex flex-col gap-2">
+                      {/* Name entry row — only if name not yet set */}
+                      {!memberName && (
+                        <div className="flex gap-2 items-center">
+                          <label
+                            htmlFor={`claimantName-${item._id}`}
+                            className="text-xs font-bold uppercase tracking-widest text-ink shrink-0"
+                          >
+                            YOUR NAME
+                          </label>
+                          <input
+                            id={`claimantName-${item._id}`}
+                            type="text"
+                            value={nameInput}
+                            onChange={(e) => setNameInput(e.target.value)}
+                            placeholder="Enter your name"
+                            onKeyDown={(e) => {
+                              if (e.key === "Enter") handleNameSubmit(item._id, item.quantity > 1 ? pendingQtyForItem : 1);
+                            }}
+                            className="flex-1 border border-ink bg-paper-chit text-ink text-sm px-2 py-2 focus:outline-none focus-visible:outline-2 focus-visible:outline-pen focus-visible:outline-offset-2 min-w-0"
+                          />
+                        </div>
+                      )}
+
+                      {/* Stepper row — only for multi-qty items */}
+                      {item.quantity > 1 ? (
+                        <div className="flex gap-2 items-center">
+                          <span className="text-xs font-bold uppercase tracking-widest text-ink shrink-0">
+                            HOW MANY
+                          </span>
+                          <button
+                            type="button"
+                            aria-label="Decrease quantity"
+                            disabled={pendingQtyForItem <= 1}
+                            onClick={() => setPendingQty((prev) => {
+                              const next = new Map(prev);
+                              next.set(item._id, Math.max(1, pendingQtyForItem - 1));
+                              return next;
+                            })}
+                            className="border border-ink text-ink text-sm w-8 h-8 flex items-center justify-center cursor-pointer disabled:opacity-30"
+                          >
+                            −
+                          </button>
+                          <span className="text-sm font-bold text-ink w-6 text-center">{pendingQtyForItem}</span>
+                          <button
+                            type="button"
+                            aria-label="Increase quantity"
+                            disabled={pendingQtyForItem >= remainingForMe}
+                            onClick={() => setPendingQty((prev) => {
+                              const next = new Map(prev);
+                              next.set(item._id, Math.min(remainingForMe, pendingQtyForItem + 1));
+                              return next;
+                            })}
+                            className="border border-ink text-ink text-sm w-8 h-8 flex items-center justify-center cursor-pointer disabled:opacity-30"
+                          >
+                            +
+                          </button>
+                          <span className="text-xs text-ink-muted ml-1">
+                            of {remainingForMe} left
+                          </span>
+                          {isMine && (
+                            <button
+                              type="button"
+                              onClick={async () => {
+                                if (!claimantSession || !myClaimOnItem) return;
+                                setExpandedItemId(null);
+                                setPendingItems((prev) => new Set(prev).add(item._id));
+                                try {
+                                  await unclaimItemMutation({ claimId: myClaimOnItem._id as Id<"claims">, claimantSession });
+                                } catch (err) {
+                                  console.error("Unclaim failed:", err);
+                                } finally {
+                                  setPendingItems((prev) => { const next = new Set(prev); next.delete(item._id); return next; });
+                                }
+                              }}
+                              className="ml-auto text-xs text-ink-muted uppercase tracking-widest cursor-pointer border-none bg-transparent"
+                            >
+                              REMOVE
+                            </button>
+                          )}
+                        </div>
+                      ) : null}
+
+                      {/* Confirm button */}
+                      <div className="flex justify-end">
+                        <button
+                          type="button"
+                          onClick={() => {
+                            if (!memberName) {
+                              handleNameSubmit(item._id, item.quantity > 1 ? pendingQtyForItem : 1);
+                            } else {
+                              handleQtyClaim(item._id, item.quantity > 1 ? pendingQtyForItem : 1);
+                            }
+                          }}
+                          className="bg-pen text-white text-xs uppercase font-bold tracking-widest px-3 py-2 shrink-0 min-h-[44px] cursor-pointer"
+                        >
+                          {isMine ? "UPDATE" : "CLAIM"}
+                        </button>
+                      </div>
                     </div>
                   </div>
                   {index < items.length - 1 ? (

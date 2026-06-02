@@ -134,7 +134,7 @@ export default function DashboardPage({
 
   // Build synthetic claims from claimedItems data for per-member calculation
   const syntheticClaims = (claimants ?? []).flatMap((c) =>
-    c.claimedItems.map((item) => ({ itemId: item._id, claimantSession: c.claimantSession }))
+    c.claimedItems.map((item) => ({ itemId: item._id, claimantSession: c.claimantSession, claimQty: item.claimedQty }))
   );
 
   // Pre-compute actual per-member totals based on claimed items

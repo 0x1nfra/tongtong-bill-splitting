@@ -159,8 +159,15 @@ export const claimItem = mutation({
     itemId: v.id("items"),
     claimantName: v.string(),
     claimantSession: v.string(),
+    claimQty: v.optional(v.number()),
   },
-  handler: async (ctx, { billId, itemId, claimantName, claimantSession }) => {
+  handler: async (ctx, { billId, itemId, claimantName, claimantSession, claimQty }) => {
+    const effectiveQty = claimQty ?? 1;
+
+    if (!Number.isInteger(effectiveQty) || effectiveQty < 1) {
+      throw new Error("claimQty must be a positive integer");
+    }
+
     // Verify bill exists
     const bill = await ctx.db.get(billId);
     if (!bill) throw new Error("Bill not found");
@@ -170,7 +177,24 @@ export const claimItem = mutation({
     const item = await ctx.db.get(itemId);
     if (!item || item.billId !== billId) throw new Error("Item not found on this bill");
 
-    // Idempotency guard: return existing claim _id if session already claimed this item (T-02-03)
+    // For multi-qty items: validate total claimed units won't exceed item.quantity
+    if (item.quantity > 1) {
+      const allClaims = await ctx.db
+        .query("claims")
+        .withIndex("by_item", (q) => q.eq("itemId", itemId))
+        .collect();
+      // Exclude this session's own existing claim from the capacity check
+      const othersClaimed = allClaims
+        .filter((c) => c.claimantSession !== claimantSession)
+        .reduce((sum, c) => sum + (c.claimQty ?? 1), 0);
+      if (othersClaimed + effectiveQty > item.quantity) {
+        throw new Error(
+          `Only ${item.quantity - othersClaimed} unit(s) remaining for this item`
+        );
+      }
+    }
+
+    // Idempotency / upsert: if session already claimed this item, update claimQty (T-02-03)
     const existing = await ctx.db
       .query("claims")
       .withIndex("by_session", (q) =>
@@ -180,6 +204,7 @@ export const claimItem = mutation({
       .first();
 
     if (existing) {
+      await ctx.db.patch(existing._id, { claimQty: effectiveQty });
       return existing._id;
     }
 
@@ -188,6 +213,7 @@ export const claimItem = mutation({
       itemId,
       claimantName,
       claimantSession,
+      claimQty: effectiveQty,
       createdAt: Date.now(),
     });
   },
@@ -339,13 +365,13 @@ export const getClaimantsForBill = query({
       claimantSession: string;
       claimantName: string;
       firstClaimAt: number;
-      itemIds: Id<"items">[];
+      claimRecords: Array<{ itemId: Id<"items">; claimQty: number }>;
     };
     const sessionMap = new Map<string, SessionData>();
     for (const claim of claims) {
       const existing = sessionMap.get(claim.claimantSession);
       if (existing) {
-        existing.itemIds.push(claim.itemId);
+        existing.claimRecords.push({ itemId: claim.itemId, claimQty: claim.claimQty ?? 1 });
         if (claim.createdAt < existing.firstClaimAt) {
           existing.firstClaimAt = claim.createdAt;
         }
@@ -354,7 +380,7 @@ export const getClaimantsForBill = query({
           claimantSession: claim.claimantSession,
           claimantName: claim.claimantName,
           firstClaimAt: claim.createdAt,
-          itemIds: [claim.itemId],
+          claimRecords: [{ itemId: claim.itemId, claimQty: claim.claimQty ?? 1 }],
         });
       }
     }
@@ -362,16 +388,16 @@ export const getClaimantsForBill = query({
     // Build result array, resolve item details, sort by firstClaimAt ascending
     const result = [...sessionMap.values()]
       .sort((a, b) => a.firstClaimAt - b.firstClaimAt)
-      .map(({ claimantSession, claimantName, itemIds }) => {
-        const claimedItems = itemIds
-          .map((id) => {
-            const item = itemById.get(id);
+      .map(({ claimantSession, claimantName, claimRecords }) => {
+        const claimedItems = claimRecords
+          .map(({ itemId, claimQty }) => {
+            const item = itemById.get(itemId);
             if (!item) return null;
             return {
               _id: item._id as string,
               name: item.name,
               price: item.price,
-              quantity: item.quantity,
+              claimedQty: claimQty,
             };
           })
           .filter((i): i is NonNullable<typeof i> => i !== null);
