@@ -169,3 +169,53 @@ describe('calculateTotals — Math.round on percentage outputs', () => {
     expect(result.grandTotalCents).toBe(afterSC + Math.round(afterSC * 0.06)) // 388
   })
 })
+
+// ---------------------------------------------------------------------------
+// 9. Rounding adjustment in grand total formula (RED — function not yet extended)
+// ---------------------------------------------------------------------------
+
+describe('calculateTotals — rounding adjustment', () => {
+  it('T-CALC-ADJ-01: adj=0 leaves grandTotalCents unchanged and roundingAdjustmentCents is 0', () => {
+    // Current behaviour: calculateTotals([{price:1000,qty:2}], false, false) → grand=2000
+    // With explicit 4th arg = 0, should be identical
+    const result = calculateTotals([item(1000, 2)], false, false, 0)
+    expect(result.grandTotalCents).toBe(2000)
+    expect(result.roundingAdjustmentCents).toBe(0)
+  })
+
+  it('T-CALC-ADJ-02: positive adjustment increases grandTotalCents by exact adjustment amount', () => {
+    // subtotal = 1000; SC = 0; SST = 0; adj = 5; grand = 1005
+    const result = calculateTotals([item(1000, 1)], false, false, 5)
+    expect(result.grandTotalCents).toBe(1005)
+    expect(result.grandTotalCents).toBe(1000 + 0 + 0 + 5)
+  })
+
+  it('T-CALC-ADJ-03: negative adjustment decreases grandTotalCents', () => {
+    // subtotal = 1000; SC = 0; SST = 0; adj = -3; grand = 997
+    const result = calculateTotals([item(1000, 1)], false, false, -3)
+    expect(result.grandTotalCents).toBe(997)
+  })
+
+  it('T-CALC-ADJ-04: roundingAdjustmentCents field is present in return object', () => {
+    // Call with adj = 2; result must expose roundingAdjustmentCents === 2
+    const result = calculateTotals([item(500, 2)], false, false, 2)
+    expect(result.roundingAdjustmentCents).toBe(2)
+  })
+
+  it('T-CALC-ADJ-05: grandTotalCents equals subtotal + SC + SST + adj (exact arithmetic check)', () => {
+    // subtotal = 200*3 = 600; SC = Math.round(600*0.1) = 60; afterSC = 660
+    // SST = Math.round(660*0.06) = Math.round(39.6) = 40; adj = 4
+    // grandTotal = 600 + 60 + 40 + 4 = 704
+    const result = calculateTotals([item(200, 3)], true, true, 4)
+    const expectedSubtotal = 600
+    const expectedSC = Math.round(600 * 0.1)         // 60
+    const afterSC = expectedSubtotal + expectedSC      // 660
+    const expectedSST = Math.round(afterSC * 0.06)    // 40
+    const expectedGrand = expectedSubtotal + expectedSC + expectedSST + 4  // 704
+    expect(result.grandTotalCents).toBe(expectedGrand)
+    expect(result.grandTotalCents).toBe(704)
+    expect(result.grandTotalCents).toBe(
+      result.subtotalCents + result.serviceChargeCents + result.sstCents + result.roundingAdjustmentCents
+    )
+  })
+})
