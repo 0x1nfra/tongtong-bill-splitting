@@ -107,11 +107,12 @@ export default function MemberViewPage({
   );
 
   // T-05-05: redirect to dashboard only when confirmed as this bill's organizer
+  // CR-01: guard with pendingItems.size === 0 to avoid redirect while claim mutation is in-flight
   useEffect(() => {
-    if (organizerBillData != null) {
+    if (organizerBillData != null && pendingItems.size === 0) {
       router.replace(`/dashboard/${billId}`);
     }
-  }, [organizerBillData, billId, router]);
+  }, [organizerBillData, billId, router, pendingItems]);
 
   const bill = useQuery(
     api.bills.getBillForMember,
@@ -339,7 +340,7 @@ export default function MemberViewPage({
   const items = bill.items ?? [];
   const claims = bill.claims ?? [];
 
-  const totals = calculateTotals(items, bill.applySST, bill.applyServiceCharge);
+  const totals = calculateTotals(items, bill.applySST, bill.applyServiceCharge, bill.roundingAdjustmentCents ?? 0);
 
   // Build claims-by-item map for O(1) lookups (D-05, CALC-01)
   const claimsByItem = new Map<string, typeof claims>();
@@ -352,14 +353,19 @@ export default function MemberViewPage({
   const hasClaims = claims.some((c) => c.claimantSession === claimantSession);
 
   // Your Portion panel values (CALC-01 through CALC-05)
+  // ADJ-07: pass roundingAdjustmentCents as 5th arg to distribute adjustment proportionally
   const personTotals =
     bill && claimantSession
-      ? calculatePersonTotals(items, claims, claimantSession, totals)
+      ? calculatePersonTotals(items, claims, claimantSession, totals, bill.roundingAdjustmentCents ?? 0)
       : null;
 
-  const paymentStatus = payment?.status ?? null;
-  const showPayForm = paymentStatus === null || paymentStatus === "rejected";
+  // CR-02: treat payment === undefined (query loading) as disabled — do NOT collapse to null via ??
+  const isPaymentLoading = payment === undefined && claimantSession !== null;
+  const paymentStatus = payment === undefined ? null : (payment?.status ?? null);
+  const showPayForm =
+    !isPaymentLoading && (paymentStatus === null || paymentStatus === "rejected");
   const isButtonDisabled =
+    isPaymentLoading ||
     !claimantSession ||
     !memberName ||
     isPaying ||
@@ -764,6 +770,16 @@ export default function MemberViewPage({
                   <span className="text-ink-muted">SST (6%)</span>
                   <span>
                     RM{((personTotals?.personSSTCents ?? 0) / 100).toFixed(2)}
+                  </span>
+                </div>
+              ) : null}
+
+              {/* ADJ-07: rounding adjustment row — only shown when non-zero */}
+              {(personTotals?.personRoundingAdjustmentCents ?? 0) !== 0 ? (
+                <div className="dot-leader flex justify-between text-sm text-ink mb-1">
+                  <span className="text-ink-muted">Rounding Adj.</span>
+                  <span className={(personTotals?.personRoundingAdjustmentCents ?? 0) > 0 ? "text-pen" : "text-ink"}>
+                    {(personTotals?.personRoundingAdjustmentCents ?? 0) > 0 ? "+" : ""}RM{(Math.abs(personTotals?.personRoundingAdjustmentCents ?? 0) / 100).toFixed(2)}
                   </span>
                 </div>
               ) : null}
