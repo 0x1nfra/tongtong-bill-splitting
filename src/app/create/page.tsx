@@ -44,6 +44,9 @@ export default function CreatePage() {
   const [applySST, setApplySST] = useState(false);
   const [applyServiceCharge, setApplyServiceCharge] = useState(false);
 
+  // Rounding adjustment state (integer RM cents, may be negative)
+  const [roundingAdjustmentCents, setRoundingAdjustmentCents] = useState<number>(0);
+
   // QR upload state — BILL-04: storageId from Convex file storage
   const [qrStorageId, setQrStorageId] = useState<string | undefined>(undefined);
   const [receiptStorageId, setReceiptStorageId] = useState<string | undefined>(undefined);
@@ -113,6 +116,7 @@ export default function CreatePage() {
         receiptStorageId: receiptStorageId as Id<"_storage"> | undefined,
         venueName: venueName || undefined,
         billDate: billDate || undefined,
+        roundingAdjustmentCents: roundingAdjustmentCents !== 0 ? roundingAdjustmentCents : undefined,
         items: items.map((item, index) => ({
           name: item.name,
           // T-03-01: convert RM string to integer cents before sending to Convex
@@ -261,10 +265,27 @@ export default function CreatePage() {
               <span className="text-sm text-ink">SST (6%)</span>
             </label>
           </div>
+          {/* ROUNDING ADJUSTMENT — optional, integer RM cents */}
+          <div className="flex flex-col gap-1 mb-4">
+            <label htmlFor="rounding-adjustment" className="text-[0.625rem] uppercase tracking-widest text-ink-muted">
+              Rounding Adjustment (optional)
+            </label>
+            <input
+              id="rounding-adjustment"
+              type="number"
+              step="1"
+              value={roundingAdjustmentCents === 0 ? "" : roundingAdjustmentCents}
+              onChange={(e) => setRoundingAdjustmentCents(parseInt(e.target.value, 10) || 0)}
+              placeholder="0"
+              className="w-full border border-ink bg-paper-chit px-3 py-2 text-ink text-sm focus:outline-none focus-visible:outline-2 focus-visible:outline-pen focus-visible:outline-offset-2"
+            />
+            <p className="text-[0.625rem] text-ink-muted">Integer RM cents (e.g. +1 or -2). Use to reconcile rounding.</p>
+          </div>
           <RunningTotal
             items={items}
             applySST={applySST}
             applyServiceCharge={applyServiceCharge}
+            roundingAdjustmentCents={roundingAdjustmentCents}
           />
 
           <div className="perforation my-4" />

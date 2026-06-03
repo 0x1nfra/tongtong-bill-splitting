@@ -66,6 +66,7 @@ export default function DashboardPage({
   const generateUploadUrl = useMutation(api.bills.generateUploadUrl);
   const setBillReceipt = useMutation(api.bills.setBillReceipt);
   const updateQR = useMutation(api.bills.updateQR);
+  const updateRoundingAdjustment = useMutation(api.bills.updateRoundingAdjustment);
 
   // organizerSecret is null while localStorage hasn't been read yet (SSR-safe)
   if (organizerSecret === null) {
@@ -129,7 +130,7 @@ export default function DashboardPage({
 
   const { bill, items } = billData;
   const isArchived = !!bill.archivedAt;
-  const billTotals = calculateTotals(items, bill.applySST, bill.applyServiceCharge);
+  const billTotals = calculateTotals(items, bill.applySST, bill.applyServiceCharge, bill.roundingAdjustmentCents ?? 0);
   const { grandTotalCents } = billTotals;
 
   // Build synthetic claims from claimedItems data for per-member calculation
@@ -140,9 +141,13 @@ export default function DashboardPage({
   // Pre-compute actual per-member totals based on claimed items
   const memberTotalsMap = new Map<string, number>();
   for (const claimant of claimants ?? []) {
-    const pt = calculatePersonTotals(items, syntheticClaims, claimant.claimantSession, billTotals);
+    const pt = calculatePersonTotals(items, syntheticClaims, claimant.claimantSession, billTotals, bill.roundingAdjustmentCents ?? 0);
     memberTotalsMap.set(claimant.claimantSession, pt.personTotalCents);
   }
+
+  // Discrepancy between grand total and sum of per-member totals
+  const sumOfPersonTotals = [...memberTotalsMap.values()].reduce((a, b) => a + b, 0);
+  const discrepancyCents = grandTotalCents - sumOfPersonTotals;
 
   // Derive stats from payments (CR-04: correct variable semantics)
   const confirmed = payments?.filter((p) => p.status === "settled").length ?? 0;
@@ -465,8 +470,40 @@ export default function DashboardPage({
               displayCode={displayCode}
             />
 
-            {/* Perforation between BillSummaryCard and quick actions */}
+            {/* Perforation between BillSummaryCard and totals/actions */}
             <div className="perforation my-4" />
+
+            {/* SPLIT VS TOTAL discrepancy row — only when there are claimants */}
+            {(claimants?.length ?? 0) > 0 && (
+              <div className="dot-leader flex justify-between text-sm text-ink mb-2">
+                <span className="text-ink-muted">Split vs Total</span>
+                <span className={discrepancyCents !== 0 ? "text-ink" : "text-ink-muted"}>
+                  {discrepancyCents > 0 ? "+" : ""}{(discrepancyCents / 100).toFixed(2)} difference
+                </span>
+              </div>
+            )}
+
+            {/* ROUNDING ADJUSTMENT live field */}
+            <div className="flex flex-col gap-1 mb-4">
+              <label className="text-[0.625rem] uppercase tracking-widest text-ink-muted">
+                Rounding Adjustment
+              </label>
+              <input
+                type="number"
+                step="1"
+                defaultValue={bill.roundingAdjustmentCents ?? 0}
+                disabled={isArchived}
+                onBlur={(e) => {
+                  const value = parseInt(e.target.value, 10) || 0;
+                  updateRoundingAdjustment({
+                    billId: billId as Id<"bills">,
+                    organizerSecret: organizerSecret!,
+                    roundingAdjustmentCents: value,
+                  }).catch((err: unknown) => console.error("Failed to update rounding adjustment:", err));
+                }}
+                className="w-full border border-ink bg-paper-chit px-3 py-2 text-ink text-sm focus:outline-none focus-visible:outline-2 focus-visible:outline-pen focus-visible:outline-offset-2 disabled:opacity-50"
+              />
+            </div>
 
             {/* Quick actions */}
             <h3 className="uppercase text-xs font-bold text-ink tracking-widest mt-4 mb-2">
@@ -584,6 +621,39 @@ export default function DashboardPage({
 
         {/* Mobile quick actions — desktop right column features surfaced below PEOPLE on mobile */}
         <div className="md:hidden mt-6">
+
+          {/* SPLIT VS TOTAL discrepancy row — only when there are claimants */}
+          {(claimants?.length ?? 0) > 0 && (
+            <div className="dot-leader flex justify-between text-sm text-ink mb-2">
+              <span className="text-ink-muted">Split vs Total</span>
+              <span className={discrepancyCents !== 0 ? "text-ink" : "text-ink-muted"}>
+                {discrepancyCents > 0 ? "+" : ""}{(discrepancyCents / 100).toFixed(2)} difference
+              </span>
+            </div>
+          )}
+
+          {/* ROUNDING ADJUSTMENT live field */}
+          <div className="flex flex-col gap-1 mb-4">
+            <label className="text-[0.625rem] uppercase tracking-widest text-ink-muted">
+              Rounding Adjustment
+            </label>
+            <input
+              type="number"
+              step="1"
+              defaultValue={bill.roundingAdjustmentCents ?? 0}
+              disabled={isArchived}
+              onBlur={(e) => {
+                const value = parseInt(e.target.value, 10) || 0;
+                updateRoundingAdjustment({
+                  billId: billId as Id<"bills">,
+                  organizerSecret: organizerSecret!,
+                  roundingAdjustmentCents: value,
+                }).catch((err: unknown) => console.error("Failed to update rounding adjustment:", err));
+              }}
+              className="w-full border border-ink bg-paper-chit px-3 py-2 text-ink text-sm focus:outline-none focus-visible:outline-2 focus-visible:outline-pen focus-visible:outline-offset-2 disabled:opacity-50"
+            />
+          </div>
+
           <h3 className="uppercase text-xs font-bold text-ink tracking-widest mb-2">
             QUICK ACTIONS
           </h3>
