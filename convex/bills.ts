@@ -17,6 +17,7 @@ export const createBill = mutation({
     venueName: v.optional(v.string()),
     billDate: v.optional(v.string()), // ISO date string "YYYY-MM-DD"
     receiptStorageId: v.optional(v.id("_storage")),
+    roundingAdjustmentCents: v.optional(v.number()),
     items: v.array(
       v.object({
         name: v.string(),
@@ -33,6 +34,9 @@ export const createBill = mutation({
       if (!Number.isInteger(item.price) || item.price < 0) {
         throw new Error("Item price must be a non-negative integer (RM cents)");
       }
+      if (!Number.isInteger(item.quantity) || item.quantity < 1) {
+        throw new Error("Item quantity must be a positive integer");
+      }
     }
 
     const billId = await ctx.db.insert("bills", {
@@ -44,6 +48,7 @@ export const createBill = mutation({
       venueName: args.venueName,
       billDate: args.billDate,
       receiptStorageId: args.receiptStorageId,
+      roundingAdjustmentCents: args.roundingAdjustmentCents,
     });
     for (const item of args.items) {
       await ctx.db.insert("items", { billId, ...item });
@@ -168,6 +173,8 @@ export const claimItem = mutation({
       throw new Error("claimQty must be a positive integer");
     }
 
+    if (!claimantName.trim()) throw new Error("Claimant name cannot be empty");
+
     // Verify bill exists
     const bill = await ctx.db.get(billId);
     if (!bill) throw new Error("Bill not found");
@@ -273,22 +280,9 @@ export const getClaimsForBill = query({
       .withIndex("by_bill", (q) => q.eq("billId", billId))
       .collect();
 
-    const payments = await ctx.db
-      .query("payments")
-      .withIndex("by_bill", (q) => q.eq("billId", billId))
-      .collect();
-
-    // CLAIMED: unique sessions that have claims but no pending/settled payment (D-08)
-    // Rejected payments do NOT count as paid — member must re-submit
+    // CLAIMED: unique sessions with ≥1 claim, regardless of payment status (D-09 / WR-02 fix)
     const claimingSessions = new Set(claims.map((c) => c.claimantSession));
-    const paidSessions = new Set(
-      payments
-        .filter((p) => p.status === "pending" || p.status === "settled")
-        .map((p) => p.claimantSession)
-    );
-    const claimedCount = [...claimingSessions].filter(
-      (s) => !paidSessions.has(s)
-    ).length;
+    const claimedCount = claimingSessions.size;
 
     // UNCLAIMED: items with zero claim records
     const claimedItemIds = new Set(claims.map((c) => c.itemId));
@@ -447,6 +441,30 @@ export const updateQR = mutation({
     }
     if (bill.archivedAt !== undefined) throw new Error("Bill is archived");
     await ctx.db.patch(billId, { qrStorageId });
+  },
+});
+
+/**
+ * updateRoundingAdjustment — allows organizer to set or update the rounding adjustment cents.
+ * Mirrors updateQR pattern: auth guard + archive freeze check + integer validation + patch.
+ * ADJ-02, D-03: integer RM cents; may be negative.
+ */
+export const updateRoundingAdjustment = mutation({
+  args: {
+    billId: v.id("bills"),
+    organizerSecret: v.string(),
+    roundingAdjustmentCents: v.number(),
+  },
+  handler: async (ctx, { billId, organizerSecret, roundingAdjustmentCents }) => {
+    const bill = await ctx.db.get(billId);
+    if (!bill || bill.organizerSecret !== organizerSecret) {
+      throw new Error("Unauthorized");
+    }
+    if (bill.archivedAt !== undefined) throw new Error("Bill is archived");
+    if (!Number.isInteger(roundingAdjustmentCents)) {
+      throw new Error("roundingAdjustmentCents must be an integer");
+    }
+    await ctx.db.patch(billId, { roundingAdjustmentCents });
   },
 });
 

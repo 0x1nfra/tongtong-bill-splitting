@@ -10,6 +10,7 @@ export default defineSchema({
     qrStorageId: v.optional(v.id("_storage")),
     receiptStorageId: v.optional(v.id("_storage")),
     archivedAt: v.optional(v.number()),
+    roundingAdjustmentCents: v.optional(v.number()), // integer RM cents; may be negative
     venueName: v.optional(v.string()),
     billDate: v.optional(v.string()), // ISO date string "YYYY-MM-DD"
   }),
