@@ -336,3 +336,100 @@ describe('calculatePersonTotals — alice + bob sum equals bill total (no roundi
     expect(Math.abs(combined - billTotals.grandTotalCents)).toBeLessThanOrEqual(2)
   })
 })
+
+// ---------------------------------------------------------------------------
+// 10. Rounding adjustment distribution (RED — function not yet extended)
+// ---------------------------------------------------------------------------
+
+describe('calculatePersonTotals — rounding adjustment distribution', () => {
+  it('T-ADJ-01: zero adjustment leaves personTotalCents unchanged and personRoundingAdjustmentCents is 0', () => {
+    // Same inputs as "both charges" test; 5th arg = 0 (explicit zero)
+    const claims = [
+      claim('i1', 'alice'),
+      claim('i1', 'bob'),
+      claim('i2', 'alice'),
+    ]
+    const billTotals = calculateTotals(BASE_ITEMS, true, true)
+    const result = calculatePersonTotals(BASE_ITEMS, claims, 'alice', billTotals, 0)
+    // personRoundingAdjustmentCents must be 0 (zero adjustment)
+    expect(result.personRoundingAdjustmentCents).toBe(0)
+    // personTotalCents must be unchanged from the non-adjustment version
+    expect(result.personTotalCents).toBe(result.personSubtotalCents + result.personServiceChargeCents + result.personSSTCents)
+  })
+
+  it('T-ADJ-02: positive adjustment distributed proportionally (alice 2500/3000, adj=+6)', () => {
+    // i1: 2500 cents claimed by alice; i2: 500 cents claimed by bob; subtotal = 3000
+    const i1 = item('i1', 2500, 1)
+    const i2 = item('i2', 500, 1)
+    const testItems = [i1, i2]
+    const testClaims = [claim('i1', 'alice'), claim('i2', 'bob')]
+    const billTotals = calculateTotals(testItems, false, false)
+    const result = calculatePersonTotals(testItems, testClaims, 'alice', billTotals, 6)
+    // alice ratio = 2500/3000; personRoundingAdjustmentCents = Math.round((2500/3000) * 6) = 5
+    expect(result.personRoundingAdjustmentCents).toBe(Math.round((2500 / 3000) * 6))
+    expect(result.personRoundingAdjustmentCents).toBe(5)
+  })
+
+  it('T-ADJ-03: negative adjustment reduces personTotalCents (adj=-3)', () => {
+    const i1 = item('i1', 2500, 1)
+    const i2 = item('i2', 500, 1)
+    const testItems = [i1, i2]
+    const testClaims = [claim('i1', 'alice'), claim('i2', 'bob')]
+    const billTotals = calculateTotals(testItems, false, false)
+    const result = calculatePersonTotals(testItems, testClaims, 'alice', billTotals, -3)
+    // alice ratio = 2500/3000; personRoundingAdjustmentCents = Math.round((2500/3000) * -3) = -2
+    expect(result.personRoundingAdjustmentCents).toBe(Math.round((2500 / 3000) * -3))
+    expect(result.personRoundingAdjustmentCents).toBe(-2)
+    // personTotalCents includes the negative adjustment
+    expect(result.personTotalCents).toBe(
+      result.personSubtotalCents + result.personServiceChargeCents + result.personSSTCents + (-2)
+    )
+  })
+
+  it('T-ADJ-04: single person claims all items — gets full adjustment (ratio = 1.0, adj=+7)', () => {
+    // alice claims everything in BASE_ITEMS; ratio = 1.0
+    const claims = [claim('i1', 'alice'), claim('i2', 'alice')]
+    const billTotals = calculateTotals(BASE_ITEMS, false, false)
+    const result = calculatePersonTotals(BASE_ITEMS, claims, 'alice', billTotals, 7)
+    // ratio = 3000/3000 = 1.0; personRoundingAdjustmentCents = Math.round(1.0 * 7) = 7
+    expect(result.personRoundingAdjustmentCents).toBe(7)
+  })
+
+  it('T-ADJ-05: zero billSubtotalCents fires zero guard — personRoundingAdjustmentCents is 0', () => {
+    const testItems = [item('i1', 1000, 1)]
+    const testClaims = [claim('i1', 'alice')]
+    const zeroBillTotals = {
+      subtotalCents: 0,
+      serviceChargeCents: 0,
+      sstCents: 0,
+      grandTotalCents: 0,
+      roundingAdjustmentCents: 0,
+    }
+    const result = calculatePersonTotals(testItems, testClaims, 'alice', zeroBillTotals, 5)
+    expect(result.personRoundingAdjustmentCents).toBe(0)
+  })
+
+  it('T-ADJ-06: result is always an integer (3-way split of adj=1)', () => {
+    // billTotals.subtotalCents = 3000; alice subtotal = 1000 (1/3)
+    // personRoundingAdjustmentCents = Math.round(1000/3000 * 1) = Math.round(0.333) = 0
+    const i1 = item('i1', 1000, 1)
+    const i2 = item('i2', 1000, 1)
+    const i3 = item('i3', 1000, 1)
+    const testItems = [i1, i2, i3]
+    const testClaims = [claim('i1', 'alice'), claim('i2', 'bob'), claim('i3', 'carol')]
+    const billTotals = calculateTotals(testItems, false, false)
+    const result = calculatePersonTotals(testItems, testClaims, 'alice', billTotals, 1)
+    expect(Number.isInteger(result.personRoundingAdjustmentCents)).toBe(true)
+    expect(result.personRoundingAdjustmentCents).toBe(Math.round(1000 / 3000 * 1))
+    expect(result.personRoundingAdjustmentCents).toBe(0)
+  })
+
+  it('T-ADJ-07: absent 5th argument defaults to 0 — same result as explicit 0', () => {
+    const claims = [claim('i1', 'alice'), claim('i2', 'alice')]
+    const billTotals = calculateTotals(BASE_ITEMS, false, false)
+    const withZero = calculatePersonTotals(BASE_ITEMS, claims, 'alice', billTotals, 0)
+    const withoutArg = calculatePersonTotals(BASE_ITEMS, claims, 'alice', billTotals)
+    expect(withoutArg.personRoundingAdjustmentCents).toBe(0)
+    expect(withoutArg.personTotalCents).toBe(withZero.personTotalCents)
+  })
+})
