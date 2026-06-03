@@ -6,12 +6,14 @@ type RunningTotalProps = Readonly<{
   items: ItemDraft[];
   applySST: boolean;
   applyServiceCharge: boolean;
+  roundingAdjustmentCents?: number;
 }>;
 
 function calculateTotals(
   items: ItemDraft[],
   applySST: boolean,
-  applyServiceCharge: boolean
+  applyServiceCharge: boolean,
+  roundingAdjustmentCents: number = 0
 ) {
   // Sum: price (as RM string) × quantity — convert to integer cents
   const subtotal = items.reduce(
@@ -26,20 +28,22 @@ function calculateTotals(
 
   // SST (6%) applied on post-service-charge total
   const sst = applySST ? Math.round(afterSC * 0.06) : 0;
-  const grandTotal = afterSC + sst;
+  const grandTotal = afterSC + sst + roundingAdjustmentCents;
 
-  return { subtotal, serviceCharge, sst, grandTotal };
+  return { subtotal, serviceCharge, sst, roundingAdjustmentCents, grandTotal };
 }
 
 export function RunningTotal({
   items,
   applySST,
   applyServiceCharge,
+  roundingAdjustmentCents = 0,
 }: RunningTotalProps) {
   const { subtotal, serviceCharge, sst, grandTotal } = calculateTotals(
     items,
     applySST,
-    applyServiceCharge
+    applyServiceCharge,
+    roundingAdjustmentCents
   );
 
   return (
@@ -60,6 +64,15 @@ export function RunningTotal({
         <div className="dot-leader flex justify-between text-sm text-ink mb-1">
           <span className="text-ink-muted">SST (6%)</span>
           <span>RM{(sst / 100).toFixed(2)}</span>
+        </div>
+      )}
+
+      {roundingAdjustmentCents !== 0 && (
+        <div className="dot-leader flex justify-between text-sm text-ink mb-1">
+          <span className="text-ink-muted">Rounding Adj.</span>
+          <span className={roundingAdjustmentCents > 0 ? "text-pen" : "text-ink"}>
+            {roundingAdjustmentCents > 0 ? "+" : ""}RM{(Math.abs(roundingAdjustmentCents) / 100).toFixed(2)}
+          </span>
         </div>
       )}
 
