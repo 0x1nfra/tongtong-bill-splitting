@@ -726,6 +726,16 @@ export default function MemberViewPage({
             </div>
           ) : null}
 
+          {/* UAT gap fix: rounding adj row in BILL TOTAL — mirrors YOUR PORTION ADJ-07 pattern */}
+          {(totals.roundingAdjustmentCents ?? 0) !== 0 ? (
+            <div className="dot-leader flex justify-between text-sm text-ink mb-1">
+              <span className="text-ink-muted">Rounding Adj.</span>
+              <span className={(totals.roundingAdjustmentCents ?? 0) > 0 ? "text-pen" : "text-ink"}>
+                {(totals.roundingAdjustmentCents ?? 0) > 0 ? "+" : ""}RM{(Math.abs(totals.roundingAdjustmentCents ?? 0) / 100).toFixed(2)}
+              </span>
+            </div>
+          ) : null}
+
           <div className="dot-leader flex justify-between font-bold text-base text-ink border-t border-ink mt-2 pt-2">
             <span className="uppercase tracking-widest">GRAND TOTAL</span>
             <span>RM{(totals.grandTotalCents / 100).toFixed(2)}</span>
