@@ -1,7 +1,7 @@
 # TongTong — Roadmap
 
 **Project:** TongTong
-**Total Phases:** 4
+**Total Phases:** 8
 **v1 Requirements:** 52 (BILL×6, AUTH×3, SHARE×4, CLAIM×6, CALC×5, PAY×5, DASH×7, UI×13, LAND×3)
 
 ## Phases
@@ -10,6 +10,10 @@
 - [x] **Phase 2: Item Claiming** - Members tap to claim individual items; multi-claim splits cost; live proportional totals per person (completed 2026-05-24)
 - [x] **Phase 3: TongTong Aesthetic** - Full chit visual theme and landing page applied across every screen (completed 2026-05-25)
 - [x] **Phase 4: Bonus Features** - Auto-archive, reminder nudges, dark mode, Google OAuth bill history; dashboard people-from-claims + flat cards (in progress) (completed 2026-05-29)
+- [x] **Phase 5: Bonus Additions** - Departure Mono headings, landing page benefits/how-it-works, receipt upload, QR quick action (completed 2026-05-30)
+- [x] **Phase 6: Math & Precision Fixes** - Fix calculation bugs and add rounding adjustment option (completed 2026-06-03)
+- [ ] **Phase 7: Claiming & Payment UX** - Banking info fields and claim items by quantity per member
+- [ ] **Phase 8: Google Auth** - Google auth so organizers don't lose bill access across devices
 
 ## Phase Details
 
@@ -163,6 +167,10 @@
 | 2. Item Claiming | 4/4 | Complete   | 2026-05-24 |
 | 3. TongTong Aesthetic | 4/4 | Complete   | 2026-05-25 |
 | 4. Bonus Features | 5/5 | Complete   | 2026-05-29 |
+| 5. Bonus Additions | 4/4 | Complete | 2026-05-30 |
+| 6. Math & Precision Fixes | 4/4 | Complete   | 2026-06-03 |
+| 7. Claiming & Payment UX | 1/4 | In Progress|  |
+| 8. Google Auth | 0/? | Not planned | — |
 
 ### Phase 5: bonus additions: Departure Mono headings + landing page enhancements (benefits, how-it-works guide)
 
@@ -185,7 +193,7 @@ Plans:
 - [x] 05-03-PLAN.md — src/app/page.tsx benefits + how-it-works sections (D-04–D-09) + src/app/c/[billId]/page.tsx h1 style props (D-01, D-02)
 
 **Wave 2** *(blocked on Wave 1)*
-- [ ] 05-04-PLAN.md — src/app/create/page.tsx h1 style + receipt upload above items + receiptStorageId state/arg; src/app/dashboard/[billId]/page.tsx h1 style on all 3 h1s + updateQR useMutation + handleQRUpload + UPLOAD QR/REPLACE QR button
+- [x] 05-04-PLAN.md — src/app/create/page.tsx h1 style + receipt upload above items + receiptStorageId state/arg; src/app/dashboard/[billId]/page.tsx h1 style on all 3 h1s + updateQR useMutation + handleQRUpload + UPLOAD QR/REPLACE QR button
 
 **Cross-cutting constraints:**
 - Departure Mono MUST use style={{ fontFamily: "var(--font-display)" }} — never a Tailwind class (D-02)
@@ -193,3 +201,66 @@ Plans:
 - receiptStorageId state in create page MUST be distinct from qrStorageId state — never shared setter (Pitfall 4)
 - updateQR must be a public mutation — NOT internalMutation (RESEARCH anti-pattern)
 - Benefits .chit and how-it-works .chit MAY have one rotation (UI-09) — never both rotation AND crease
+
+### Phase 6: Math & Precision Fixes
+**Goal:** Eliminate known calculation bugs and give organizers a rounding adjustment option to handle cent discrepancies
+**Requirements:** CR-01, CR-02, CR-03, WR-01, WR-02, ADJ-01, ADJ-02, ADJ-03, ADJ-04, ADJ-05, ADJ-06, ADJ-07
+**Depends on:** Phase 5
+**Plans:** 4/4 plans complete
+
+**Wave 0**
+- [x] 06-01-PLAN.md — RED test stubs: updateRoundingAdjustment.test.ts (new) + extend calculatePersonTotals.test.ts and calculateTotalsLib.test.ts with adjustment cases
+
+**Wave 1** *(blocked on Wave 0)*
+- [x] 06-02-PLAN.md — src/lib/calculateTotals.ts extension (both functions) + convex/schema.ts roundingAdjustmentCents + convex/bills.ts CR-03/WR-01/WR-02 fixes + updateRoundingAdjustment mutation
+
+**Wave 2** *(06-03 and 06-04 run in parallel — both blocked on Wave 1)*
+- [x] 06-03-PLAN.md — src/app/c/[billId]/page.tsx: CR-01 redirect fix + CR-02 payment loading fix + ADJ-07 adjusted Your Portion row
+- [x] 06-04-PLAN.md — src/components/RunningTotal.tsx + src/app/create/page.tsx adjustment input + src/app/dashboard/[billId]/page.tsx live field + discrepancy row
+
+**Cross-cutting constraints:**
+- Never use text-stamp (red #B91C1C) on any rounding adjustment display row — use text-pen (positive) or text-ink (negative)
+- bill.roundingAdjustmentCents ?? 0 fallback required at ALL 3 calculateTotals/calculatePersonTotals call sites (existing bills have undefined)
+- RunningTotal.tsx local calculateTotals must be extended independently — it does NOT import the shared lib
+- calculateTotals grand total formula: subtotalCents + serviceChargeCents + sstCents + roundingAdjustmentCents (one place only — Pitfall 1)
+- createBill mutation extended to accept roundingAdjustmentCents: v.optional(v.number()) so create-page adjustment is not lost on submission
+
+### Phase 7: Claiming & Payment UX
+**Goal:** Members can claim items by quantity (not just one-of), and organizers can display banking transfer info alongside QR
+**Requirements:** CLAIM-BANK-01, CLAIM-BANK-DISPLAY-01, CLAIM-BANK-DASH-01, UAT-ADJ-01
+**Depends on:** Phase 6
+**Plans:** 1/4 plans executed
+
+**Wave 1**
+- [x] 07-01-PLAN.md — TDD RED stubs: updateBankingInfo boundary tests + roundingAdjInBillTotal data-prerequisite tests
+
+**Wave 2** *(blocked on Wave 1)*
+- [ ] 07-02-PLAN.md — Convex backend: schema banking fields + updateBankingInfo mutation
+
+**Wave 3** *(07-03 and 07-04 run in parallel — both blocked on Wave 2)*
+- [ ] 07-03-PLAN.md — Member view: UAT gap fix (Rounding Adj. in BILL TOTAL) + banking info display in PAYMENT ZONE
+- [ ] 07-04-PLAN.md — Dashboard: banking info input fields in both desktop and mobile panels
+
+**Cross-cutting constraints:**
+- claimQty is the canonical field name (NOT quantityClaimed) — already in schema and all code paths
+- Banking fields sanitized on write: .replace(/[<>"]/g, '') per T-04-04 pattern
+- Red (#B91C1C / text-stamp) MUST NOT appear on any banking info element
+- defaultValue + .catch pattern for onBlur inputs (NOT controlled state)
+- claimQty ?? 1 fallback required at all read sites (backward compat for existing claims)
+- Dashboard banking fields appear twice (desktop + mobile right panels) — both must receive the inputs
+
+### Phase 8: Google Auth
+**Goal:** Organizers can sign in with Google so bill dashboard access is preserved across devices and sessions
+**Requirements:** TBD
+**Depends on:** Phase 7
+**Plans:** TBD — run /gsd-plan-phase 8 to generate
+
+### Phase 9: Bill editing — organizer can edit items, prices, and tax toggles after bill creation
+
+**Goal:** [To be planned]
+**Requirements**: TBD
+**Depends on:** Phase 8
+**Plans:** 0 plans
+
+Plans:
+- [ ] TBD (run /gsd-plan-phase 9 to break down)

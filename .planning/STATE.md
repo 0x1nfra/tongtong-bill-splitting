@@ -2,30 +2,30 @@
 gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
-current_phase: 05
-status: complete
-stopped_at: Phase 5 complete — all 4 plans executed
-last_updated: "2026-05-30T00:00:00.000Z"
+current_phase: 07
+status: executing
+stopped_at: Phase 6 context gathered
+last_updated: "2026-06-04T12:13:18.606Z"
 progress:
-  total_phases: 6
-  completed_phases: 6
-  total_plans: 27
-  completed_plans: 27
-  percent: 100
+  total_phases: 10
+  completed_phases: 7
+  total_plans: 35
+  completed_plans: 31
+  percent: 70
 ---
 
 # TongTong — Project State
 
 **Initialized:** 2026-05-22
-**Current Phase:** 05
-**Status:** Executing Phase 05
+**Current Phase:** 07
+**Status:** Executing Phase 07
 
 ## Project Reference
 
 See: .planning/PROJECT.md
 
 **Core value:** Share a link — friends claim items, see what they owe, confirm payment. Organizer stops chasing.
-**Current focus:** Phase 05 — bonus-additions-departure-mono-headings-landing-page-enhance
+**Current focus:** Phase 07 — claiming-payment-ux
 
 ## Roadmap Summary
 
@@ -35,7 +35,7 @@ See: .planning/PROJECT.md
 
 ## Current Position
 
-Phase: 05 (bonus-additions-departure-mono-headings-landing-page-enhance) — EXECUTING
+Phase: 07 (claiming-payment-ux) — EXECUTING
 Plan: 1 of 4
 **Phase:** 2 — Item Claiming
 **Plans:** 0/? plans complete
@@ -54,6 +54,10 @@ Plan: 1 of 4
 - Phase 4 added: Bonus Features (BONUS-03 auto-archive, BONUS-04 reminder nudges, BONUS-05 Google OAuth, BONUS-06 dark mode)
 - Phase 4 plan 05 added (2026-05-29): dashboard PEOPLE tab from claims + collapsible items toggle + remove slanted card rotations
 - Phase 5 added: bonus additions — Departure Mono headings + landing page enhancements (benefits, how-it-works guide)
+- Phase 6 added: Math & Precision Fixes — fix calculation bugs, rounding adjustment option
+- Phase 7 added: Claiming & Payment UX — banking info fields, claim items by quantity per member
+- Phase 8 added: Google Auth — Google sign-in for organizer bill access persistence
+- Phase 9 added: Bill editing — organizer can edit items, prices, and tax toggles after bill creation
 
 ### Decisions
 
@@ -84,6 +88,6 @@ Plan: 1 of 4
 
 ## Session Continuity
 
-Last session: 2026-05-29T15:39:10.173Z
-Stopped at: Phase 5 UI-SPEC approved
-Resume file: .planning/phases/05-bonus-additions-departure-mono-headings-landing-page-enhance/05-UI-SPEC.md
+Last session: 2026-06-03T13:06:50.598Z
+Stopped at: Phase 6 context gathered
+Resume file: .planning/phases/06-math-precision-fixes/06-CONTEXT.md
