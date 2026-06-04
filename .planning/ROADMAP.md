@@ -12,7 +12,7 @@
 - [x] **Phase 4: Bonus Features** - Auto-archive, reminder nudges, dark mode, Google OAuth bill history; dashboard people-from-claims + flat cards (in progress) (completed 2026-05-29)
 - [x] **Phase 5: Bonus Additions** - Departure Mono headings, landing page benefits/how-it-works, receipt upload, QR quick action (completed 2026-05-30)
 - [x] **Phase 6: Math & Precision Fixes** - Fix calculation bugs and add rounding adjustment option (completed 2026-06-03)
-- [ ] **Phase 7: Claiming & Payment UX** - Banking info fields and claim items by quantity per member
+- [x] **Phase 7: Claiming & Payment UX** - Banking info fields and claim items by quantity per member (completed 2026-06-04)
 - [ ] **Phase 8: Google Auth** - Google auth so organizers don't lose bill access across devices
 
 ## Phase Details
@@ -169,7 +169,7 @@
 | 4. Bonus Features | 5/5 | Complete   | 2026-05-29 |
 | 5. Bonus Additions | 4/4 | Complete | 2026-05-30 |
 | 6. Math & Precision Fixes | 4/4 | Complete   | 2026-06-03 |
-| 7. Claiming & Payment UX | 2/4 | In Progress|  |
+| 7. Claiming & Payment UX | 4/4 | Complete   | 2026-06-04 |
 | 8. Google Auth | 0/? | Not planned | — |
 
 ### Phase 5: bonus additions: Departure Mono headings + landing page enhancements (benefits, how-it-works guide)
@@ -229,7 +229,7 @@ Plans:
 **Goal:** Members can claim items by quantity (not just one-of), and organizers can display banking transfer info alongside QR
 **Requirements:** CLAIM-BANK-01, CLAIM-BANK-DISPLAY-01, CLAIM-BANK-DASH-01, UAT-ADJ-01
 **Depends on:** Phase 6
-**Plans:** 2/4 plans executed
+**Plans:** 4/4 plans complete
 
 **Wave 1**
 - [x] 07-01-PLAN.md — TDD RED stubs: updateBankingInfo boundary tests + roundingAdjInBillTotal data-prerequisite tests
@@ -238,8 +238,8 @@ Plans:
 - [x] 07-02-PLAN.md — Convex backend: schema banking fields + updateBankingInfo mutation
 
 **Wave 3** *(07-03 and 07-04 run in parallel — both blocked on Wave 2)*
-- [ ] 07-03-PLAN.md — Member view: UAT gap fix (Rounding Adj. in BILL TOTAL) + banking info display in PAYMENT ZONE
-- [ ] 07-04-PLAN.md — Dashboard: banking info input fields in both desktop and mobile panels
+- [x] 07-03-PLAN.md — Member view: UAT gap fix (Rounding Adj. in BILL TOTAL) + banking info display in PAYMENT ZONE
+- [x] 07-04-PLAN.md — Dashboard: banking info input fields in both desktop and mobile panels
 
 **Cross-cutting constraints:**
 - claimQty is the canonical field name (NOT quantityClaimed) — already in schema and all code paths
