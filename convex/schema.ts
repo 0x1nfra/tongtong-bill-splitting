@@ -13,6 +13,11 @@ export default defineSchema({
     roundingAdjustmentCents: v.optional(v.number()), // integer RM cents; may be negative
     venueName: v.optional(v.string()),
     billDate: v.optional(v.string()), // ISO date string "YYYY-MM-DD"
+    // Banking info for transfer payment display (Phase 07)
+    bankName: v.optional(v.string()),
+    accountNumber: v.optional(v.string()),
+    accountHolderName: v.optional(v.string()),
+    duitNowId: v.optional(v.string()),
   }),
 
   items: defineTable({
