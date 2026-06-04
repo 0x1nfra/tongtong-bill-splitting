@@ -169,7 +169,7 @@
 | 4. Bonus Features | 5/5 | Complete   | 2026-05-29 |
 | 5. Bonus Additions | 4/4 | Complete | 2026-05-30 |
 | 6. Math & Precision Fixes | 4/4 | Complete   | 2026-06-03 |
-| 7. Claiming & Payment UX | 1/4 | In Progress|  |
+| 7. Claiming & Payment UX | 2/4 | In Progress|  |
 | 8. Google Auth | 0/? | Not planned | — |
 
 ### Phase 5: bonus additions: Departure Mono headings + landing page enhancements (benefits, how-it-works guide)
@@ -229,13 +229,13 @@ Plans:
 **Goal:** Members can claim items by quantity (not just one-of), and organizers can display banking transfer info alongside QR
 **Requirements:** CLAIM-BANK-01, CLAIM-BANK-DISPLAY-01, CLAIM-BANK-DASH-01, UAT-ADJ-01
 **Depends on:** Phase 6
-**Plans:** 1/4 plans executed
+**Plans:** 2/4 plans executed
 
 **Wave 1**
 - [x] 07-01-PLAN.md — TDD RED stubs: updateBankingInfo boundary tests + roundingAdjInBillTotal data-prerequisite tests
 
 **Wave 2** *(blocked on Wave 1)*
-- [ ] 07-02-PLAN.md — Convex backend: schema banking fields + updateBankingInfo mutation
+- [x] 07-02-PLAN.md — Convex backend: schema banking fields + updateBankingInfo mutation
 
 **Wave 3** *(07-03 and 07-04 run in parallel — both blocked on Wave 2)*
 - [ ] 07-03-PLAN.md — Member view: UAT gap fix (Rounding Adj. in BILL TOTAL) + banking info display in PAYMENT ZONE
