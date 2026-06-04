@@ -469,6 +469,38 @@ export const updateRoundingAdjustment = mutation({
 });
 
 /**
+ * updateBankingInfo — allows organizer to save banking transfer details for member display.
+ * Mirrors updateRoundingAdjustment pattern. XSS-safe: strips <, >, and " from all string inputs (T-04-04).
+ */
+export const updateBankingInfo = mutation({
+  args: {
+    billId: v.id("bills"),
+    organizerSecret: v.string(),
+    bankName: v.optional(v.string()),
+    accountNumber: v.optional(v.string()),
+    accountHolderName: v.optional(v.string()),
+    duitNowId: v.optional(v.string()),
+  },
+  handler: async (ctx, { billId, organizerSecret, bankName, accountNumber, accountHolderName, duitNowId }) => {
+    const bill = await ctx.db.get(billId);
+    if (!bill || bill.organizerSecret !== organizerSecret) {
+      throw new Error("Unauthorized");
+    }
+    if (bill.archivedAt !== undefined) throw new Error("Bill is archived");
+    const sanitizedBankName = bankName !== undefined ? bankName.replace(/[<>"]/g, "") : undefined;
+    const sanitizedAccountNumber = accountNumber !== undefined ? accountNumber.replace(/[<>"]/g, "") : undefined;
+    const sanitizedAccountHolderName = accountHolderName !== undefined ? accountHolderName.replace(/[<>"]/g, "") : undefined;
+    const sanitizedDuitNowId = duitNowId !== undefined ? duitNowId.replace(/[<>"]/g, "") : undefined;
+    await ctx.db.patch(billId, {
+      bankName: sanitizedBankName,
+      accountNumber: sanitizedAccountNumber,
+      accountHolderName: sanitizedAccountHolderName,
+      duitNowId: sanitizedDuitNowId,
+    });
+  },
+});
+
+/**
  * archiveStale — internalMutation called by the daily cron job (BONUS-03).
  * Archives bills older than 30 days by setting archivedAt timestamp.
  * Uses JS-side filter instead of Convex q.eq filter on optional field to avoid
