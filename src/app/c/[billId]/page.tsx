@@ -823,6 +823,39 @@ export default function MemberViewPage({
                   </>
                 ) : null}
 
+                {/* BANKING INFO: display transfer details when any field is set — text-ink only, never text-stamp */}
+                {(bill.bankName || bill.accountNumber || bill.accountHolderName || bill.duitNowId) ? (
+                  <div className="mb-4 text-left">
+                    <p className="text-xs font-bold uppercase text-ink-muted tracking-widest mb-2">
+                      TRANSFER TO
+                    </p>
+                    {bill.bankName ? (
+                      <div className="dot-leader flex justify-between text-sm text-ink mb-1">
+                        <span className="text-ink-muted">Bank</span>
+                        <span>{bill.bankName}</span>
+                      </div>
+                    ) : null}
+                    {bill.accountNumber ? (
+                      <div className="dot-leader flex justify-between text-sm text-ink mb-1">
+                        <span className="text-ink-muted">Account No.</span>
+                        <span>{bill.accountNumber}</span>
+                      </div>
+                    ) : null}
+                    {bill.accountHolderName ? (
+                      <div className="dot-leader flex justify-between text-sm text-ink mb-1">
+                        <span className="text-ink-muted">Name</span>
+                        <span>{bill.accountHolderName}</span>
+                      </div>
+                    ) : null}
+                    {bill.duitNowId ? (
+                      <div className="dot-leader flex justify-between text-sm text-ink mb-1">
+                        <span className="text-ink-muted">DuitNow ID</span>
+                        <span>{bill.duitNowId}</span>
+                      </div>
+                    ) : null}
+                  </div>
+                ) : null}
+
                 {paymentStatus !== null && paymentStatus !== "rejected" ? (
                   <div className="mb-4 flex justify-center">
                     <SettleStamp status={paymentStatus} />
