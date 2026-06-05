@@ -529,7 +529,19 @@ export default function DashboardPage({
             </div>
 
             {/* BANKING INFO — organizer can save transfer details; displayed on member view */}
-            <div ref={bankInfoDesktopRef}>
+            {/* WR-05: onBlur on container fires once when focus leaves entirely, preventing race conditions */}
+            <div
+              ref={bankInfoDesktopRef}
+              onBlur={(e) => {
+                if (!bankInfoDesktopRef.current?.contains(e.relatedTarget as Node)) {
+                  updateBankingInfo({
+                    billId: billId as Id<"bills">,
+                    organizerSecret: organizerSecret!,
+                    ...readBankInfoFromContainer(bankInfoDesktopRef.current),
+                  }).catch((err: unknown) => console.error("Failed to update banking info:", err));
+                }
+              }}
+            >
             <div className="flex flex-col gap-1 mb-4">
               <label htmlFor="bankName-desktop" className="text-[0.625rem] uppercase tracking-widest text-ink-muted">
                 Bank Name
@@ -541,13 +553,6 @@ export default function DashboardPage({
                 type="text"
                 defaultValue={bill.bankName ?? ''}
                 disabled={isArchived}
-                onBlur={() => {
-                  updateBankingInfo({
-                    billId: billId as Id<"bills">,
-                    organizerSecret: organizerSecret!,
-                    ...readBankInfoFromContainer(bankInfoDesktopRef.current),
-                  }).catch((err: unknown) => console.error("Failed to update banking info:", err));
-                }}
                 className="w-full border border-ink bg-paper-chit px-3 py-2 text-ink text-sm focus:outline-none focus-visible:outline-2 focus-visible:outline-pen focus-visible:outline-offset-2 disabled:opacity-50"
               />
             </div>
@@ -562,13 +567,6 @@ export default function DashboardPage({
                 type="text"
                 defaultValue={bill.accountNumber ?? ''}
                 disabled={isArchived}
-                onBlur={() => {
-                  updateBankingInfo({
-                    billId: billId as Id<"bills">,
-                    organizerSecret: organizerSecret!,
-                    ...readBankInfoFromContainer(bankInfoDesktopRef.current),
-                  }).catch((err: unknown) => console.error("Failed to update banking info:", err));
-                }}
                 className="w-full border border-ink bg-paper-chit px-3 py-2 text-ink text-sm focus:outline-none focus-visible:outline-2 focus-visible:outline-pen focus-visible:outline-offset-2 disabled:opacity-50"
               />
             </div>
@@ -583,13 +581,6 @@ export default function DashboardPage({
                 type="text"
                 defaultValue={bill.accountHolderName ?? ''}
                 disabled={isArchived}
-                onBlur={() => {
-                  updateBankingInfo({
-                    billId: billId as Id<"bills">,
-                    organizerSecret: organizerSecret!,
-                    ...readBankInfoFromContainer(bankInfoDesktopRef.current),
-                  }).catch((err: unknown) => console.error("Failed to update banking info:", err));
-                }}
                 className="w-full border border-ink bg-paper-chit px-3 py-2 text-ink text-sm focus:outline-none focus-visible:outline-2 focus-visible:outline-pen focus-visible:outline-offset-2 disabled:opacity-50"
               />
             </div>
@@ -604,13 +595,6 @@ export default function DashboardPage({
                 type="text"
                 defaultValue={bill.duitNowId ?? ''}
                 disabled={isArchived}
-                onBlur={() => {
-                  updateBankingInfo({
-                    billId: billId as Id<"bills">,
-                    organizerSecret: organizerSecret!,
-                    ...readBankInfoFromContainer(bankInfoDesktopRef.current),
-                  }).catch((err: unknown) => console.error("Failed to update banking info:", err));
-                }}
                 className="w-full border border-ink bg-paper-chit px-3 py-2 text-ink text-sm focus:outline-none focus-visible:outline-2 focus-visible:outline-pen focus-visible:outline-offset-2 disabled:opacity-50"
               />
             </div>
@@ -767,7 +751,19 @@ export default function DashboardPage({
           </div>
 
           {/* BANKING INFO — organizer can save transfer details; displayed on member view */}
-          <div ref={bankInfoMobileRef}>
+          {/* WR-05: onBlur on container fires once when focus leaves entirely, preventing race conditions */}
+          <div
+            ref={bankInfoMobileRef}
+            onBlur={(e) => {
+              if (!bankInfoMobileRef.current?.contains(e.relatedTarget as Node)) {
+                updateBankingInfo({
+                  billId: billId as Id<"bills">,
+                  organizerSecret: organizerSecret!,
+                  ...readBankInfoFromContainer(bankInfoMobileRef.current),
+                }).catch((err: unknown) => console.error("Failed to update banking info:", err));
+              }
+            }}
+          >
           <div className="flex flex-col gap-1 mb-4">
             <label htmlFor="bankName-mobile" className="text-[0.625rem] uppercase tracking-widest text-ink-muted">
               Bank Name
@@ -779,13 +775,6 @@ export default function DashboardPage({
               type="text"
               defaultValue={bill.bankName ?? ''}
               disabled={isArchived}
-              onBlur={() => {
-                updateBankingInfo({
-                  billId: billId as Id<"bills">,
-                  organizerSecret: organizerSecret!,
-                  ...readBankInfoFromContainer(bankInfoMobileRef.current),
-                }).catch((err: unknown) => console.error("Failed to update banking info:", err));
-              }}
               className="w-full border border-ink bg-paper-chit px-3 py-2 text-ink text-sm focus:outline-none focus-visible:outline-2 focus-visible:outline-pen focus-visible:outline-offset-2 disabled:opacity-50"
             />
           </div>
@@ -800,13 +789,6 @@ export default function DashboardPage({
               type="text"
               defaultValue={bill.accountNumber ?? ''}
               disabled={isArchived}
-              onBlur={() => {
-                updateBankingInfo({
-                  billId: billId as Id<"bills">,
-                  organizerSecret: organizerSecret!,
-                  ...readBankInfoFromContainer(bankInfoMobileRef.current),
-                }).catch((err: unknown) => console.error("Failed to update banking info:", err));
-              }}
               className="w-full border border-ink bg-paper-chit px-3 py-2 text-ink text-sm focus:outline-none focus-visible:outline-2 focus-visible:outline-pen focus-visible:outline-offset-2 disabled:opacity-50"
             />
           </div>
@@ -821,13 +803,6 @@ export default function DashboardPage({
               type="text"
               defaultValue={bill.accountHolderName ?? ''}
               disabled={isArchived}
-              onBlur={() => {
-                updateBankingInfo({
-                  billId: billId as Id<"bills">,
-                  organizerSecret: organizerSecret!,
-                  ...readBankInfoFromContainer(bankInfoMobileRef.current),
-                }).catch((err: unknown) => console.error("Failed to update banking info:", err));
-              }}
               className="w-full border border-ink bg-paper-chit px-3 py-2 text-ink text-sm focus:outline-none focus-visible:outline-2 focus-visible:outline-pen focus-visible:outline-offset-2 disabled:opacity-50"
             />
           </div>
@@ -842,13 +817,6 @@ export default function DashboardPage({
               type="text"
               defaultValue={bill.duitNowId ?? ''}
               disabled={isArchived}
-              onBlur={() => {
-                updateBankingInfo({
-                  billId: billId as Id<"bills">,
-                  organizerSecret: organizerSecret!,
-                  ...readBankInfoFromContainer(bankInfoMobileRef.current),
-                }).catch((err: unknown) => console.error("Failed to update banking info:", err));
-              }}
               className="w-full border border-ink bg-paper-chit px-3 py-2 text-ink text-sm focus:outline-none focus-visible:outline-2 focus-visible:outline-pen focus-visible:outline-offset-2 disabled:opacity-50"
             />
           </div>
