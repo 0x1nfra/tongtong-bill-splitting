@@ -232,17 +232,20 @@ export default function MemberViewPage({
   /**
    * handleNameSubmit — D-02: save name, collapse inline entry, fire claim.
    * Guard: if (!claimantSession) return (Pitfall 1 / T-02-09).
+   * WR-01: also guard on pendingItems to prevent concurrent duplicate mutations.
    */
   const handleNameSubmit = async (itemId: string, claimQty?: number) => {
     const name = nameInput.trim();
     if (!name) return;
     if (!claimantSession) return; // T-02-09
+    if (pendingItems.has(itemId)) return; // WR-01: mirrors handleItemTap guard
 
     // Save name to localStorage and update state
     setMemberName(name);
     setExpandedItemId(null);
     setNameInput("");
 
+    setPendingItems((prev) => new Set(prev).add(itemId));
     try {
       await claimItemMutation({
         billId: billId as Id<"bills">,
@@ -253,6 +256,12 @@ export default function MemberViewPage({
       });
     } catch (err) {
       console.error("Claim failed:", err);
+    } finally {
+      setPendingItems((prev) => {
+        const next = new Set(prev);
+        next.delete(itemId);
+        return next;
+      });
     }
   };
 
