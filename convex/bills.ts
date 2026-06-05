@@ -32,6 +32,9 @@ export const createBill = mutation({
     ),
   },
   handler: async (ctx, args) => {
+    // WR-04: server-side title validation — Convex v.string() accepts empty strings
+    if (!args.title.trim()) throw new Error("Bill title cannot be empty");
+
     // WR-04: server-side item validation — catches any bypass of client-side checks
     for (const item of args.items) {
       if (!item.name.trim()) throw new Error("Item name cannot be empty");
