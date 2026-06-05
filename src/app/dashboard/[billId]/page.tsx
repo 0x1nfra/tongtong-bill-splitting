@@ -73,13 +73,14 @@ export default function DashboardPage({
   const bankInfoDesktopRef = useRef<HTMLDivElement>(null);
   const bankInfoMobileRef = useRef<HTMLDivElement>(null);
 
-  // CR-01: read all 4 banking input values from a container ref
+  // CR-02: read all 4 banking input values from a container ref.
+  // Empty string is passed explicitly so updateBankingInfo treats it as a clear (stores null).
   const readBankInfoFromContainer = (container: HTMLDivElement | null) => {
     if (!container) return { bankName: undefined, accountNumber: undefined, accountHolderName: undefined, duitNowId: undefined };
     const inputs = container.querySelectorAll<HTMLInputElement>('input[data-field]');
-    const vals: Record<string, string | undefined> = {};
+    const vals: Record<string, string> = {};
     inputs.forEach(inp => {
-      vals[inp.dataset.field!] = inp.value.trim() || undefined;
+      vals[inp.dataset.field!] = inp.value.trim() || "";  // CR-02: empty string, not undefined
     });
     return {
       bankName: vals['bankName'],

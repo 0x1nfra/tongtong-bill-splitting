@@ -493,10 +493,11 @@ export const updateBankingInfo = mutation({
   args: {
     billId: v.id("bills"),
     organizerSecret: v.string(),
-    bankName: v.optional(v.string()),
-    accountNumber: v.optional(v.string()),
-    accountHolderName: v.optional(v.string()),
-    duitNowId: v.optional(v.string()),
+    // CR-02: accept null to allow explicit field clear; undefined = not in patch (no-op)
+    bankName: v.optional(v.union(v.string(), v.null())),
+    accountNumber: v.optional(v.union(v.string(), v.null())),
+    accountHolderName: v.optional(v.union(v.string(), v.null())),
+    duitNowId: v.optional(v.union(v.string(), v.null())),
   },
   handler: async (ctx, { billId, organizerSecret, bankName, accountNumber, accountHolderName, duitNowId }) => {
     const bill = await ctx.db.get(billId);
@@ -504,10 +505,11 @@ export const updateBankingInfo = mutation({
       throw new Error("Unauthorized");
     }
     if (bill.archivedAt !== undefined) throw new Error("Bill is archived");
-    const sanitizedBankName = bankName !== undefined ? bankName.replace(/[<>"]/g, "").trim() : undefined;
-    const sanitizedAccountNumber = accountNumber !== undefined ? accountNumber.replace(/[<>"]/g, "").trim() : undefined;
-    const sanitizedAccountHolderName = accountHolderName !== undefined ? accountHolderName.replace(/[<>"]/g, "").trim() : undefined;
-    const sanitizedDuitNowId = duitNowId !== undefined ? duitNowId.replace(/[<>"]/g, "").trim() : undefined;
+    // CR-02: empty string after sanitize → null (clears field); undefined → no-op
+    const sanitizedBankName = bankName !== undefined ? (bankName !== null ? bankName.replace(/[<>"]/g, "").trim() || null : null) : undefined;
+    const sanitizedAccountNumber = accountNumber !== undefined ? (accountNumber !== null ? accountNumber.replace(/[<>"]/g, "").trim() || null : null) : undefined;
+    const sanitizedAccountHolderName = accountHolderName !== undefined ? (accountHolderName !== null ? accountHolderName.replace(/[<>"]/g, "").trim() || null : null) : undefined;
+    const sanitizedDuitNowId = duitNowId !== undefined ? (duitNowId !== null ? duitNowId.replace(/[<>"]/g, "").trim() || null : null) : undefined;
     await ctx.db.patch(billId, {
       bankName: sanitizedBankName,
       accountNumber: sanitizedAccountNumber,

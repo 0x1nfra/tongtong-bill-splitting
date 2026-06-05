@@ -14,10 +14,11 @@ export default defineSchema({
     venueName: v.optional(v.string()),
     billDate: v.optional(v.string()), // ISO date string "YYYY-MM-DD"
     // Banking info for transfer payment display (Phase 07)
-    bankName: v.optional(v.string()),
-    accountNumber: v.optional(v.string()),
-    accountHolderName: v.optional(v.string()),
-    duitNowId: v.optional(v.string()),
+    // v.null() allows explicit field clear via updateBankingInfo (CR-02)
+    bankName: v.optional(v.union(v.string(), v.null())),
+    accountNumber: v.optional(v.union(v.string(), v.null())),
+    accountHolderName: v.optional(v.union(v.string(), v.null())),
+    duitNowId: v.optional(v.union(v.string(), v.null())),
   }),
 
   items: defineTable({
