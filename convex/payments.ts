@@ -137,11 +137,16 @@ export const getMyPayment = query({
     claimantSession: v.string(),
   },
   handler: async (ctx, { billId, claimantSession }) => {
-    return await ctx.db
+    const all = await ctx.db
       .query("payments")
       .withIndex("by_session", (q) =>
         q.eq("billId", billId).eq("claimantSession", claimantSession)
       )
-      .first();
+      .collect();
+    if (all.length === 0) return null;
+    const priority = { settled: 3, pending: 2, rejected: 1 } as const;
+    return all.reduce((best, p) =>
+      priority[p.status] > priority[best.status] ? p : best
+    );
   },
 });
