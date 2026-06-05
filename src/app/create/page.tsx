@@ -51,6 +51,12 @@ export default function CreatePage() {
   const [qrStorageId, setQrStorageId] = useState<string | undefined>(undefined);
   const [receiptStorageId, setReceiptStorageId] = useState<string | undefined>(undefined);
 
+  // Banking info state — CLAIM-BANK-01: optional payment details entered at creation time
+  const [bankName, setBankName] = useState("");
+  const [accountNumber, setAccountNumber] = useState("");
+  const [accountHolderName, setAccountHolderName] = useState("");
+  const [duitNowId, setDuitNowId] = useState("");
+
   // Submission guard — prevents double-tap
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -117,6 +123,10 @@ export default function CreatePage() {
         venueName: venueName || undefined,
         billDate: billDate || undefined,
         roundingAdjustmentCents: roundingAdjustmentCents !== 0 ? roundingAdjustmentCents : undefined,
+        bankName: bankName || undefined,
+        accountNumber: accountNumber || undefined,
+        accountHolderName: accountHolderName || undefined,
+        duitNowId: duitNowId || undefined,
         items: items.map((item, index) => ({
           name: item.name,
           // T-03-01: convert RM string to integer cents before sending to Convex
@@ -309,6 +319,70 @@ export default function CreatePage() {
                 DuitNow QR (optional)
               </p>
               <QRUpload onUpload={(id) => setQrStorageId(id)} />
+            </div>
+          </div>
+
+          <div className="perforation my-4" />
+
+          {/* PAYMENT DETAILS ZONE */}
+          <p
+            className="text-xs font-bold uppercase text-ink-muted tracking-widest mb-3"
+            style={{ fontFamily: "var(--font-display)" }}
+          >
+            PAYMENT DETAILS
+          </p>
+          <div className="space-y-3">
+            <div className="flex flex-col gap-1">
+              <label htmlFor="bank-name" className="text-[0.625rem] uppercase tracking-widest text-ink-muted">
+                Bank Name
+              </label>
+              <input
+                id="bank-name"
+                type="text"
+                value={bankName}
+                onChange={(e) => setBankName(e.target.value)}
+                placeholder="e.g. Maybank"
+                className="w-full border border-ink bg-paper-chit px-3 py-2 text-ink text-sm focus:outline-none focus-visible:outline-2 focus-visible:outline-pen focus-visible:outline-offset-2"
+              />
+            </div>
+            <div className="flex flex-col gap-1">
+              <label htmlFor="account-number" className="text-[0.625rem] uppercase tracking-widest text-ink-muted">
+                Account No.
+              </label>
+              <input
+                id="account-number"
+                type="text"
+                value={accountNumber}
+                onChange={(e) => setAccountNumber(e.target.value)}
+                placeholder="e.g. 1234567890"
+                className="w-full border border-ink bg-paper-chit px-3 py-2 text-ink text-sm focus:outline-none focus-visible:outline-2 focus-visible:outline-pen focus-visible:outline-offset-2"
+              />
+            </div>
+            <div className="flex flex-col gap-1">
+              <label htmlFor="account-holder" className="text-[0.625rem] uppercase tracking-widest text-ink-muted">
+                Account Holder
+              </label>
+              <input
+                id="account-holder"
+                type="text"
+                value={accountHolderName}
+                onChange={(e) => setAccountHolderName(e.target.value)}
+                placeholder="e.g. Ahmad bin Ali"
+                className="w-full border border-ink bg-paper-chit px-3 py-2 text-ink text-sm focus:outline-none focus-visible:outline-2 focus-visible:outline-pen focus-visible:outline-offset-2"
+              />
+            </div>
+            <div className="flex flex-col gap-1">
+              <label htmlFor="duitnow-id" className="text-[0.625rem] uppercase tracking-widest text-ink-muted">
+                DuitNow ID
+              </label>
+              <input
+                id="duitnow-id"
+                type="text"
+                value={duitNowId}
+                onChange={(e) => setDuitNowId(e.target.value)}
+                placeholder="e.g. 0123456789"
+                className="w-full border border-ink bg-paper-chit px-3 py-2 text-ink text-sm focus:outline-none focus-visible:outline-2 focus-visible:outline-pen focus-visible:outline-offset-2"
+              />
             </div>
           </div>
 
