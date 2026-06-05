@@ -18,6 +18,10 @@ export const createBill = mutation({
     billDate: v.optional(v.string()), // ISO date string "YYYY-MM-DD"
     receiptStorageId: v.optional(v.id("_storage")),
     roundingAdjustmentCents: v.optional(v.number()),
+    bankName: v.optional(v.string()),
+    accountNumber: v.optional(v.string()),
+    accountHolderName: v.optional(v.string()),
+    duitNowId: v.optional(v.string()),
     items: v.array(
       v.object({
         name: v.string(),
@@ -39,6 +43,12 @@ export const createBill = mutation({
       }
     }
 
+    // T-07-05-01: XSS sanitization for banking info fields (mirrors updateBankingInfo T-04-04 pattern)
+    const sanitizedBankName = args.bankName !== undefined ? args.bankName.replace(/[<>"]/g, "").trim() : undefined;
+    const sanitizedAccountNumber = args.accountNumber !== undefined ? args.accountNumber.replace(/[<>"]/g, "").trim() : undefined;
+    const sanitizedAccountHolderName = args.accountHolderName !== undefined ? args.accountHolderName.replace(/[<>"]/g, "").trim() : undefined;
+    const sanitizedDuitNowId = args.duitNowId !== undefined ? args.duitNowId.replace(/[<>"]/g, "").trim() : undefined;
+
     const billId = await ctx.db.insert("bills", {
       organizerSecret: args.organizerSecret,
       title: args.title,
@@ -49,6 +59,10 @@ export const createBill = mutation({
       billDate: args.billDate,
       receiptStorageId: args.receiptStorageId,
       roundingAdjustmentCents: args.roundingAdjustmentCents,
+      bankName: sanitizedBankName,
+      accountNumber: sanitizedAccountNumber,
+      accountHolderName: sanitizedAccountHolderName,
+      duitNowId: sanitizedDuitNowId,
     });
     for (const item of args.items) {
       await ctx.db.insert("items", { billId, ...item });
