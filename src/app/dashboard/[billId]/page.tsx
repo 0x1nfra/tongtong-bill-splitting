@@ -513,6 +513,7 @@ export default function DashboardPage({
               <input
                 type="number"
                 step="1"
+                key={bill.roundingAdjustmentCents ?? 0}
                 defaultValue={bill.roundingAdjustmentCents ?? 0}
                 disabled={isArchived}
                 onBlur={(e) => {
@@ -750,6 +751,7 @@ export default function DashboardPage({
             <input
               type="number"
               step="1"
+              key={bill.roundingAdjustmentCents ?? 0}
               defaultValue={bill.roundingAdjustmentCents ?? 0}
               disabled={isArchived}
               onBlur={(e) => {
