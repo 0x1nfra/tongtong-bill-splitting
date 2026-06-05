@@ -75,7 +75,7 @@
   2. Multiple members can claim the same item and each sees their equal share of that item's cost
   3. Tax and service charge appear in each member's total proportional to their subtotal share, not as a flat equal split
   4. Other members' claim actions appear on screen within seconds without a page refresh
-**Plans:** 4/4 plans complete
+**Plans:** 5 plans (4 complete + 1 gap closure)
 
 **Wave 1**
 - [x] 02-01-PLAN.md — Convex backend: claimItem + unclaimItem mutations, getClaimsForBill query, extend getBillForMember to return claims[]
@@ -104,7 +104,7 @@
   1. The claim screen displays item rows with dot-leader alignment, handwritten blue claimant names at slight random rotations, and a SETTLE stamp with ink-bleed animation on payment confirmation
   2. A visitor to the landing page sees the "tongtong." logotype, Manglish marketing copy, and a "START NEW BILL" chop-style button — and can reach the bill builder in one tap
   3. Every screen uses the correct color roles: warm paper background, charcoal ink, blue pen marks, and red reserved strictly for SETTLE stamp and unclaimed item warnings
-**Plans:** 4/4 plans complete
+**Plans:** 5 plans (4 complete + 1 gap closure)
 
 **Wave 1**
 - [x] 03-01-PLAN.md — Font migration (JetBrains Mono + Bungee → next/font/google; Departure Mono → self-hosted WOFF2) + CSS animation token + SVG ink-bleed filter in layout.tsx
@@ -169,7 +169,7 @@
 | 4. Bonus Features | 5/5 | Complete   | 2026-05-29 |
 | 5. Bonus Additions | 4/4 | Complete | 2026-05-30 |
 | 6. Math & Precision Fixes | 4/4 | Complete   | 2026-06-03 |
-| 7. Claiming & Payment UX | 4/4 | Complete   | 2026-06-04 |
+| 7. Claiming & Payment UX | 4/5 | Gap closure | 2026-06-04 |
 | 8. Google Auth | 0/? | Not planned | — |
 
 ### Phase 5: bonus additions: Departure Mono headings + landing page enhancements (benefits, how-it-works guide)
@@ -206,7 +206,7 @@ Plans:
 **Goal:** Eliminate known calculation bugs and give organizers a rounding adjustment option to handle cent discrepancies
 **Requirements:** CR-01, CR-02, CR-03, WR-01, WR-02, ADJ-01, ADJ-02, ADJ-03, ADJ-04, ADJ-05, ADJ-06, ADJ-07
 **Depends on:** Phase 5
-**Plans:** 4/4 plans complete
+**Plans:** 5 plans (4 complete + 1 gap closure)
 
 **Wave 0**
 - [x] 06-01-PLAN.md — RED test stubs: updateRoundingAdjustment.test.ts (new) + extend calculatePersonTotals.test.ts and calculateTotalsLib.test.ts with adjustment cases
@@ -229,7 +229,7 @@ Plans:
 **Goal:** Members can claim items by quantity (not just one-of), and organizers can display banking transfer info alongside QR
 **Requirements:** CLAIM-BANK-01, CLAIM-BANK-DISPLAY-01, CLAIM-BANK-DASH-01, UAT-ADJ-01
 **Depends on:** Phase 6
-**Plans:** 4/4 plans complete
+**Plans:** 5 plans (4 complete + 1 gap closure)
 
 **Wave 1**
 - [x] 07-01-PLAN.md — TDD RED stubs: updateBankingInfo boundary tests + roundingAdjInBillTotal data-prerequisite tests
@@ -240,6 +240,9 @@ Plans:
 **Wave 3** *(07-03 and 07-04 run in parallel — both blocked on Wave 2)*
 - [x] 07-03-PLAN.md — Member view: UAT gap fix (Rounding Adj. in BILL TOTAL) + banking info display in PAYMENT ZONE
 - [x] 07-04-PLAN.md — Dashboard: banking info input fields in both desktop and mobile panels
+
+**Wave 5 (gap closure — UAT)**
+- [ ] 07-05-PLAN.md — createBill banking info args + create page PAYMENT DETAILS section (banking info at bill creation time)
 
 **Cross-cutting constraints:**
 - claimQty is the canonical field name (NOT quantityClaimed) — already in schema and all code paths
