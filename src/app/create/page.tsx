@@ -139,6 +139,8 @@ export default function CreatePage() {
       router.push(`/share/${billId}`);
     } catch (err) {
       console.error("Failed to create bill:", err);
+    } finally {
+      // WR-02: always reset so button re-enables if navigation is delayed
       setIsSubmitting(false);
     }
   };
