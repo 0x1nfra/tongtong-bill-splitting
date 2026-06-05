@@ -1,6 +1,6 @@
 "use client";
 
-import { use, useEffect, useState } from "react";
+import { use, useEffect, useRef, useState } from "react";
 import { useQuery, useMutation } from "convex/react";
 import { api } from "../../../../convex/_generated/api";
 import type { Id } from "../../../../convex/_generated/dataModel";
@@ -68,6 +68,26 @@ export default function DashboardPage({
   const updateQR = useMutation(api.bills.updateQR);
   const updateRoundingAdjustment = useMutation(api.bills.updateRoundingAdjustment);
   const updateBankingInfo = useMutation(api.bills.updateBankingInfo);
+
+  // CR-01: container refs so onBlur reads sibling values from DOM, not stale Convex subscription
+  const bankInfoDesktopRef = useRef<HTMLDivElement>(null);
+  const bankInfoMobileRef = useRef<HTMLDivElement>(null);
+
+  // CR-01: read all 4 banking input values from a container ref
+  const readBankInfoFromContainer = (container: HTMLDivElement | null) => {
+    if (!container) return { bankName: undefined, accountNumber: undefined, accountHolderName: undefined, duitNowId: undefined };
+    const inputs = container.querySelectorAll<HTMLInputElement>('input[data-field]');
+    const vals: Record<string, string | undefined> = {};
+    inputs.forEach(inp => {
+      vals[inp.dataset.field!] = inp.value.trim() || undefined;
+    });
+    return {
+      bankName: vals['bankName'],
+      accountNumber: vals['accountNumber'],
+      accountHolderName: vals['accountHolderName'],
+      duitNowId: vals['duitNowId'],
+    };
+  };
 
   // organizerSecret is null while localStorage hasn't been read yet (SSR-safe)
   if (organizerSecret === null) {
@@ -507,93 +527,91 @@ export default function DashboardPage({
             </div>
 
             {/* BANKING INFO — organizer can save transfer details; displayed on member view */}
+            <div ref={bankInfoDesktopRef}>
             <div className="flex flex-col gap-1 mb-4">
-              <label className="text-[0.625rem] uppercase tracking-widest text-ink-muted">
+              <label htmlFor="bankName-desktop" className="text-[0.625rem] uppercase tracking-widest text-ink-muted">
                 Bank Name
               </label>
               <input
+                id="bankName-desktop"
+                data-field="bankName"
+                key={bill.bankName ?? ''}
                 type="text"
                 defaultValue={bill.bankName ?? ''}
                 disabled={isArchived}
-                onBlur={(e) => {
-                  const value = e.target.value.trim();
+                onBlur={() => {
                   updateBankingInfo({
                     billId: billId as Id<"bills">,
                     organizerSecret: organizerSecret!,
-                    bankName: value || undefined,
-                    accountNumber: bill.accountNumber ?? undefined,
-                    accountHolderName: bill.accountHolderName ?? undefined,
-                    duitNowId: bill.duitNowId ?? undefined,
+                    ...readBankInfoFromContainer(bankInfoDesktopRef.current),
                   }).catch((err: unknown) => console.error("Failed to update banking info:", err));
                 }}
                 className="w-full border border-ink bg-paper-chit px-3 py-2 text-ink text-sm focus:outline-none focus-visible:outline-2 focus-visible:outline-pen focus-visible:outline-offset-2 disabled:opacity-50"
               />
             </div>
             <div className="flex flex-col gap-1 mb-4">
-              <label className="text-[0.625rem] uppercase tracking-widest text-ink-muted">
+              <label htmlFor="accountNumber-desktop" className="text-[0.625rem] uppercase tracking-widest text-ink-muted">
                 Account No.
               </label>
               <input
+                id="accountNumber-desktop"
+                data-field="accountNumber"
+                key={bill.accountNumber ?? ''}
                 type="text"
                 defaultValue={bill.accountNumber ?? ''}
                 disabled={isArchived}
-                onBlur={(e) => {
-                  const value = e.target.value.trim();
+                onBlur={() => {
                   updateBankingInfo({
                     billId: billId as Id<"bills">,
                     organizerSecret: organizerSecret!,
-                    bankName: bill.bankName ?? undefined,
-                    accountNumber: value || undefined,
-                    accountHolderName: bill.accountHolderName ?? undefined,
-                    duitNowId: bill.duitNowId ?? undefined,
+                    ...readBankInfoFromContainer(bankInfoDesktopRef.current),
                   }).catch((err: unknown) => console.error("Failed to update banking info:", err));
                 }}
                 className="w-full border border-ink bg-paper-chit px-3 py-2 text-ink text-sm focus:outline-none focus-visible:outline-2 focus-visible:outline-pen focus-visible:outline-offset-2 disabled:opacity-50"
               />
             </div>
             <div className="flex flex-col gap-1 mb-4">
-              <label className="text-[0.625rem] uppercase tracking-widest text-ink-muted">
+              <label htmlFor="accountHolderName-desktop" className="text-[0.625rem] uppercase tracking-widest text-ink-muted">
                 Account Holder
               </label>
               <input
+                id="accountHolderName-desktop"
+                data-field="accountHolderName"
+                key={bill.accountHolderName ?? ''}
                 type="text"
                 defaultValue={bill.accountHolderName ?? ''}
                 disabled={isArchived}
-                onBlur={(e) => {
-                  const value = e.target.value.trim();
+                onBlur={() => {
                   updateBankingInfo({
                     billId: billId as Id<"bills">,
                     organizerSecret: organizerSecret!,
-                    bankName: bill.bankName ?? undefined,
-                    accountNumber: bill.accountNumber ?? undefined,
-                    accountHolderName: value || undefined,
-                    duitNowId: bill.duitNowId ?? undefined,
+                    ...readBankInfoFromContainer(bankInfoDesktopRef.current),
                   }).catch((err: unknown) => console.error("Failed to update banking info:", err));
                 }}
                 className="w-full border border-ink bg-paper-chit px-3 py-2 text-ink text-sm focus:outline-none focus-visible:outline-2 focus-visible:outline-pen focus-visible:outline-offset-2 disabled:opacity-50"
               />
             </div>
             <div className="flex flex-col gap-1 mb-4">
-              <label className="text-[0.625rem] uppercase tracking-widest text-ink-muted">
+              <label htmlFor="duitNowId-desktop" className="text-[0.625rem] uppercase tracking-widest text-ink-muted">
                 DuitNow ID
               </label>
               <input
+                id="duitNowId-desktop"
+                data-field="duitNowId"
+                key={bill.duitNowId ?? ''}
                 type="text"
                 defaultValue={bill.duitNowId ?? ''}
                 disabled={isArchived}
-                onBlur={(e) => {
-                  const value = e.target.value.trim();
+                onBlur={() => {
                   updateBankingInfo({
                     billId: billId as Id<"bills">,
                     organizerSecret: organizerSecret!,
-                    bankName: bill.bankName ?? undefined,
-                    accountNumber: bill.accountNumber ?? undefined,
-                    accountHolderName: bill.accountHolderName ?? undefined,
-                    duitNowId: value || undefined,
+                    ...readBankInfoFromContainer(bankInfoDesktopRef.current),
                   }).catch((err: unknown) => console.error("Failed to update banking info:", err));
                 }}
                 className="w-full border border-ink bg-paper-chit px-3 py-2 text-ink text-sm focus:outline-none focus-visible:outline-2 focus-visible:outline-pen focus-visible:outline-offset-2 disabled:opacity-50"
               />
+            </div>
             </div>
 
             {/* Quick actions */}
@@ -746,93 +764,91 @@ export default function DashboardPage({
           </div>
 
           {/* BANKING INFO — organizer can save transfer details; displayed on member view */}
+          <div ref={bankInfoMobileRef}>
           <div className="flex flex-col gap-1 mb-4">
-            <label className="text-[0.625rem] uppercase tracking-widest text-ink-muted">
+            <label htmlFor="bankName-mobile" className="text-[0.625rem] uppercase tracking-widest text-ink-muted">
               Bank Name
             </label>
             <input
+              id="bankName-mobile"
+              data-field="bankName"
+              key={bill.bankName ?? ''}
               type="text"
               defaultValue={bill.bankName ?? ''}
               disabled={isArchived}
-              onBlur={(e) => {
-                const value = e.target.value.trim();
+              onBlur={() => {
                 updateBankingInfo({
                   billId: billId as Id<"bills">,
                   organizerSecret: organizerSecret!,
-                  bankName: value || undefined,
-                  accountNumber: bill.accountNumber ?? undefined,
-                  accountHolderName: bill.accountHolderName ?? undefined,
-                  duitNowId: bill.duitNowId ?? undefined,
+                  ...readBankInfoFromContainer(bankInfoMobileRef.current),
                 }).catch((err: unknown) => console.error("Failed to update banking info:", err));
               }}
               className="w-full border border-ink bg-paper-chit px-3 py-2 text-ink text-sm focus:outline-none focus-visible:outline-2 focus-visible:outline-pen focus-visible:outline-offset-2 disabled:opacity-50"
             />
           </div>
           <div className="flex flex-col gap-1 mb-4">
-            <label className="text-[0.625rem] uppercase tracking-widest text-ink-muted">
+            <label htmlFor="accountNumber-mobile" className="text-[0.625rem] uppercase tracking-widest text-ink-muted">
               Account No.
             </label>
             <input
+              id="accountNumber-mobile"
+              data-field="accountNumber"
+              key={bill.accountNumber ?? ''}
               type="text"
               defaultValue={bill.accountNumber ?? ''}
               disabled={isArchived}
-              onBlur={(e) => {
-                const value = e.target.value.trim();
+              onBlur={() => {
                 updateBankingInfo({
                   billId: billId as Id<"bills">,
                   organizerSecret: organizerSecret!,
-                  bankName: bill.bankName ?? undefined,
-                  accountNumber: value || undefined,
-                  accountHolderName: bill.accountHolderName ?? undefined,
-                  duitNowId: bill.duitNowId ?? undefined,
+                  ...readBankInfoFromContainer(bankInfoMobileRef.current),
                 }).catch((err: unknown) => console.error("Failed to update banking info:", err));
               }}
               className="w-full border border-ink bg-paper-chit px-3 py-2 text-ink text-sm focus:outline-none focus-visible:outline-2 focus-visible:outline-pen focus-visible:outline-offset-2 disabled:opacity-50"
             />
           </div>
           <div className="flex flex-col gap-1 mb-4">
-            <label className="text-[0.625rem] uppercase tracking-widest text-ink-muted">
+            <label htmlFor="accountHolderName-mobile" className="text-[0.625rem] uppercase tracking-widest text-ink-muted">
               Account Holder
             </label>
             <input
+              id="accountHolderName-mobile"
+              data-field="accountHolderName"
+              key={bill.accountHolderName ?? ''}
               type="text"
               defaultValue={bill.accountHolderName ?? ''}
               disabled={isArchived}
-              onBlur={(e) => {
-                const value = e.target.value.trim();
+              onBlur={() => {
                 updateBankingInfo({
                   billId: billId as Id<"bills">,
                   organizerSecret: organizerSecret!,
-                  bankName: bill.bankName ?? undefined,
-                  accountNumber: bill.accountNumber ?? undefined,
-                  accountHolderName: value || undefined,
-                  duitNowId: bill.duitNowId ?? undefined,
+                  ...readBankInfoFromContainer(bankInfoMobileRef.current),
                 }).catch((err: unknown) => console.error("Failed to update banking info:", err));
               }}
               className="w-full border border-ink bg-paper-chit px-3 py-2 text-ink text-sm focus:outline-none focus-visible:outline-2 focus-visible:outline-pen focus-visible:outline-offset-2 disabled:opacity-50"
             />
           </div>
           <div className="flex flex-col gap-1 mb-4">
-            <label className="text-[0.625rem] uppercase tracking-widest text-ink-muted">
+            <label htmlFor="duitNowId-mobile" className="text-[0.625rem] uppercase tracking-widest text-ink-muted">
               DuitNow ID
             </label>
             <input
+              id="duitNowId-mobile"
+              data-field="duitNowId"
+              key={bill.duitNowId ?? ''}
               type="text"
               defaultValue={bill.duitNowId ?? ''}
               disabled={isArchived}
-              onBlur={(e) => {
-                const value = e.target.value.trim();
+              onBlur={() => {
                 updateBankingInfo({
                   billId: billId as Id<"bills">,
                   organizerSecret: organizerSecret!,
-                  bankName: bill.bankName ?? undefined,
-                  accountNumber: bill.accountNumber ?? undefined,
-                  accountHolderName: bill.accountHolderName ?? undefined,
-                  duitNowId: value || undefined,
+                  ...readBankInfoFromContainer(bankInfoMobileRef.current),
                 }).catch((err: unknown) => console.error("Failed to update banking info:", err));
               }}
               className="w-full border border-ink bg-paper-chit px-3 py-2 text-ink text-sm focus:outline-none focus-visible:outline-2 focus-visible:outline-pen focus-visible:outline-offset-2 disabled:opacity-50"
             />
+          </div>
           </div>
 
           <h3 className="uppercase text-xs font-bold text-ink tracking-widest mb-2">

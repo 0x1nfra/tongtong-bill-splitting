@@ -184,6 +184,9 @@ export const claimItem = mutation({
     const item = await ctx.db.get(itemId);
     if (!item || item.billId !== billId) throw new Error("Item not found on this bill");
 
+    // NOTE: capacity check and insert are not atomic. Under very high concurrency
+    // (multiple simultaneous mutations on the same item) total claimed units could
+    // briefly exceed item.quantity. Acceptable for MVP; revisit if contention observed.
     // For multi-qty items: validate total claimed units won't exceed item.quantity
     if (item.quantity > 1) {
       const allClaims = await ctx.db
@@ -487,10 +490,10 @@ export const updateBankingInfo = mutation({
       throw new Error("Unauthorized");
     }
     if (bill.archivedAt !== undefined) throw new Error("Bill is archived");
-    const sanitizedBankName = bankName !== undefined ? bankName.replace(/[<>"]/g, "") : undefined;
-    const sanitizedAccountNumber = accountNumber !== undefined ? accountNumber.replace(/[<>"]/g, "") : undefined;
-    const sanitizedAccountHolderName = accountHolderName !== undefined ? accountHolderName.replace(/[<>"]/g, "") : undefined;
-    const sanitizedDuitNowId = duitNowId !== undefined ? duitNowId.replace(/[<>"]/g, "") : undefined;
+    const sanitizedBankName = bankName !== undefined ? bankName.replace(/[<>"]/g, "").trim() : undefined;
+    const sanitizedAccountNumber = accountNumber !== undefined ? accountNumber.replace(/[<>"]/g, "").trim() : undefined;
+    const sanitizedAccountHolderName = accountHolderName !== undefined ? accountHolderName.replace(/[<>"]/g, "").trim() : undefined;
+    const sanitizedDuitNowId = duitNowId !== undefined ? duitNowId.replace(/[<>"]/g, "").trim() : undefined;
     await ctx.db.patch(billId, {
       bankName: sanitizedBankName,
       accountNumber: sanitizedAccountNumber,
