@@ -169,8 +169,8 @@
 | 4. Bonus Features | 5/5 | Complete   | 2026-05-29 |
 | 5. Bonus Additions | 4/4 | Complete | 2026-05-30 |
 | 6. Math & Precision Fixes | 4/4 | Complete   | 2026-06-03 |
-| 7. Claiming & Payment UX | 4/5 | Gap closure | 2026-06-04 |
-| 8. Google Auth | 0/? | Not planned | — |
+| 7. Claiming & Payment UX | 5/5 | Complete   | 2026-06-05 |
+| 8. Google Auth | 0/3 | Planned | — |
 
 ### Phase 5: bonus additions: Departure Mono headings + landing page enhancements (benefits, how-it-works guide)
 
@@ -229,7 +229,7 @@ Plans:
 **Goal:** Members can claim items by quantity (not just one-of), and organizers can display banking transfer info alongside QR
 **Requirements:** CLAIM-BANK-01, CLAIM-BANK-DISPLAY-01, CLAIM-BANK-DASH-01, UAT-ADJ-01
 **Depends on:** Phase 6
-**Plans:** 5 plans (4 complete + 1 gap closure)
+**Plans:** 5/5 plans complete
 
 **Wave 1**
 - [x] 07-01-PLAN.md — TDD RED stubs: updateBankingInfo boundary tests + roundingAdjInBillTotal data-prerequisite tests
@@ -242,7 +242,7 @@ Plans:
 - [x] 07-04-PLAN.md — Dashboard: banking info input fields in both desktop and mobile panels
 
 **Wave 5 (gap closure — UAT)**
-- [ ] 07-05-PLAN.md — createBill banking info args + create page PAYMENT DETAILS section (banking info at bill creation time)
+- [x] 07-05-PLAN.md — createBill banking info args + create page PAYMENT DETAILS section (banking info at bill creation time)
 
 **Cross-cutting constraints:**
 - claimQty is the canonical field name (NOT quantityClaimed) — already in schema and all code paths
@@ -254,9 +254,18 @@ Plans:
 
 ### Phase 8: Google Auth
 **Goal:** Organizers can sign in with Google so bill dashboard access is preserved across devices and sessions
-**Requirements:** TBD
+**Requirements:** BONUS-05
 **Depends on:** Phase 7
-**Plans:** TBD — run /gsd-plan-phase 8 to generate
+**Plans:** 3 plans
+
+**Wave 1**
+- [ ] 08-01-PLAN.md — Foundation: install @convex-dev/auth, 4 new Convex files, schema authTables + googleUserId, provider wiring, external OAuth/env setup
+
+**Wave 2** *(blocked on Wave 1)*
+- [ ] 08-02-PLAN.md — Backend dual-auth: getAuthUserId guard on all organizer functions in bills.ts + payments.ts; createBill stores googleUserId
+
+**Wave 3** *(blocked on Waves 1+2)*
+- [ ] 08-03-PLAN.md — Frontend: wire SignInButton, dashboard sign-in banner + auth-loading skeleton, dual-auth query/mutation paths
 
 ### Phase 9: Bill editing — organizer can edit items, prices, and tax toggles after bill creation
 
