@@ -1,9 +1,12 @@
+import { authTables } from "@convex-dev/auth/server";
 import { defineSchema, defineTable } from "convex/server";
 import { v } from "convex/values";
 
 export default defineSchema({
+  ...authTables,
   bills: defineTable({
     organizerSecret: v.string(),
+    googleUserId: v.optional(v.string()), // Phase 8 D-03: Google Auth user ID
     title: v.string(),
     applySST: v.boolean(),
     applyServiceCharge: v.boolean(),
