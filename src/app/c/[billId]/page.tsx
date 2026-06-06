@@ -525,7 +525,7 @@ export default function MemberViewPage({
                 item.quantity > 1
                   ? isMine
                     ? item.price * myClaimedQty
-                    : item.price
+                    : item.price * item.quantity
                   : totalClaimants > 0
                     ? Math.round(item.price / totalClaimants)
                     : item.price;
@@ -745,7 +745,7 @@ export default function MemberViewPage({
           {(totals.roundingAdjustmentCents ?? 0) !== 0 ? (
             <div className="dot-leader flex justify-between text-sm text-ink mb-1">
               <span className="text-ink-muted">Rounding Adj.</span>
-              <span className={(totals.roundingAdjustmentCents ?? 0) > 0 ? "text-pen" : "text-ink"}>
+              <span className="text-ink">
                 {(totals.roundingAdjustmentCents ?? 0) > 0 ? "+" : ""}RM{(Math.abs(totals.roundingAdjustmentCents ?? 0) / 100).toFixed(2)}
               </span>
             </div>
@@ -797,7 +797,7 @@ export default function MemberViewPage({
               {(personTotals?.personRoundingAdjustmentCents ?? 0) !== 0 ? (
                 <div className="dot-leader flex justify-between text-sm text-ink mb-1">
                   <span className="text-ink-muted">Rounding Adj.</span>
-                  <span className={(personTotals?.personRoundingAdjustmentCents ?? 0) > 0 ? "text-pen" : "text-ink"}>
+                  <span className="text-ink">
                     {(personTotals?.personRoundingAdjustmentCents ?? 0) > 0 ? "+" : ""}RM{(Math.abs(personTotals?.personRoundingAdjustmentCents ?? 0) / 100).toFixed(2)}
                   </span>
                 </div>
@@ -826,7 +826,43 @@ export default function MemberViewPage({
             </>
           )}
 
-          {/* PAYMENT ZONE — only if hasClaims */}
+          {/* BANKING INFO — visible whenever set, no claim required */}
+          {(bill.bankName || bill.accountNumber || bill.accountHolderName || bill.duitNowId) ? (
+            <>
+              <div className="perforation my-4"></div>
+              <div className="text-left">
+                <p className="text-xs font-bold uppercase text-ink-muted tracking-widest mb-2">
+                  TRANSFER TO
+                </p>
+                {bill.bankName ? (
+                  <div className="dot-leader flex justify-between text-sm text-ink mb-1">
+                    <span className="text-ink-muted">Bank</span>
+                    <span>{bill.bankName}</span>
+                  </div>
+                ) : null}
+                {bill.accountNumber ? (
+                  <div className="dot-leader flex justify-between text-sm text-ink mb-1">
+                    <span className="text-ink-muted">Account No.</span>
+                    <span>{bill.accountNumber}</span>
+                  </div>
+                ) : null}
+                {bill.accountHolderName ? (
+                  <div className="dot-leader flex justify-between text-sm text-ink mb-1">
+                    <span className="text-ink-muted">Name</span>
+                    <span>{bill.accountHolderName}</span>
+                  </div>
+                ) : null}
+                {bill.duitNowId ? (
+                  <div className="dot-leader flex justify-between text-sm text-ink mb-1">
+                    <span className="text-ink-muted">DuitNow ID</span>
+                    <span>{bill.duitNowId}</span>
+                  </div>
+                ) : null}
+              </div>
+            </>
+          ) : null}
+
+          {/* PAYMENT ZONE — QR, stamp, pay button — only if hasClaims */}
           {hasClaims && (
             <>
               <div className="perforation my-4"></div>
@@ -846,39 +882,6 @@ export default function MemberViewPage({
                       className="w-[200px] h-[200px] object-contain mx-auto mb-4"
                     />
                   </>
-                ) : null}
-
-                {/* BANKING INFO: display transfer details when any field is set — text-ink only, never text-stamp */}
-                {(bill.bankName || bill.accountNumber || bill.accountHolderName || bill.duitNowId) ? (
-                  <div className="mb-4 text-left">
-                    <p className="text-xs font-bold uppercase text-ink-muted tracking-widest mb-2">
-                      TRANSFER TO
-                    </p>
-                    {bill.bankName ? (
-                      <div className="dot-leader flex justify-between text-sm text-ink mb-1">
-                        <span className="text-ink-muted">Bank</span>
-                        <span>{bill.bankName}</span>
-                      </div>
-                    ) : null}
-                    {bill.accountNumber ? (
-                      <div className="dot-leader flex justify-between text-sm text-ink mb-1">
-                        <span className="text-ink-muted">Account No.</span>
-                        <span>{bill.accountNumber}</span>
-                      </div>
-                    ) : null}
-                    {bill.accountHolderName ? (
-                      <div className="dot-leader flex justify-between text-sm text-ink mb-1">
-                        <span className="text-ink-muted">Name</span>
-                        <span>{bill.accountHolderName}</span>
-                      </div>
-                    ) : null}
-                    {bill.duitNowId ? (
-                      <div className="dot-leader flex justify-between text-sm text-ink mb-1">
-                        <span className="text-ink-muted">DuitNow ID</span>
-                        <span>{bill.duitNowId}</span>
-                      </div>
-                    ) : null}
-                  </div>
                 ) : null}
 
                 {paymentStatus !== null && paymentStatus !== "rejected" ? (
