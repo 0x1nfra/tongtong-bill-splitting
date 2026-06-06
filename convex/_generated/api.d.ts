@@ -8,8 +8,10 @@
  * @module
  */
 
+import type * as auth from "../auth.js";
 import type * as bills from "../bills.js";
 import type * as crons from "../crons.js";
+import type * as http from "../http.js";
 import type * as payments from "../payments.js";
 
 import type {
@@ -19,8 +21,10 @@ import type {
 } from "convex/server";
 
 declare const fullApi: ApiFromModules<{
+  auth: typeof auth;
   bills: typeof bills;
   crons: typeof crons;
+  http: typeof http;
   payments: typeof payments;
 }>;
 

@@ -2,30 +2,30 @@
 gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
-current_phase: 07
+current_phase: 08
 status: executing
-stopped_at: Phase 6 context gathered
-last_updated: "2026-06-04T12:13:18.606Z"
+stopped_at: Phase 08 Plan 01 complete — auth foundation + providers wired
+last_updated: "2026-06-06T14:00:00.000Z"
 progress:
   total_phases: 10
-  completed_phases: 7
-  total_plans: 35
-  completed_plans: 31
-  percent: 70
+  completed_phases: 8
+  total_plans: 39
+  completed_plans: 37
+  percent: 81
 ---
 
 # TongTong — Project State
 
 **Initialized:** 2026-05-22
-**Current Phase:** 07
-**Status:** Executing Phase 07
+**Current Phase:** 08
+**Status:** Executing Phase 08
 
 ## Project Reference
 
 See: .planning/PROJECT.md
 
 **Core value:** Share a link — friends claim items, see what they owe, confirm payment. Organizer stops chasing.
-**Current focus:** Phase 07 — claiming-payment-ux
+**Current focus:** Phase 08 — google-auth
 
 ## Roadmap Summary
 
@@ -35,8 +35,8 @@ See: .planning/PROJECT.md
 
 ## Current Position
 
-Phase: 07 (claiming-payment-ux) — EXECUTING
-Plan: 1 of 4
+Phase: 08 (google-auth) — EXECUTING
+Plan: 2 of 3 (Plan 01 complete)
 **Phase:** 2 — Item Claiming
 **Plans:** 0/? plans complete
 **Progress:** [██████████] 100%
@@ -64,6 +64,9 @@ Plan: 1 of 4
 - Coarse granularity applied: PRD milestones 1+2 collapsed into Phase 1, milestone 3 into Phase 2, milestone 4 into Phase 3
 - Phase 3 deferred all aesthetic requirements to avoid horizontal layering; functional vertical slices ship first
 - Phase 4 scoped to feasible bonus reqs: BONUS-03, BONUS-04, BONUS-05, BONUS-06 (BONUS-01/02/07/08 already shipped on feat/bonus branch)
+- Phase 08-01: @auth/core pinned to exactly 0.37.0 (not ^0.37.0) — required by @convex-dev/auth peer range
+- Phase 08-01: No proxy.ts or middleware.ts — auth is optional per D-01; Next.js 16 proxy compatibility issue (#271)
+- Phase 08-01: OAuth redirect URI points to Convex .site URL — auth callback must reach Convex HTTP actions, not Next.js app
 
 ### Key Constraints
 
@@ -88,6 +91,6 @@ Plan: 1 of 4
 
 ## Session Continuity
 
-Last session: 2026-06-03T13:06:50.598Z
-Stopped at: Phase 6 context gathered
-Resume file: .planning/phases/06-math-precision-fixes/06-CONTEXT.md
+Last session: 2026-06-06T14:00:00.000Z
+Stopped at: Phase 08 Plan 01 complete — convex-auth foundation, providers, and credentials wired
+Resume file: .planning/phases/08-google-auth/08-02-PLAN.md
