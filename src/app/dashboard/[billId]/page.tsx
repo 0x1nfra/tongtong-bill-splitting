@@ -13,6 +13,70 @@ import { StatsBar } from "../../../components/StatsBar";
 import { MemberRow } from "../../../components/MemberRow";
 import { calculateTotals, calculatePersonTotals } from "@/lib/calculateTotals";
 
+function ItemEditRow({
+  item,
+  organizerSecret,
+  isAuthenticated,
+  onSave,
+}: {
+  item: { _id: Id<"items">; name: string; price: number; quantity: number };
+  organizerSecret: string | null;
+  isAuthenticated: boolean;
+  onSave: (itemId: Id<"items">, priceCents: number, qty: number) => void;
+}) {
+  const [priceRm, setPriceRm] = useState((item.price / 100).toFixed(2));
+  const [qty, setQty] = useState(String(item.quantity));
+  const [totalRm, setTotalRm] = useState(((item.price * item.quantity) / 100).toFixed(2));
+
+  const save = () => {
+    const p = Math.round(parseFloat(priceRm) * 100);
+    const q = parseInt(qty, 10);
+    if (!isNaN(p) && !isNaN(q) && q > 0 && p >= 0) onSave(item._id, p, q);
+  };
+
+  return (
+    <div className="flex items-center gap-1 mb-2 text-xs">
+      <span className="flex-1 text-ink truncate min-w-0">{item.name}</span>
+      <span className="text-ink-muted shrink-0">RM</span>
+      <input
+        type="number" step="0.01" min="0" value={priceRm}
+        onChange={(e) => {
+          setPriceRm(e.target.value);
+          const p = parseFloat(e.target.value);
+          const q = parseInt(qty, 10);
+          if (!isNaN(p) && !isNaN(q)) setTotalRm((p * q).toFixed(2));
+        }}
+        onBlur={save}
+        className="w-16 border border-ink-muted bg-transparent text-ink px-1 py-0.5 text-right shrink-0"
+      />
+      <span className="text-ink-muted shrink-0">×</span>
+      <input
+        type="number" min="1" value={qty}
+        onChange={(e) => {
+          setQty(e.target.value);
+          const p = parseFloat(priceRm);
+          const q = parseInt(e.target.value, 10);
+          if (!isNaN(p) && !isNaN(q)) setTotalRm((p * q).toFixed(2));
+        }}
+        onBlur={save}
+        className="w-10 border border-ink-muted bg-transparent text-ink px-1 py-0.5 text-right shrink-0"
+      />
+      <span className="text-ink-muted shrink-0">=</span>
+      <input
+        type="number" step="0.01" min="0" value={totalRm}
+        onChange={(e) => {
+          setTotalRm(e.target.value);
+          const t = parseFloat(e.target.value);
+          const q = parseInt(qty, 10);
+          if (!isNaN(t) && !isNaN(q) && q > 0) setPriceRm((t / q).toFixed(2));
+        }}
+        onBlur={save}
+        className="w-16 border border-ink-muted bg-transparent text-ink px-1 py-0.5 text-right shrink-0"
+      />
+    </div>
+  );
+}
+
 export default function DashboardPage({
   params,
 }: {
@@ -479,38 +543,15 @@ export default function DashboardPage({
             </h2>
             <div className="mb-6">
               {items.map((item) => (
-                <div key={item._id} className="flex items-center gap-2 mb-2 text-xs">
-                  <span className="flex-1 text-ink truncate">{item.name}</span>
-                  <label className="text-ink-muted uppercase tracking-widest shrink-0">RM</label>
-                  <input
-                    type="number"
-                    step="0.01"
-                    min="0"
-                    defaultValue={((item.price) / 100).toFixed(2)}
-                    key={`price-${item._id}-${item.price}`}
-                    onBlur={(e) => {
-                      const priceCents = Math.round(parseFloat(e.target.value) * 100);
-                      if (!isNaN(priceCents) && priceCents !== item.price) {
-                        updateItem({ itemId: item._id, organizerSecret: organizerSecret || undefined, price: priceCents, quantity: item.quantity }).catch(console.error);
-                      }
-                    }}
-                    className="w-20 border border-ink-muted bg-transparent text-ink px-1 py-0.5 text-right"
-                  />
-                  <label className="text-ink-muted uppercase tracking-widest shrink-0">×</label>
-                  <input
-                    type="number"
-                    min="1"
-                    defaultValue={item.quantity}
-                    key={`qty-${item._id}-${item.quantity}`}
-                    onBlur={(e) => {
-                      const qty = parseInt(e.target.value, 10);
-                      if (!isNaN(qty) && qty > 0 && qty !== item.quantity) {
-                        updateItem({ itemId: item._id, organizerSecret: organizerSecret || undefined, price: item.price, quantity: qty }).catch(console.error);
-                      }
-                    }}
-                    className="w-12 border border-ink-muted bg-transparent text-ink px-1 py-0.5 text-right"
-                  />
-                </div>
+                <ItemEditRow
+                  key={item._id}
+                  item={item}
+                  organizerSecret={organizerSecret}
+                  isAuthenticated={isAuthenticated}
+                  onSave={(itemId, priceCents, qty) => {
+                    updateItem({ itemId, organizerSecret: organizerSecret || undefined, price: priceCents, quantity: qty }).catch(console.error);
+                  }}
+                />
               ))}
             </div>
 
