@@ -1,10 +1,11 @@
 "use client";
 
 import { use, useEffect, useRef, useState } from "react";
-import { useQuery, useMutation } from "convex/react";
+import { useQuery, useMutation, useConvexAuth } from "convex/react";
 import { api } from "../../../../convex/_generated/api";
 import type { Id } from "../../../../convex/_generated/dataModel";
 import { BillSummaryCard } from "../../../components/BillSummaryCard";
+import { SignInButton } from "../../../components/SignInButton";
 import { CopyLinkField } from "../../../components/CopyLinkField";
 import { ProgressBar } from "../../../components/ProgressBar";
 import { StatsBar } from "../../../components/StatsBar";
@@ -24,6 +25,8 @@ export default function DashboardPage({
   const [isUploadingQR, setIsUploadingQR] = useState(false);
   const [closeBillMsg, setCloseBillMsg] = useState<string | null>(null);
 
+  const { isAuthenticated, isLoading: authLoading } = useConvexAuth();
+
   useEffect(() => {
     const stored = localStorage.getItem("tongtong_organizer_secret");
     // null means key absent (different device) — coerce to "" so the !organizerSecret guard fires
@@ -38,27 +41,49 @@ export default function DashboardPage({
   // unauthenticated request; Convex server will also verify the secret
   const billData = useQuery(
     api.bills.getBillForOrganizer,
-    organizerSecret ? { billId: billId as Id<"bills">, organizerSecret } : "skip"
+    (!organizerSecret && authLoading) || organizerSecret === null
+      ? "skip"
+      : organizerSecret
+        ? { billId: billId as Id<"bills">, organizerSecret }
+        : isAuthenticated
+          ? { billId: billId as Id<"bills"> }
+          : "skip"
   );
 
   // Separate real-time payments subscription (DASH-01, DASH-02, DASH-03)
   const payments = useQuery(
     api.payments.getPaymentsForBill,
-    organizerSecret
-      ? { billId: billId as Id<"bills">, organizerSecret }
-      : "skip"
+    (!organizerSecret && authLoading) || organizerSecret === null
+      ? "skip"
+      : organizerSecret
+        ? { billId: billId as Id<"bills">, organizerSecret }
+        : isAuthenticated
+          ? { billId: billId as Id<"bills"> }
+          : "skip"
   );
 
   // Real-time CLAIMED/UNCLAIMED subscription (DASH-02); skipped until organizerSecret loads
   const claimsStats = useQuery(
     api.bills.getClaimsForBill,
-    organizerSecret ? { billId: billId as Id<"bills">, organizerSecret } : "skip"
+    (!organizerSecret && authLoading) || organizerSecret === null
+      ? "skip"
+      : organizerSecret
+        ? { billId: billId as Id<"bills">, organizerSecret }
+        : isAuthenticated
+          ? { billId: billId as Id<"bills"> }
+          : "skip"
   );
 
   // DASH-03: all claimants (members who claimed at least one item) — used for PEOPLE tab
   const claimants = useQuery(
     api.bills.getClaimantsForBill,
-    organizerSecret ? { billId: billId as Id<"bills">, organizerSecret } : "skip"
+    (!organizerSecret && authLoading) || organizerSecret === null
+      ? "skip"
+      : organizerSecret
+        ? { billId: billId as Id<"bills">, organizerSecret }
+        : isAuthenticated
+          ? { billId: billId as Id<"bills"> }
+          : "skip"
   );
 
   const confirmPayment = useMutation(api.payments.confirmPayment);
@@ -104,17 +129,32 @@ export default function DashboardPage({
     );
   }
 
-  // D-10: organizerSecret is "" (empty string) — key absent, wrong device (AUTH-03)
-  if (!organizerSecret) {
+  // Auth-loading skeleton: no organizerSecret but Convex auth still resolving — prevents banner flash
+  if (!organizerSecret && authLoading) {
     return (
       <main className="min-h-screen bg-paper-table flex items-center justify-center">
-        <div className="max-w-[480px] mx-auto px-4 py-12 text-center">
-          <h1 className="text-xl font-bold uppercase text-ink tracking-widest mb-3">
-            WRONG DEVICE LAH
-          </h1>
-          <p className="text-sm text-ink-muted">
-            This dashboard can only be opened from the device that created this bill lah.
+        <div role="status" aria-label="Loading dashboard" className="chit max-w-[480px] w-full mx-4 p-4 animate-pulse">
+          <div className="h-4 bg-ink opacity-10 mb-3 w-1/3" />
+          <div className="h-3 bg-ink opacity-10 mb-2 w-full" />
+          <div className="h-3 bg-ink opacity-10 mb-2 w-4/5" />
+          <div className="h-3 bg-ink opacity-10 w-3/4" />
+        </div>
+      </main>
+    );
+  }
+
+  // D-02: no organizerSecret, auth resolved, not authenticated — show sign-in banner
+  if (!organizerSecret && !authLoading && !isAuthenticated) {
+    return (
+      <main className="min-h-screen bg-paper-table flex items-center justify-center">
+        <div className="chit max-w-[480px] w-full mx-4 border-l-4 border-pen p-6">
+          <p className="text-sm uppercase tracking-widest font-[family-name:var(--font-body)] text-ink">
+            SIGN IN TO ACCESS THIS CHIT
           </p>
+          <p className="text-xs text-ink-muted mt-1 mb-3">
+            This bill was created on another device. Sign in with Google to access the dashboard.
+          </p>
+          <SignInButton />
         </div>
       </main>
     );
@@ -134,16 +174,16 @@ export default function DashboardPage({
     );
   }
 
-  // D-10: bill is null — secret does not match this bill's organizer (AUTH-03)
+  // D-10: bill is null — secret does not match this bill's organizer, or Google auth not authorized (AUTH-03)
   if (billData === null) {
     return (
       <main className="min-h-screen bg-paper-table flex items-center justify-center">
         <div className="max-w-[480px] mx-auto px-4 py-12 text-center">
           <h1 className="text-xl font-bold uppercase text-ink tracking-widest mb-3">
-            WRONG DEVICE LAH
+            ACCESS DENIED
           </h1>
           <p className="text-sm text-ink-muted">
-            This dashboard can only be opened from the device that created this bill lah.
+            This dashboard could not be accessed. Check that you are signed in with the correct account.
           </p>
         </div>
       </main>
@@ -190,7 +230,7 @@ export default function DashboardPage({
   function handleConfirm(paymentId: string) {
     confirmPayment({
       paymentId: paymentId as Id<"payments">,
-      organizerSecret: organizerSecret!,
+      organizerSecret: organizerSecret || undefined,
     }).catch((err: unknown) => {
       console.error("Failed to confirm payment:", err);
     });
@@ -199,7 +239,7 @@ export default function DashboardPage({
   function handleReject(paymentId: string) {
     rejectPayment({
       paymentId: paymentId as Id<"payments">,
-      organizerSecret: organizerSecret!,
+      organizerSecret: organizerSecret || undefined,
     }).catch((err: unknown) => {
       console.error("Failed to reject payment:", err);
     });
@@ -264,7 +304,7 @@ export default function DashboardPage({
   }
 
   async function handleReceiptUpload(file: File) {
-    if (!organizerSecret) return;
+    if (!organizerSecret && !isAuthenticated) return;
     setIsUploadingReceipt(true);
     try {
       const uploadUrl = await generateUploadUrl({});
@@ -289,7 +329,7 @@ export default function DashboardPage({
   }
 
   async function handleQRUpload(file: File) {
-    if (!organizerSecret) return;
+    if (!organizerSecret && !isAuthenticated) return;
     setIsUploadingQR(true);
     try {
       const uploadUrl = await generateUploadUrl({});
@@ -520,7 +560,7 @@ export default function DashboardPage({
                   const value = parseInt(e.target.value, 10) || 0;
                   updateRoundingAdjustment({
                     billId: billId as Id<"bills">,
-                    organizerSecret: organizerSecret!,
+                    organizerSecret: organizerSecret || undefined,
                     roundingAdjustmentCents: value,
                   }).catch((err: unknown) => console.error("Failed to update rounding adjustment:", err));
                 }}
@@ -536,7 +576,7 @@ export default function DashboardPage({
                 if (!bankInfoDesktopRef.current?.contains(e.relatedTarget as Node)) {
                   updateBankingInfo({
                     billId: billId as Id<"bills">,
-                    organizerSecret: organizerSecret!,
+                    organizerSecret: organizerSecret || undefined,
                     ...readBankInfoFromContainer(bankInfoDesktopRef.current),
                   }).catch((err: unknown) => console.error("Failed to update banking info:", err));
                 }
@@ -742,7 +782,7 @@ export default function DashboardPage({
                 const value = parseInt(e.target.value, 10) || 0;
                 updateRoundingAdjustment({
                   billId: billId as Id<"bills">,
-                  organizerSecret: organizerSecret!,
+                  organizerSecret: organizerSecret || undefined,
                   roundingAdjustmentCents: value,
                 }).catch((err: unknown) => console.error("Failed to update rounding adjustment:", err));
               }}
@@ -758,7 +798,7 @@ export default function DashboardPage({
               if (!bankInfoMobileRef.current?.contains(e.relatedTarget as Node)) {
                 updateBankingInfo({
                   billId: billId as Id<"bills">,
-                  organizerSecret: organizerSecret!,
+                  organizerSecret: organizerSecret || undefined,
                   ...readBankInfoFromContainer(bankInfoMobileRef.current),
                 }).catch((err: unknown) => console.error("Failed to update banking info:", err));
               }
