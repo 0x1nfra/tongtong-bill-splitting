@@ -27,11 +27,26 @@ function ItemEditRow({
   const [priceRm, setPriceRm] = useState((item.price / 100).toFixed(2));
   const [qty, setQty] = useState(String(item.quantity));
   const [totalRm, setTotalRm] = useState(((item.price * item.quantity) / 100).toFixed(2));
+  // tracks whether total or unit price was last edited so save() picks the right source of truth
+  const lastEdited = useRef<"price" | "total">("price");
 
   const save = () => {
-    const p = Math.round(parseFloat(priceRm) * 100);
     const q = parseInt(qty, 10);
-    if (!isNaN(p) && !isNaN(q) && q > 0 && p >= 0) onSave(item._id, p, q);
+    if (isNaN(q) || q <= 0) return;
+    let priceCents: number;
+    if (lastEdited.current === "total") {
+      // preserve total exactly — store float cents per unit to avoid rounding loss
+      const t = parseFloat(totalRm);
+      if (isNaN(t) || t < 0) return;
+      priceCents = (t * 100) / q;
+    } else {
+      const p = parseFloat(priceRm);
+      if (isNaN(p) || p < 0) return;
+      priceCents = Math.round(p * 100);
+    }
+    setPriceRm((priceCents / 100).toFixed(2));
+    setTotalRm(((priceCents * q) / 100).toFixed(2));
+    onSave(item._id, priceCents, q);
   };
 
   return (
@@ -41,6 +56,7 @@ function ItemEditRow({
       <input
         type="number" step="0.01" min="0" value={priceRm}
         onChange={(e) => {
+          lastEdited.current = "price";
           setPriceRm(e.target.value);
           const p = parseFloat(e.target.value);
           const q = parseInt(qty, 10);
@@ -53,6 +69,7 @@ function ItemEditRow({
       <input
         type="number" min="1" value={qty}
         onChange={(e) => {
+          lastEdited.current = "price";
           setQty(e.target.value);
           const p = parseFloat(priceRm);
           const q = parseInt(e.target.value, 10);
@@ -65,6 +82,7 @@ function ItemEditRow({
       <input
         type="number" step="0.01" min="0" value={totalRm}
         onChange={(e) => {
+          lastEdited.current = "total";
           setTotalRm(e.target.value);
           const t = parseFloat(e.target.value);
           const q = parseInt(qty, 10);
