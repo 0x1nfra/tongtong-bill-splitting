@@ -44,9 +44,18 @@ export default function CreatePage() {
   const [applySST, setApplySST] = useState(false);
   const [applyServiceCharge, setApplyServiceCharge] = useState(false);
 
+  // Rounding adjustment state (integer RM cents, may be negative)
+  const [roundingAdjustmentCents, setRoundingAdjustmentCents] = useState<number>(0);
+
   // QR upload state — BILL-04: storageId from Convex file storage
   const [qrStorageId, setQrStorageId] = useState<string | undefined>(undefined);
   const [receiptStorageId, setReceiptStorageId] = useState<string | undefined>(undefined);
+
+  // Banking info state — CLAIM-BANK-01: optional payment details entered at creation time
+  const [bankName, setBankName] = useState("");
+  const [accountNumber, setAccountNumber] = useState("");
+  const [accountHolderName, setAccountHolderName] = useState("");
+  const [duitNowId, setDuitNowId] = useState("");
 
   // Submission guard — prevents double-tap
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -113,6 +122,11 @@ export default function CreatePage() {
         receiptStorageId: receiptStorageId as Id<"_storage"> | undefined,
         venueName: venueName || undefined,
         billDate: billDate || undefined,
+        roundingAdjustmentCents: roundingAdjustmentCents !== 0 ? roundingAdjustmentCents : undefined,
+        bankName: bankName || undefined,
+        accountNumber: accountNumber || undefined,
+        accountHolderName: accountHolderName || undefined,
+        duitNowId: duitNowId || undefined,
         items: items.map((item, index) => ({
           name: item.name,
           // T-03-01: convert RM string to integer cents before sending to Convex
@@ -125,6 +139,8 @@ export default function CreatePage() {
       router.push(`/share/${billId}`);
     } catch (err) {
       console.error("Failed to create bill:", err);
+    } finally {
+      // WR-02: always reset so button re-enables if navigation is delayed
       setIsSubmitting(false);
     }
   };
@@ -261,10 +277,27 @@ export default function CreatePage() {
               <span className="text-sm text-ink">SST (6%)</span>
             </label>
           </div>
+          {/* ROUNDING ADJUSTMENT — optional, integer RM cents */}
+          <div className="flex flex-col gap-1 mb-4">
+            <label htmlFor="rounding-adjustment" className="text-[0.625rem] uppercase tracking-widest text-ink-muted">
+              Rounding Adjustment (optional)
+            </label>
+            <input
+              id="rounding-adjustment"
+              type="number"
+              step="1"
+              value={roundingAdjustmentCents === 0 ? "" : roundingAdjustmentCents}
+              onChange={(e) => setRoundingAdjustmentCents(parseInt(e.target.value, 10) || 0)}
+              placeholder="0"
+              className="w-full border border-ink bg-paper-chit px-3 py-2 text-ink text-sm focus:outline-none focus-visible:outline-2 focus-visible:outline-pen focus-visible:outline-offset-2"
+            />
+            <p className="text-[0.625rem] text-ink-muted">Integer RM cents (e.g. +1 or -2). Use to reconcile rounding.</p>
+          </div>
           <RunningTotal
             items={items}
             applySST={applySST}
             applyServiceCharge={applyServiceCharge}
+            roundingAdjustmentCents={roundingAdjustmentCents}
           />
 
           <div className="perforation my-4" />
@@ -276,12 +309,74 @@ export default function CreatePage() {
           >
             ATTACHMENTS
           </p>
-          <div className="space-y-4">
-            <div>
-              <p className="text-[0.625rem] uppercase tracking-widest text-ink-muted mb-2">
-                Receipt photo (optional)
-              </p>
-              <QRUpload onUpload={(id) => setReceiptStorageId(id)} />
+          <div>
+            <p className="text-[0.625rem] uppercase tracking-widest text-ink-muted mb-2">
+              Receipt photo (optional)
+            </p>
+            <QRUpload onUpload={(id) => setReceiptStorageId(id)} />
+          </div>
+
+          <div className="perforation my-4" />
+
+          {/* PAYMENT DETAILS ZONE — QR upload + banking info bundled */}
+          <p
+            className="text-xs font-bold uppercase text-ink-muted tracking-widest mb-3"
+            style={{ fontFamily: "var(--font-display)" }}
+          >
+            PAYMENT DETAILS
+          </p>
+          <div className="space-y-3">
+            <div className="flex flex-col gap-1">
+              <label htmlFor="bank-name" className="text-[0.625rem] uppercase tracking-widest text-ink-muted">
+                Bank Name
+              </label>
+              <input
+                id="bank-name"
+                type="text"
+                value={bankName}
+                onChange={(e) => setBankName(e.target.value)}
+                placeholder="e.g. Maybank"
+                className="w-full border border-ink bg-paper-chit px-3 py-2 text-ink text-sm focus:outline-none focus-visible:outline-2 focus-visible:outline-pen focus-visible:outline-offset-2"
+              />
+            </div>
+            <div className="flex flex-col gap-1">
+              <label htmlFor="account-number" className="text-[0.625rem] uppercase tracking-widest text-ink-muted">
+                Account No.
+              </label>
+              <input
+                id="account-number"
+                type="text"
+                value={accountNumber}
+                onChange={(e) => setAccountNumber(e.target.value)}
+                placeholder="e.g. 1234567890"
+                className="w-full border border-ink bg-paper-chit px-3 py-2 text-ink text-sm focus:outline-none focus-visible:outline-2 focus-visible:outline-pen focus-visible:outline-offset-2"
+              />
+            </div>
+            <div className="flex flex-col gap-1">
+              <label htmlFor="account-holder" className="text-[0.625rem] uppercase tracking-widest text-ink-muted">
+                Account Holder
+              </label>
+              <input
+                id="account-holder"
+                type="text"
+                value={accountHolderName}
+                onChange={(e) => setAccountHolderName(e.target.value)}
+                placeholder="e.g. Ahmad bin Ali"
+                className="w-full border border-ink bg-paper-chit px-3 py-2 text-ink text-sm focus:outline-none focus-visible:outline-2 focus-visible:outline-pen focus-visible:outline-offset-2"
+              />
+            </div>
+            <div className="flex flex-col gap-1">
+              <label htmlFor="duitnow-id" className="text-[0.625rem] uppercase tracking-widest text-ink-muted">
+                DuitNow ID
+              </label>
+              <input
+                id="duitnow-id"
+                type="text"
+                value={duitNowId}
+                onChange={(e) => setDuitNowId(e.target.value)}
+                placeholder="e.g. 0123456789"
+                className="w-full border border-ink bg-paper-chit px-3 py-2 text-ink text-sm focus:outline-none focus-visible:outline-2 focus-visible:outline-pen focus-visible:outline-offset-2"
+              />
             </div>
             <div>
               <p className="text-[0.625rem] uppercase tracking-widest text-ink-muted mb-2">

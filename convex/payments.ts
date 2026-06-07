@@ -1,5 +1,6 @@
 import { mutation, query } from "./_generated/server";
 import { v } from "convex/values";
+import { getAuthUserId } from "@convex-dev/auth/server";
 
 /**
  * markPaid — creates a pending payment for the member's session (PAY-01).
@@ -47,17 +48,18 @@ export const markPaid = mutation({
 export const confirmPayment = mutation({
   args: {
     paymentId: v.id("payments"),
-    organizerSecret: v.string(),
+    organizerSecret: v.optional(v.string()),
   },
   handler: async (ctx, { paymentId, organizerSecret }) => {
     const payment = await ctx.db.get(paymentId);
     if (!payment) throw new Error("Payment not found");
 
     const bill = await ctx.db.get(payment.billId);
-    // Server-side secret verification (T-01-01)
-    if (!bill || bill.organizerSecret !== organizerSecret) {
-      throw new Error("Unauthorized");
-    }
+    // D-05: dual-auth guard — organizerSecret OR Google session (T-01-01)
+    const googleUserId = await getAuthUserId(ctx);
+    const hasGoogleAccess = googleUserId && bill?.googleUserId === googleUserId.toString();
+    const hasSecretAccess = organizerSecret && bill?.organizerSecret === organizerSecret;
+    if (!bill || (!hasGoogleAccess && !hasSecretAccess)) throw new Error("Unauthorized");
     if (bill.archivedAt !== undefined) throw new Error("Bill is archived");
 
     // WR-01: enforce state machine — only pending payments can be confirmed
@@ -80,17 +82,18 @@ export const confirmPayment = mutation({
 export const rejectPayment = mutation({
   args: {
     paymentId: v.id("payments"),
-    organizerSecret: v.string(),
+    organizerSecret: v.optional(v.string()),
   },
   handler: async (ctx, { paymentId, organizerSecret }) => {
     const payment = await ctx.db.get(paymentId);
     if (!payment) throw new Error("Payment not found");
 
     const bill = await ctx.db.get(payment.billId);
-    // Server-side secret verification (T-01-02)
-    if (!bill || bill.organizerSecret !== organizerSecret) {
-      throw new Error("Unauthorized");
-    }
+    // D-05: dual-auth guard — organizerSecret OR Google session (T-01-02)
+    const googleUserId = await getAuthUserId(ctx);
+    const hasGoogleAccess = googleUserId && bill?.googleUserId === googleUserId.toString();
+    const hasSecretAccess = organizerSecret && bill?.organizerSecret === organizerSecret;
+    if (!bill || (!hasGoogleAccess && !hasSecretAccess)) throw new Error("Unauthorized");
     if (bill.archivedAt !== undefined) throw new Error("Bill is archived");
 
     // WR-01: enforce state machine — only pending payments can be rejected
@@ -111,14 +114,15 @@ export const rejectPayment = mutation({
 export const getPaymentsForBill = query({
   args: {
     billId: v.id("bills"),
-    organizerSecret: v.string(),
+    organizerSecret: v.optional(v.string()),
   },
   handler: async (ctx, { billId, organizerSecret }) => {
     const bill = await ctx.db.get(billId);
-    // WR-06: return null instead of throwing — useQuery stays stuck on undefined when queries throw
-    if (!bill || bill.organizerSecret !== organizerSecret) {
-      return null;
-    }
+    // D-04: dual-auth guard — WR-06: return null (no throw) on auth failure
+    const googleUserId = await getAuthUserId(ctx);
+    const hasGoogleAccess = googleUserId && bill?.googleUserId === googleUserId.toString();
+    const hasSecretAccess = organizerSecret && bill?.organizerSecret === organizerSecret;
+    if (!bill || (!hasGoogleAccess && !hasSecretAccess)) return null;
 
     return await ctx.db
       .query("payments")
@@ -137,11 +141,16 @@ export const getMyPayment = query({
     claimantSession: v.string(),
   },
   handler: async (ctx, { billId, claimantSession }) => {
-    return await ctx.db
+    const all = await ctx.db
       .query("payments")
       .withIndex("by_session", (q) =>
         q.eq("billId", billId).eq("claimantSession", claimantSession)
       )
-      .first();
+      .collect();
+    if (all.length === 0) return null;
+    const priority = { settled: 3, pending: 2, rejected: 1 } as const;
+    return all.reduce((best, p) =>
+      priority[p.status] > priority[best.status] ? p : best
+    );
   },
 });

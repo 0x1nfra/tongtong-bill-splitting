@@ -107,11 +107,12 @@ export default function MemberViewPage({
   );
 
   // T-05-05: redirect to dashboard only when confirmed as this bill's organizer
+  // CR-01: guard with pendingItems.size === 0 to avoid redirect while claim mutation is in-flight
   useEffect(() => {
-    if (organizerBillData != null) {
+    if (organizerBillData != null && pendingItems.size === 0) {
       router.replace(`/dashboard/${billId}`);
     }
-  }, [organizerBillData, billId, router]);
+  }, [organizerBillData, billId, router, pendingItems]);
 
   const bill = useQuery(
     api.bills.getBillForMember,
@@ -231,17 +232,20 @@ export default function MemberViewPage({
   /**
    * handleNameSubmit — D-02: save name, collapse inline entry, fire claim.
    * Guard: if (!claimantSession) return (Pitfall 1 / T-02-09).
+   * WR-01: also guard on pendingItems to prevent concurrent duplicate mutations.
    */
   const handleNameSubmit = async (itemId: string, claimQty?: number) => {
     const name = nameInput.trim();
     if (!name) return;
     if (!claimantSession) return; // T-02-09
+    if (pendingItems.has(itemId)) return; // WR-01: mirrors handleItemTap guard
 
     // Save name to localStorage and update state
     setMemberName(name);
     setExpandedItemId(null);
     setNameInput("");
 
+    setPendingItems((prev) => new Set(prev).add(itemId));
     try {
       await claimItemMutation({
         billId: billId as Id<"bills">,
@@ -252,6 +256,12 @@ export default function MemberViewPage({
       });
     } catch (err) {
       console.error("Claim failed:", err);
+    } finally {
+      setPendingItems((prev) => {
+        const next = new Set(prev);
+        next.delete(itemId);
+        return next;
+      });
     }
   };
 
@@ -339,7 +349,7 @@ export default function MemberViewPage({
   const items = bill.items ?? [];
   const claims = bill.claims ?? [];
 
-  const totals = calculateTotals(items, bill.applySST, bill.applyServiceCharge);
+  const totals = calculateTotals(items, bill.applySST, bill.applyServiceCharge, bill.roundingAdjustmentCents ?? 0);
 
   // Build claims-by-item map for O(1) lookups (D-05, CALC-01)
   const claimsByItem = new Map<string, typeof claims>();
@@ -352,14 +362,19 @@ export default function MemberViewPage({
   const hasClaims = claims.some((c) => c.claimantSession === claimantSession);
 
   // Your Portion panel values (CALC-01 through CALC-05)
+  // ADJ-07: pass roundingAdjustmentCents as 5th arg to distribute adjustment proportionally
   const personTotals =
     bill && claimantSession
-      ? calculatePersonTotals(items, claims, claimantSession, totals)
+      ? calculatePersonTotals(items, claims, claimantSession, totals, bill.roundingAdjustmentCents ?? 0)
       : null;
 
-  const paymentStatus = payment?.status ?? null;
-  const showPayForm = paymentStatus === null || paymentStatus === "rejected";
+  // CR-02: treat payment === undefined (query loading) as disabled — do NOT collapse to null via ??
+  const isPaymentLoading = payment === undefined && claimantSession !== null;
+  const paymentStatus = payment === undefined ? null : (payment?.status ?? null);
+  const showPayForm =
+    !isPaymentLoading && (paymentStatus === null || paymentStatus === "rejected");
   const isButtonDisabled =
+    isPaymentLoading ||
     !claimantSession ||
     !memberName ||
     isPaying ||
@@ -510,7 +525,7 @@ export default function MemberViewPage({
                 item.quantity > 1
                   ? isMine
                     ? item.price * myClaimedQty
-                    : item.price
+                    : item.price * item.quantity
                   : totalClaimants > 0
                     ? Math.round(item.price / totalClaimants)
                     : item.price;
@@ -726,6 +741,16 @@ export default function MemberViewPage({
             </div>
           ) : null}
 
+          {/* UAT gap fix: rounding adj row in BILL TOTAL — mirrors YOUR PORTION ADJ-07 pattern */}
+          {(totals.roundingAdjustmentCents ?? 0) !== 0 ? (
+            <div className="dot-leader flex justify-between text-sm text-ink mb-1">
+              <span className="text-ink-muted">Rounding Adj.</span>
+              <span className="text-ink">
+                {(totals.roundingAdjustmentCents ?? 0) > 0 ? "+" : ""}RM{(Math.abs(totals.roundingAdjustmentCents ?? 0) / 100).toFixed(2)}
+              </span>
+            </div>
+          ) : null}
+
           <div className="dot-leader flex justify-between font-bold text-base text-ink border-t border-ink mt-2 pt-2">
             <span className="uppercase tracking-widest">GRAND TOTAL</span>
             <span>RM{(totals.grandTotalCents / 100).toFixed(2)}</span>
@@ -768,6 +793,16 @@ export default function MemberViewPage({
                 </div>
               ) : null}
 
+              {/* ADJ-07: rounding adjustment row — only shown when non-zero */}
+              {(personTotals?.personRoundingAdjustmentCents ?? 0) !== 0 ? (
+                <div className="dot-leader flex justify-between text-sm text-ink mb-1">
+                  <span className="text-ink-muted">Rounding Adj.</span>
+                  <span className="text-ink">
+                    {(personTotals?.personRoundingAdjustmentCents ?? 0) > 0 ? "+" : ""}RM{(Math.abs(personTotals?.personRoundingAdjustmentCents ?? 0) / 100).toFixed(2)}
+                  </span>
+                </div>
+              ) : null}
+
               <div className="dot-leader flex justify-between font-bold text-base text-ink border-t border-ink mt-2 pt-2">
                 <span className="uppercase tracking-widest">YOUR TOTAL</span>
                 <span aria-live="polite">
@@ -791,7 +826,43 @@ export default function MemberViewPage({
             </>
           )}
 
-          {/* PAYMENT ZONE — only if hasClaims */}
+          {/* BANKING INFO — visible whenever set, no claim required */}
+          {(bill.bankName || bill.accountNumber || bill.accountHolderName || bill.duitNowId) ? (
+            <>
+              <div className="perforation my-4"></div>
+              <div className="text-left">
+                <p className="text-xs font-bold uppercase text-ink-muted tracking-widest mb-2">
+                  TRANSFER TO
+                </p>
+                {bill.bankName ? (
+                  <div className="dot-leader flex justify-between text-sm text-ink mb-1">
+                    <span className="text-ink-muted">Bank</span>
+                    <span>{bill.bankName}</span>
+                  </div>
+                ) : null}
+                {bill.accountNumber ? (
+                  <div className="dot-leader flex justify-between text-sm text-ink mb-1">
+                    <span className="text-ink-muted">Account No.</span>
+                    <span>{bill.accountNumber}</span>
+                  </div>
+                ) : null}
+                {bill.accountHolderName ? (
+                  <div className="dot-leader flex justify-between text-sm text-ink mb-1">
+                    <span className="text-ink-muted">Name</span>
+                    <span>{bill.accountHolderName}</span>
+                  </div>
+                ) : null}
+                {bill.duitNowId ? (
+                  <div className="dot-leader flex justify-between text-sm text-ink mb-1">
+                    <span className="text-ink-muted">DuitNow ID</span>
+                    <span>{bill.duitNowId}</span>
+                  </div>
+                ) : null}
+              </div>
+            </>
+          ) : null}
+
+          {/* PAYMENT ZONE — QR, stamp, pay button — only if hasClaims */}
           {hasClaims && (
             <>
               <div className="perforation my-4"></div>

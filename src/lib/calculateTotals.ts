@@ -6,11 +6,13 @@
 export function calculateTotals(
   items: Array<{ price: number; quantity: number }>,
   applySST: boolean,
-  applyServiceCharge: boolean
+  applyServiceCharge: boolean,
+  roundingAdjustmentCents: number = 0
 ): {
   subtotalCents: number;
   serviceChargeCents: number;
   sstCents: number;
+  roundingAdjustmentCents: number;
   grandTotalCents: number;
 } {
   const subtotalCents = items.reduce(
@@ -22,8 +24,8 @@ export function calculateTotals(
     : 0;
   const afterServiceCharge = subtotalCents + serviceChargeCents;
   const sstCents = applySST ? Math.round(afterServiceCharge * 0.06) : 0;
-  const grandTotalCents = afterServiceCharge + sstCents;
-  return { subtotalCents, serviceChargeCents, sstCents, grandTotalCents };
+  const grandTotalCents = afterServiceCharge + sstCents + roundingAdjustmentCents;
+  return { subtotalCents, serviceChargeCents, sstCents, roundingAdjustmentCents, grandTotalCents };
 }
 
 /**
@@ -43,11 +45,13 @@ export function calculatePersonTotals(
   items: Array<{ _id: string; price: number; quantity: number }>,
   claims: Array<{ itemId: string; claimantSession: string; claimQty?: number }>,
   claimantSession: string,
-  billTotals: ReturnType<typeof calculateTotals>
+  billTotals: ReturnType<typeof calculateTotals>,
+  roundingAdjustmentCents: number = 0
 ): {
   personSubtotalCents: number;
   personServiceChargeCents: number;
   personSSTCents: number;
+  personRoundingAdjustmentCents: number;
   personTotalCents: number;
 } {
   // Guard: division-by-zero — if bill subtotal is zero, all person totals are zero
@@ -56,6 +60,7 @@ export function calculatePersonTotals(
       personSubtotalCents: 0,
       personServiceChargeCents: 0,
       personSSTCents: 0,
+      personRoundingAdjustmentCents: 0,
       personTotalCents: 0,
     };
   }
@@ -100,13 +105,15 @@ export function calculatePersonTotals(
     ratio * billTotals.serviceChargeCents
   );
   const personSSTCents = Math.round(ratio * billTotals.sstCents);
+  const personRoundingAdjustmentCents = Math.round(ratio * roundingAdjustmentCents);
   const personTotalCents =
-    personSubtotalCents + personServiceChargeCents + personSSTCents;
+    personSubtotalCents + personServiceChargeCents + personSSTCents + personRoundingAdjustmentCents;
 
   return {
     personSubtotalCents,
     personServiceChargeCents,
     personSSTCents,
+    personRoundingAdjustmentCents,
     personTotalCents,
   };
 }

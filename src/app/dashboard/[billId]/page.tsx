@@ -1,10 +1,12 @@
 "use client";
 
-import { use, useEffect, useState } from "react";
-import { useQuery, useMutation } from "convex/react";
+import { use, useEffect, useRef, useState } from "react";
+import { useQuery, useMutation, useConvexAuth } from "convex/react";
+import { useAuthActions } from "@convex-dev/auth/react";
 import { api } from "../../../../convex/_generated/api";
 import type { Id } from "../../../../convex/_generated/dataModel";
 import { BillSummaryCard } from "../../../components/BillSummaryCard";
+import { SignInButton } from "../../../components/SignInButton";
 import { CopyLinkField } from "../../../components/CopyLinkField";
 import { ProgressBar } from "../../../components/ProgressBar";
 import { StatsBar } from "../../../components/StatsBar";
@@ -24,6 +26,9 @@ export default function DashboardPage({
   const [isUploadingQR, setIsUploadingQR] = useState(false);
   const [closeBillMsg, setCloseBillMsg] = useState<string | null>(null);
 
+  const { isAuthenticated, isLoading: authLoading } = useConvexAuth();
+  const { signOut } = useAuthActions();
+
   useEffect(() => {
     const stored = localStorage.getItem("tongtong_organizer_secret");
     // null means key absent (different device) — coerce to "" so the !organizerSecret guard fires
@@ -38,27 +43,49 @@ export default function DashboardPage({
   // unauthenticated request; Convex server will also verify the secret
   const billData = useQuery(
     api.bills.getBillForOrganizer,
-    organizerSecret ? { billId: billId as Id<"bills">, organizerSecret } : "skip"
+    (!organizerSecret && authLoading) || organizerSecret === null
+      ? "skip"
+      : organizerSecret
+        ? { billId: billId as Id<"bills">, organizerSecret }
+        : isAuthenticated
+          ? { billId: billId as Id<"bills"> }
+          : "skip"
   );
 
   // Separate real-time payments subscription (DASH-01, DASH-02, DASH-03)
   const payments = useQuery(
     api.payments.getPaymentsForBill,
-    organizerSecret
-      ? { billId: billId as Id<"bills">, organizerSecret }
-      : "skip"
+    (!organizerSecret && authLoading) || organizerSecret === null
+      ? "skip"
+      : organizerSecret
+        ? { billId: billId as Id<"bills">, organizerSecret }
+        : isAuthenticated
+          ? { billId: billId as Id<"bills"> }
+          : "skip"
   );
 
   // Real-time CLAIMED/UNCLAIMED subscription (DASH-02); skipped until organizerSecret loads
   const claimsStats = useQuery(
     api.bills.getClaimsForBill,
-    organizerSecret ? { billId: billId as Id<"bills">, organizerSecret } : "skip"
+    (!organizerSecret && authLoading) || organizerSecret === null
+      ? "skip"
+      : organizerSecret
+        ? { billId: billId as Id<"bills">, organizerSecret }
+        : isAuthenticated
+          ? { billId: billId as Id<"bills"> }
+          : "skip"
   );
 
   // DASH-03: all claimants (members who claimed at least one item) — used for PEOPLE tab
   const claimants = useQuery(
     api.bills.getClaimantsForBill,
-    organizerSecret ? { billId: billId as Id<"bills">, organizerSecret } : "skip"
+    (!organizerSecret && authLoading) || organizerSecret === null
+      ? "skip"
+      : organizerSecret
+        ? { billId: billId as Id<"bills">, organizerSecret }
+        : isAuthenticated
+          ? { billId: billId as Id<"bills"> }
+          : "skip"
   );
 
   const confirmPayment = useMutation(api.payments.confirmPayment);
@@ -66,6 +93,29 @@ export default function DashboardPage({
   const generateUploadUrl = useMutation(api.bills.generateUploadUrl);
   const setBillReceipt = useMutation(api.bills.setBillReceipt);
   const updateQR = useMutation(api.bills.updateQR);
+  const updateRoundingAdjustment = useMutation(api.bills.updateRoundingAdjustment);
+  const updateBankingInfo = useMutation(api.bills.updateBankingInfo);
+
+  // CR-01: container refs so onBlur reads sibling values from DOM, not stale Convex subscription
+  const bankInfoDesktopRef = useRef<HTMLDivElement>(null);
+  const bankInfoMobileRef = useRef<HTMLDivElement>(null);
+
+  // CR-02: read all 4 banking input values from a container ref.
+  // Empty string is passed explicitly so updateBankingInfo treats it as a clear (stores null).
+  const readBankInfoFromContainer = (container: HTMLDivElement | null) => {
+    if (!container) return { bankName: undefined, accountNumber: undefined, accountHolderName: undefined, duitNowId: undefined };
+    const inputs = container.querySelectorAll<HTMLInputElement>('input[data-field]');
+    const vals: Record<string, string> = {};
+    inputs.forEach(inp => {
+      vals[inp.dataset.field!] = inp.value.trim() || "";  // CR-02: empty string, not undefined
+    });
+    return {
+      bankName: vals['bankName'],
+      accountNumber: vals['accountNumber'],
+      accountHolderName: vals['accountHolderName'],
+      duitNowId: vals['duitNowId'],
+    };
+  };
 
   // organizerSecret is null while localStorage hasn't been read yet (SSR-safe)
   if (organizerSecret === null) {
@@ -81,17 +131,32 @@ export default function DashboardPage({
     );
   }
 
-  // D-10: organizerSecret is "" (empty string) — key absent, wrong device (AUTH-03)
-  if (!organizerSecret) {
+  // Auth-loading skeleton: no organizerSecret but Convex auth still resolving — prevents banner flash
+  if (!organizerSecret && authLoading) {
     return (
       <main className="min-h-screen bg-paper-table flex items-center justify-center">
-        <div className="max-w-[480px] mx-auto px-4 py-12 text-center">
-          <h1 className="text-xl font-bold uppercase text-ink tracking-widest mb-3">
-            WRONG DEVICE LAH
-          </h1>
-          <p className="text-sm text-ink-muted">
-            This dashboard can only be opened from the device that created this bill lah.
+        <div role="status" aria-label="Loading dashboard" className="chit max-w-[480px] w-full mx-4 p-4 animate-pulse">
+          <div className="h-4 bg-ink opacity-10 mb-3 w-1/3" />
+          <div className="h-3 bg-ink opacity-10 mb-2 w-full" />
+          <div className="h-3 bg-ink opacity-10 mb-2 w-4/5" />
+          <div className="h-3 bg-ink opacity-10 w-3/4" />
+        </div>
+      </main>
+    );
+  }
+
+  // D-02: no organizerSecret, auth resolved, not authenticated — show sign-in banner
+  if (!organizerSecret && !authLoading && !isAuthenticated) {
+    return (
+      <main className="min-h-screen bg-paper-table flex items-center justify-center">
+        <div className="chit max-w-[480px] w-full mx-4 border-l-4 border-pen p-6">
+          <p className="text-sm uppercase tracking-widest font-[family-name:var(--font-body)] text-ink">
+            SIGN IN TO ACCESS THIS CHIT
           </p>
+          <p className="text-xs text-ink-muted mt-1 mb-3">
+            This bill was created on another device. Sign in with Google to access the dashboard.
+          </p>
+          <SignInButton />
         </div>
       </main>
     );
@@ -111,16 +176,16 @@ export default function DashboardPage({
     );
   }
 
-  // D-10: bill is null — secret does not match this bill's organizer (AUTH-03)
+  // D-10: bill is null — secret does not match this bill's organizer, or Google auth not authorized (AUTH-03)
   if (billData === null) {
     return (
       <main className="min-h-screen bg-paper-table flex items-center justify-center">
         <div className="max-w-[480px] mx-auto px-4 py-12 text-center">
           <h1 className="text-xl font-bold uppercase text-ink tracking-widest mb-3">
-            WRONG DEVICE LAH
+            ACCESS DENIED
           </h1>
           <p className="text-sm text-ink-muted">
-            This dashboard can only be opened from the device that created this bill lah.
+            This dashboard could not be accessed. Check that you are signed in with the correct account.
           </p>
         </div>
       </main>
@@ -129,7 +194,7 @@ export default function DashboardPage({
 
   const { bill, items } = billData;
   const isArchived = !!bill.archivedAt;
-  const billTotals = calculateTotals(items, bill.applySST, bill.applyServiceCharge);
+  const billTotals = calculateTotals(items, bill.applySST, bill.applyServiceCharge, bill.roundingAdjustmentCents ?? 0);
   const { grandTotalCents } = billTotals;
 
   // Build synthetic claims from claimedItems data for per-member calculation
@@ -140,9 +205,13 @@ export default function DashboardPage({
   // Pre-compute actual per-member totals based on claimed items
   const memberTotalsMap = new Map<string, number>();
   for (const claimant of claimants ?? []) {
-    const pt = calculatePersonTotals(items, syntheticClaims, claimant.claimantSession, billTotals);
+    const pt = calculatePersonTotals(items, syntheticClaims, claimant.claimantSession, billTotals, bill.roundingAdjustmentCents ?? 0);
     memberTotalsMap.set(claimant.claimantSession, pt.personTotalCents);
   }
+
+  // Discrepancy between grand total and sum of per-member totals
+  const sumOfPersonTotals = [...memberTotalsMap.values()].reduce((a, b) => a + b, 0);
+  const discrepancyCents = grandTotalCents - sumOfPersonTotals;
 
   // Derive stats from payments (CR-04: correct variable semantics)
   const confirmed = payments?.filter((p) => p.status === "settled").length ?? 0;
@@ -163,7 +232,7 @@ export default function DashboardPage({
   function handleConfirm(paymentId: string) {
     confirmPayment({
       paymentId: paymentId as Id<"payments">,
-      organizerSecret: organizerSecret!,
+      organizerSecret: organizerSecret || undefined,
     }).catch((err: unknown) => {
       console.error("Failed to confirm payment:", err);
     });
@@ -172,7 +241,7 @@ export default function DashboardPage({
   function handleReject(paymentId: string) {
     rejectPayment({
       paymentId: paymentId as Id<"payments">,
-      organizerSecret: organizerSecret!,
+      organizerSecret: organizerSecret || undefined,
     }).catch((err: unknown) => {
       console.error("Failed to reject payment:", err);
     });
@@ -237,7 +306,7 @@ export default function DashboardPage({
   }
 
   async function handleReceiptUpload(file: File) {
-    if (!organizerSecret) return;
+    if (!organizerSecret && !isAuthenticated) return;
     setIsUploadingReceipt(true);
     try {
       const uploadUrl = await generateUploadUrl({});
@@ -262,7 +331,7 @@ export default function DashboardPage({
   }
 
   async function handleQRUpload(file: File) {
-    if (!organizerSecret) return;
+    if (!organizerSecret && !isAuthenticated) return;
     setIsUploadingQR(true);
     try {
       const uploadUrl = await generateUploadUrl({});
@@ -355,6 +424,18 @@ export default function DashboardPage({
         <p className="text-[0.625rem] text-ink-muted mb-6 uppercase tracking-widest break-words">
           {bill.venueName ? `${bill.venueName} · ` : ""}{displayCode}
         </p>
+        {isAuthenticated && (
+          <p className="text-[0.625rem] text-ink-muted mb-4 -mt-4 uppercase tracking-widest">
+            Signed in with Google &middot;{" "}
+            <button
+              type="button"
+              onClick={() => void signOut()}
+              className="underline hover:text-ink transition-colors"
+            >
+              Sign out
+            </button>
+          </p>
+        )}
 
         {/* Mobile-only share strip — md+ uses right column quick actions */}
         <div className="md:hidden mb-6">
@@ -465,8 +546,113 @@ export default function DashboardPage({
               displayCode={displayCode}
             />
 
-            {/* Perforation between BillSummaryCard and quick actions */}
+            {/* Perforation between BillSummaryCard and totals/actions */}
             <div className="perforation my-4" />
+
+            {/* SPLIT VS TOTAL discrepancy row — only when there are claimants */}
+            {(claimants?.length ?? 0) > 0 && (
+              <div className="dot-leader flex justify-between text-sm text-ink mb-2">
+                <span className="text-ink-muted">Split vs Total</span>
+                <span className={discrepancyCents !== 0 ? "text-ink" : "text-ink-muted"}>
+                  {discrepancyCents > 0 ? "+" : ""}{(discrepancyCents / 100).toFixed(2)} difference
+                </span>
+              </div>
+            )}
+
+            {/* ROUNDING ADJUSTMENT live field */}
+            <div className="flex flex-col gap-1 mb-4">
+              <label className="text-[0.625rem] uppercase tracking-widest text-ink-muted">
+                Rounding Adjustment
+              </label>
+              <input
+                type="number"
+                step="1"
+                key={bill.roundingAdjustmentCents ?? 0}
+                defaultValue={bill.roundingAdjustmentCents ?? 0}
+                disabled={isArchived}
+                onBlur={(e) => {
+                  const value = parseInt(e.target.value, 10) || 0;
+                  updateRoundingAdjustment({
+                    billId: billId as Id<"bills">,
+                    organizerSecret: organizerSecret || undefined,
+                    roundingAdjustmentCents: value,
+                  }).catch((err: unknown) => console.error("Failed to update rounding adjustment:", err));
+                }}
+                className="w-full border border-ink bg-paper-chit px-3 py-2 text-ink text-sm focus:outline-none focus-visible:outline-2 focus-visible:outline-pen focus-visible:outline-offset-2 disabled:opacity-50"
+              />
+            </div>
+
+            {/* BANKING INFO — organizer can save transfer details; displayed on member view */}
+            {/* WR-05: onBlur on container fires once when focus leaves entirely, preventing race conditions */}
+            <div
+              ref={bankInfoDesktopRef}
+              onBlur={(e) => {
+                if (!bankInfoDesktopRef.current?.contains(e.relatedTarget as Node)) {
+                  updateBankingInfo({
+                    billId: billId as Id<"bills">,
+                    organizerSecret: organizerSecret || undefined,
+                    ...readBankInfoFromContainer(bankInfoDesktopRef.current),
+                  }).catch((err: unknown) => console.error("Failed to update banking info:", err));
+                }
+              }}
+            >
+            <div className="flex flex-col gap-1 mb-4">
+              <label htmlFor="bankName-desktop" className="text-[0.625rem] uppercase tracking-widest text-ink-muted">
+                Bank Name
+              </label>
+              <input
+                id="bankName-desktop"
+                data-field="bankName"
+                key={bill.bankName ?? ''}
+                type="text"
+                defaultValue={bill.bankName ?? ''}
+                disabled={isArchived}
+                className="w-full border border-ink bg-paper-chit px-3 py-2 text-ink text-sm focus:outline-none focus-visible:outline-2 focus-visible:outline-pen focus-visible:outline-offset-2 disabled:opacity-50"
+              />
+            </div>
+            <div className="flex flex-col gap-1 mb-4">
+              <label htmlFor="accountNumber-desktop" className="text-[0.625rem] uppercase tracking-widest text-ink-muted">
+                Account No.
+              </label>
+              <input
+                id="accountNumber-desktop"
+                data-field="accountNumber"
+                key={bill.accountNumber ?? ''}
+                type="text"
+                defaultValue={bill.accountNumber ?? ''}
+                disabled={isArchived}
+                className="w-full border border-ink bg-paper-chit px-3 py-2 text-ink text-sm focus:outline-none focus-visible:outline-2 focus-visible:outline-pen focus-visible:outline-offset-2 disabled:opacity-50"
+              />
+            </div>
+            <div className="flex flex-col gap-1 mb-4">
+              <label htmlFor="accountHolderName-desktop" className="text-[0.625rem] uppercase tracking-widest text-ink-muted">
+                Account Holder
+              </label>
+              <input
+                id="accountHolderName-desktop"
+                data-field="accountHolderName"
+                key={bill.accountHolderName ?? ''}
+                type="text"
+                defaultValue={bill.accountHolderName ?? ''}
+                disabled={isArchived}
+                className="w-full border border-ink bg-paper-chit px-3 py-2 text-ink text-sm focus:outline-none focus-visible:outline-2 focus-visible:outline-pen focus-visible:outline-offset-2 disabled:opacity-50"
+              />
+            </div>
+            <div className="flex flex-col gap-1 mb-4">
+              <label htmlFor="duitNowId-desktop" className="text-[0.625rem] uppercase tracking-widest text-ink-muted">
+                DuitNow ID
+              </label>
+              <input
+                id="duitNowId-desktop"
+                data-field="duitNowId"
+                key={bill.duitNowId ?? ''}
+                type="text"
+                defaultValue={bill.duitNowId ?? ''}
+                disabled={isArchived}
+                className="w-full border border-ink bg-paper-chit px-3 py-2 text-ink text-sm focus:outline-none focus-visible:outline-2 focus-visible:outline-pen focus-visible:outline-offset-2 disabled:opacity-50"
+              />
+            </div>
+            </div>
 
             {/* Quick actions */}
             <h3 className="uppercase text-xs font-bold text-ink tracking-widest mt-4 mb-2">
@@ -584,6 +770,112 @@ export default function DashboardPage({
 
         {/* Mobile quick actions — desktop right column features surfaced below PEOPLE on mobile */}
         <div className="md:hidden mt-6">
+
+          {/* SPLIT VS TOTAL discrepancy row — only when there are claimants */}
+          {(claimants?.length ?? 0) > 0 && (
+            <div className="dot-leader flex justify-between text-sm text-ink mb-2">
+              <span className="text-ink-muted">Split vs Total</span>
+              <span className={discrepancyCents !== 0 ? "text-ink" : "text-ink-muted"}>
+                {discrepancyCents > 0 ? "+" : ""}{(discrepancyCents / 100).toFixed(2)} difference
+              </span>
+            </div>
+          )}
+
+          {/* ROUNDING ADJUSTMENT live field */}
+          <div className="flex flex-col gap-1 mb-4">
+            <label className="text-[0.625rem] uppercase tracking-widest text-ink-muted">
+              Rounding Adjustment
+            </label>
+            <input
+              type="number"
+              step="1"
+              key={bill.roundingAdjustmentCents ?? 0}
+              defaultValue={bill.roundingAdjustmentCents ?? 0}
+              disabled={isArchived}
+              onBlur={(e) => {
+                const value = parseInt(e.target.value, 10) || 0;
+                updateRoundingAdjustment({
+                  billId: billId as Id<"bills">,
+                  organizerSecret: organizerSecret || undefined,
+                  roundingAdjustmentCents: value,
+                }).catch((err: unknown) => console.error("Failed to update rounding adjustment:", err));
+              }}
+              className="w-full border border-ink bg-paper-chit px-3 py-2 text-ink text-sm focus:outline-none focus-visible:outline-2 focus-visible:outline-pen focus-visible:outline-offset-2 disabled:opacity-50"
+            />
+          </div>
+
+          {/* BANKING INFO — organizer can save transfer details; displayed on member view */}
+          {/* WR-05: onBlur on container fires once when focus leaves entirely, preventing race conditions */}
+          <div
+            ref={bankInfoMobileRef}
+            onBlur={(e) => {
+              if (!bankInfoMobileRef.current?.contains(e.relatedTarget as Node)) {
+                updateBankingInfo({
+                  billId: billId as Id<"bills">,
+                  organizerSecret: organizerSecret || undefined,
+                  ...readBankInfoFromContainer(bankInfoMobileRef.current),
+                }).catch((err: unknown) => console.error("Failed to update banking info:", err));
+              }
+            }}
+          >
+          <div className="flex flex-col gap-1 mb-4">
+            <label htmlFor="bankName-mobile" className="text-[0.625rem] uppercase tracking-widest text-ink-muted">
+              Bank Name
+            </label>
+            <input
+              id="bankName-mobile"
+              data-field="bankName"
+              key={bill.bankName ?? ''}
+              type="text"
+              defaultValue={bill.bankName ?? ''}
+              disabled={isArchived}
+              className="w-full border border-ink bg-paper-chit px-3 py-2 text-ink text-sm focus:outline-none focus-visible:outline-2 focus-visible:outline-pen focus-visible:outline-offset-2 disabled:opacity-50"
+            />
+          </div>
+          <div className="flex flex-col gap-1 mb-4">
+            <label htmlFor="accountNumber-mobile" className="text-[0.625rem] uppercase tracking-widest text-ink-muted">
+              Account No.
+            </label>
+            <input
+              id="accountNumber-mobile"
+              data-field="accountNumber"
+              key={bill.accountNumber ?? ''}
+              type="text"
+              defaultValue={bill.accountNumber ?? ''}
+              disabled={isArchived}
+              className="w-full border border-ink bg-paper-chit px-3 py-2 text-ink text-sm focus:outline-none focus-visible:outline-2 focus-visible:outline-pen focus-visible:outline-offset-2 disabled:opacity-50"
+            />
+          </div>
+          <div className="flex flex-col gap-1 mb-4">
+            <label htmlFor="accountHolderName-mobile" className="text-[0.625rem] uppercase tracking-widest text-ink-muted">
+              Account Holder
+            </label>
+            <input
+              id="accountHolderName-mobile"
+              data-field="accountHolderName"
+              key={bill.accountHolderName ?? ''}
+              type="text"
+              defaultValue={bill.accountHolderName ?? ''}
+              disabled={isArchived}
+              className="w-full border border-ink bg-paper-chit px-3 py-2 text-ink text-sm focus:outline-none focus-visible:outline-2 focus-visible:outline-pen focus-visible:outline-offset-2 disabled:opacity-50"
+            />
+          </div>
+          <div className="flex flex-col gap-1 mb-4">
+            <label htmlFor="duitNowId-mobile" className="text-[0.625rem] uppercase tracking-widest text-ink-muted">
+              DuitNow ID
+            </label>
+            <input
+              id="duitNowId-mobile"
+              data-field="duitNowId"
+              key={bill.duitNowId ?? ''}
+              type="text"
+              defaultValue={bill.duitNowId ?? ''}
+              disabled={isArchived}
+              className="w-full border border-ink bg-paper-chit px-3 py-2 text-ink text-sm focus:outline-none focus-visible:outline-2 focus-visible:outline-pen focus-visible:outline-offset-2 disabled:opacity-50"
+            />
+          </div>
+          </div>
+
           <h3 className="uppercase text-xs font-bold text-ink tracking-widest mb-2">
             QUICK ACTIONS
           </h3>

@@ -1,17 +1,27 @@
+import { authTables } from "@convex-dev/auth/server";
 import { defineSchema, defineTable } from "convex/server";
 import { v } from "convex/values";
 
 export default defineSchema({
+  ...authTables,
   bills: defineTable({
     organizerSecret: v.string(),
+    googleUserId: v.optional(v.string()), // Phase 8 D-03: Google Auth user ID
     title: v.string(),
     applySST: v.boolean(),
     applyServiceCharge: v.boolean(),
     qrStorageId: v.optional(v.id("_storage")),
     receiptStorageId: v.optional(v.id("_storage")),
     archivedAt: v.optional(v.number()),
+    roundingAdjustmentCents: v.optional(v.number()), // integer RM cents; may be negative
     venueName: v.optional(v.string()),
     billDate: v.optional(v.string()), // ISO date string "YYYY-MM-DD"
+    // Banking info for transfer payment display (Phase 07)
+    // v.null() allows explicit field clear via updateBankingInfo (CR-02)
+    bankName: v.optional(v.union(v.string(), v.null())),
+    accountNumber: v.optional(v.union(v.string(), v.null())),
+    accountHolderName: v.optional(v.union(v.string(), v.null())),
+    duitNowId: v.optional(v.union(v.string(), v.null())),
   }),
 
   items: defineTable({

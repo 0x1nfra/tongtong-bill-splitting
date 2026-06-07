@@ -1,6 +1,7 @@
 import { mutation, query, internalMutation } from "./_generated/server";
 import { v } from "convex/values";
 import { Id } from "./_generated/dataModel";
+import { getAuthUserId } from "@convex-dev/auth/server";
 
 /**
  * createBill — atomically inserts bill + all items in one transaction.
@@ -17,6 +18,11 @@ export const createBill = mutation({
     venueName: v.optional(v.string()),
     billDate: v.optional(v.string()), // ISO date string "YYYY-MM-DD"
     receiptStorageId: v.optional(v.id("_storage")),
+    roundingAdjustmentCents: v.optional(v.number()),
+    bankName: v.optional(v.string()),
+    accountNumber: v.optional(v.string()),
+    accountHolderName: v.optional(v.string()),
+    duitNowId: v.optional(v.string()),
     items: v.array(
       v.object({
         name: v.string(),
@@ -27,16 +33,31 @@ export const createBill = mutation({
     ),
   },
   handler: async (ctx, args) => {
+    // WR-04: server-side title validation — Convex v.string() accepts empty strings
+    if (!args.title.trim()) throw new Error("Bill title cannot be empty");
+
     // WR-04: server-side item validation — catches any bypass of client-side checks
     for (const item of args.items) {
       if (!item.name.trim()) throw new Error("Item name cannot be empty");
       if (!Number.isInteger(item.price) || item.price < 0) {
         throw new Error("Item price must be a non-negative integer (RM cents)");
       }
+      if (!Number.isInteger(item.quantity) || item.quantity < 1) {
+        throw new Error("Item quantity must be a positive integer");
+      }
     }
+
+    // T-07-05-01: XSS sanitization for banking info fields (mirrors updateBankingInfo T-04-04 pattern)
+    const sanitizedBankName = args.bankName !== undefined ? args.bankName.replace(/[<>"]/g, "").trim() : undefined;
+    const sanitizedAccountNumber = args.accountNumber !== undefined ? args.accountNumber.replace(/[<>"]/g, "").trim() : undefined;
+    const sanitizedAccountHolderName = args.accountHolderName !== undefined ? args.accountHolderName.replace(/[<>"]/g, "").trim() : undefined;
+    const sanitizedDuitNowId = args.duitNowId !== undefined ? args.duitNowId.replace(/[<>"]/g, "").trim() : undefined;
+    // Phase 8 D-03: capture Google identity if organizer is signed in (T-08-01: never from args)
+    const googleUserId = await getAuthUserId(ctx);
 
     const billId = await ctx.db.insert("bills", {
       organizerSecret: args.organizerSecret,
+      googleUserId: googleUserId ? googleUserId.toString() : undefined, // D-03
       title: args.title,
       applySST: args.applySST,
       applyServiceCharge: args.applyServiceCharge,
@@ -44,6 +65,11 @@ export const createBill = mutation({
       venueName: args.venueName,
       billDate: args.billDate,
       receiptStorageId: args.receiptStorageId,
+      roundingAdjustmentCents: args.roundingAdjustmentCents,
+      bankName: sanitizedBankName,
+      accountNumber: sanitizedAccountNumber,
+      accountHolderName: sanitizedAccountHolderName,
+      duitNowId: sanitizedDuitNowId,
     });
     for (const item of args.items) {
       await ctx.db.insert("items", { billId, ...item });
@@ -113,17 +139,18 @@ export const getBillForMember = query({
 export const getBillForOrganizer = query({
   args: {
     billId: v.id("bills"),
-    organizerSecret: v.string(),
+    organizerSecret: v.optional(v.string()),
   },
   handler: async (ctx, { billId, organizerSecret }) => {
     const bill = await ctx.db.get(billId);
     if (!bill) return null;
 
-    // Server-side secret verification (T-01-05)
+    // D-04: dual-auth guard — either path grants organizer access
+    const googleUserId = await getAuthUserId(ctx);
+    const hasGoogleAccess = googleUserId && bill.googleUserId === googleUserId.toString();
+    const hasSecretAccess = organizerSecret && bill.organizerSecret === organizerSecret;
     // WR-06: return null instead of throwing — useQuery stays stuck on undefined when queries throw
-    if (bill.organizerSecret !== organizerSecret) {
-      return null;
-    }
+    if (!hasGoogleAccess && !hasSecretAccess) return null;
 
     const items = await ctx.db
       .query("items")
@@ -168,6 +195,8 @@ export const claimItem = mutation({
       throw new Error("claimQty must be a positive integer");
     }
 
+    if (!claimantName.trim()) throw new Error("Claimant name cannot be empty");
+
     // Verify bill exists
     const bill = await ctx.db.get(billId);
     if (!bill) throw new Error("Bill not found");
@@ -177,6 +206,9 @@ export const claimItem = mutation({
     const item = await ctx.db.get(itemId);
     if (!item || item.billId !== billId) throw new Error("Item not found on this bill");
 
+    // NOTE: capacity check and insert are not atomic. Under very high concurrency
+    // (multiple simultaneous mutations on the same item) total claimed units could
+    // briefly exceed item.quantity. Acceptable for MVP; revisit if contention observed.
     // For multi-qty items: validate total claimed units won't exceed item.quantity
     if (item.quantity > 1) {
       const allClaims = await ctx.db
@@ -254,14 +286,16 @@ export const unclaimItem = mutation({
 export const getClaimsForBill = query({
   args: {
     billId: v.id("bills"),
-    organizerSecret: v.string(),
+    organizerSecret: v.optional(v.string()),
   },
   handler: async (ctx, { billId, organizerSecret }) => {
     const bill = await ctx.db.get(billId);
-    // WR-06 + T-02-04: return null on missing bill or secret mismatch — never throw
-    if (!bill || bill.organizerSecret !== organizerSecret) {
-      return null;
-    }
+    if (!bill) return null;
+    // D-04: dual-auth guard (WR-06 + T-02-04: return null on auth failure — never throw)
+    const googleUserId = await getAuthUserId(ctx);
+    const hasGoogleAccess = googleUserId && bill.googleUserId === googleUserId.toString();
+    const hasSecretAccess = organizerSecret && bill.organizerSecret === organizerSecret;
+    if (!hasGoogleAccess && !hasSecretAccess) return null;
 
     const claims = await ctx.db
       .query("claims")
@@ -273,22 +307,9 @@ export const getClaimsForBill = query({
       .withIndex("by_bill", (q) => q.eq("billId", billId))
       .collect();
 
-    const payments = await ctx.db
-      .query("payments")
-      .withIndex("by_bill", (q) => q.eq("billId", billId))
-      .collect();
-
-    // CLAIMED: unique sessions that have claims but no pending/settled payment (D-08)
-    // Rejected payments do NOT count as paid — member must re-submit
+    // CLAIMED: unique sessions with ≥1 claim, regardless of payment status (D-09 / WR-02 fix)
     const claimingSessions = new Set(claims.map((c) => c.claimantSession));
-    const paidSessions = new Set(
-      payments
-        .filter((p) => p.status === "pending" || p.status === "settled")
-        .map((p) => p.claimantSession)
-    );
-    const claimedCount = [...claimingSessions].filter(
-      (s) => !paidSessions.has(s)
-    ).length;
+    const claimedCount = claimingSessions.size;
 
     // UNCLAIMED: items with zero claim records
     const claimedItemIds = new Set(claims.map((c) => c.itemId));
@@ -311,14 +332,16 @@ export const getClaimsForBill = query({
 export const getClaimantsForBill = query({
   args: {
     billId: v.id("bills"),
-    organizerSecret: v.string(),
+    organizerSecret: v.optional(v.string()),
   },
   handler: async (ctx, { billId, organizerSecret }) => {
     const bill = await ctx.db.get(billId);
-    // WR-06 + T-02-04: return null on missing bill or secret mismatch — never throw
-    if (!bill || bill.organizerSecret !== organizerSecret) {
-      return null;
-    }
+    if (!bill) return null;
+    // D-04: dual-auth guard (WR-06 + T-02-04: return null on auth failure — never throw)
+    const googleUserId = await getAuthUserId(ctx);
+    const hasGoogleAccess = googleUserId && bill.googleUserId === googleUserId.toString();
+    const hasSecretAccess = organizerSecret && bill.organizerSecret === organizerSecret;
+    if (!hasGoogleAccess && !hasSecretAccess) return null;
 
     const claims = await ctx.db
       .query("claims")
@@ -417,14 +440,16 @@ export const getClaimantsForBill = query({
 export const setBillReceipt = mutation({
   args: {
     billId: v.id("bills"),
-    organizerSecret: v.string(),
+    organizerSecret: v.optional(v.string()),
     receiptStorageId: v.id("_storage"),
   },
   handler: async (ctx, { billId, organizerSecret, receiptStorageId }) => {
     const bill = await ctx.db.get(billId);
-    if (!bill || bill.organizerSecret !== organizerSecret) {
-      throw new Error("Unauthorized");
-    }
+    // D-05: dual-auth guard (throw on failure — mutation variant)
+    const googleUserId = await getAuthUserId(ctx);
+    const hasGoogleAccess = googleUserId && bill?.googleUserId === googleUserId.toString();
+    const hasSecretAccess = organizerSecret && bill?.organizerSecret === organizerSecret;
+    if (!bill || (!hasGoogleAccess && !hasSecretAccess)) throw new Error("Unauthorized");
     if (bill.archivedAt !== undefined) throw new Error("Bill is archived");
     await ctx.db.patch(billId, { receiptStorageId });
   },
@@ -437,16 +462,81 @@ export const setBillReceipt = mutation({
 export const updateQR = mutation({
   args: {
     billId: v.id("bills"),
-    organizerSecret: v.string(),
+    organizerSecret: v.optional(v.string()),
     qrStorageId: v.id("_storage"),
   },
   handler: async (ctx, { billId, organizerSecret, qrStorageId }) => {
     const bill = await ctx.db.get(billId);
-    if (!bill || bill.organizerSecret !== organizerSecret) {
+    // D-05: dual-auth guard (throw on failure — mutation variant)
+    const googleUserId = await getAuthUserId(ctx);
+    const hasGoogleAccess = googleUserId && bill?.googleUserId === googleUserId.toString();
+    const hasSecretAccess = organizerSecret && bill?.organizerSecret === organizerSecret;
+    if (!bill || (!hasGoogleAccess && !hasSecretAccess)) throw new Error("Unauthorized");
+    if (bill.archivedAt !== undefined) throw new Error("Bill is archived");
+    await ctx.db.patch(billId, { qrStorageId });
+  },
+});
+
+/**
+ * updateRoundingAdjustment — allows organizer to set or update the rounding adjustment cents.
+ * Mirrors updateQR pattern: auth guard + archive freeze check + integer validation + patch.
+ * ADJ-02, D-03: integer RM cents; may be negative.
+ */
+export const updateRoundingAdjustment = mutation({
+  args: {
+    billId: v.id("bills"),
+    organizerSecret: v.optional(v.string()),
+    roundingAdjustmentCents: v.number(),
+  },
+  handler: async (ctx, { billId, organizerSecret, roundingAdjustmentCents }) => {
+    const bill = await ctx.db.get(billId);
+    const googleUserId = await getAuthUserId(ctx);
+    const hasGoogleAccess = googleUserId && bill?.googleUserId === googleUserId.toString();
+    const hasSecretAccess = organizerSecret && bill?.organizerSecret === organizerSecret;
+    if (!bill || (!hasGoogleAccess && !hasSecretAccess)) throw new Error("Unauthorized");
+    if (bill.archivedAt !== undefined) throw new Error("Bill is archived");
+    if (!Number.isInteger(roundingAdjustmentCents)) {
+      throw new Error("roundingAdjustmentCents must be an integer");
+    }
+    await ctx.db.patch(billId, { roundingAdjustmentCents });
+  },
+});
+
+/**
+ * updateBankingInfo — allows organizer to save banking transfer details for member display.
+ * Mirrors updateRoundingAdjustment pattern. XSS-safe: strips <, >, and " from all string inputs (T-04-04).
+ */
+export const updateBankingInfo = mutation({
+  args: {
+    billId: v.id("bills"),
+    organizerSecret: v.optional(v.string()),
+    // CR-02: accept null to allow explicit field clear; undefined = not in patch (no-op)
+    bankName: v.optional(v.union(v.string(), v.null())),
+    accountNumber: v.optional(v.union(v.string(), v.null())),
+    accountHolderName: v.optional(v.union(v.string(), v.null())),
+    duitNowId: v.optional(v.union(v.string(), v.null())),
+  },
+  handler: async (ctx, { billId, organizerSecret, bankName, accountNumber, accountHolderName, duitNowId }) => {
+    const bill = await ctx.db.get(billId);
+    // D-05: dual-auth guard (T-01-02)
+    const googleUserId = await getAuthUserId(ctx);
+    const hasGoogleAccess = googleUserId && bill?.googleUserId === googleUserId.toString();
+    const hasSecretAccess = organizerSecret && bill?.organizerSecret === organizerSecret;
+    if (!bill || (!hasGoogleAccess && !hasSecretAccess)) {
       throw new Error("Unauthorized");
     }
     if (bill.archivedAt !== undefined) throw new Error("Bill is archived");
-    await ctx.db.patch(billId, { qrStorageId });
+    // CR-02: empty string after sanitize → null (clears field); undefined → no-op
+    const sanitizedBankName = bankName !== undefined ? (bankName !== null ? bankName.replace(/[<>"]/g, "").trim() || null : null) : undefined;
+    const sanitizedAccountNumber = accountNumber !== undefined ? (accountNumber !== null ? accountNumber.replace(/[<>"]/g, "").trim() || null : null) : undefined;
+    const sanitizedAccountHolderName = accountHolderName !== undefined ? (accountHolderName !== null ? accountHolderName.replace(/[<>"]/g, "").trim() || null : null) : undefined;
+    const sanitizedDuitNowId = duitNowId !== undefined ? (duitNowId !== null ? duitNowId.replace(/[<>"]/g, "").trim() || null : null) : undefined;
+    await ctx.db.patch(billId, {
+      bankName: sanitizedBankName,
+      accountNumber: sanitizedAccountNumber,
+      accountHolderName: sanitizedAccountHolderName,
+      duitNowId: sanitizedDuitNowId,
+    });
   },
 });
 
