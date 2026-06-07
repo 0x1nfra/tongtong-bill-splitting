@@ -540,6 +540,27 @@ export const updateBankingInfo = mutation({
   },
 });
 
+export const updateItem = mutation({
+  args: {
+    itemId: v.id("items"),
+    organizerSecret: v.optional(v.string()),
+    price: v.number(), // integer RM cents
+    quantity: v.number(),
+  },
+  handler: async (ctx, { itemId, organizerSecret, price, quantity }) => {
+    const item = await ctx.db.get(itemId);
+    if (!item) throw new Error("Item not found");
+    const bill = await ctx.db.get(item.billId);
+    const googleUserId = await getAuthUserId(ctx);
+    const hasGoogleAccess = googleUserId && bill?.googleUserId === googleUserId.toString();
+    const hasSecretAccess = organizerSecret && bill?.organizerSecret === organizerSecret;
+    if (!bill || (!hasGoogleAccess && !hasSecretAccess)) throw new Error("Unauthorized");
+    if (bill.archivedAt !== undefined) throw new Error("Bill is archived");
+    if (price < 0 || quantity < 1) throw new Error("Invalid price or quantity");
+    await ctx.db.patch(itemId, { price, quantity });
+  },
+});
+
 /**
  * archiveStale — internalMutation called by the daily cron job (BONUS-03).
  * Archives bills older than 30 days by setting archivedAt timestamp.

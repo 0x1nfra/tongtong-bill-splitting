@@ -95,6 +95,7 @@ export default function DashboardPage({
   const updateQR = useMutation(api.bills.updateQR);
   const updateRoundingAdjustment = useMutation(api.bills.updateRoundingAdjustment);
   const updateBankingInfo = useMutation(api.bills.updateBankingInfo);
+  const updateItem = useMutation(api.bills.updateItem);
 
   // CR-01: container refs so onBlur reads sibling values from DOM, not stale Convex subscription
   const bankInfoDesktopRef = useRef<HTMLDivElement>(null);
@@ -471,6 +472,47 @@ export default function DashboardPage({
 
             {/* Perforation between stats and people section */}
             <div className="perforation my-4" />
+
+            {/* ADMIN: editable item list */}
+            <h2 className="uppercase text-xs font-bold text-ink tracking-widest mt-6 mb-2">
+              ITEMS
+            </h2>
+            <div className="mb-6">
+              {items.map((item) => (
+                <div key={item._id} className="flex items-center gap-2 mb-2 text-xs">
+                  <span className="flex-1 text-ink truncate">{item.name}</span>
+                  <label className="text-ink-muted uppercase tracking-widest shrink-0">RM</label>
+                  <input
+                    type="number"
+                    step="0.01"
+                    min="0"
+                    defaultValue={((item.price) / 100).toFixed(2)}
+                    key={`price-${item._id}-${item.price}`}
+                    onBlur={(e) => {
+                      const priceCents = Math.round(parseFloat(e.target.value) * 100);
+                      if (!isNaN(priceCents) && priceCents !== item.price) {
+                        updateItem({ itemId: item._id, organizerSecret: organizerSecret || undefined, price: priceCents, quantity: item.quantity }).catch(console.error);
+                      }
+                    }}
+                    className="w-20 border border-ink-muted bg-transparent text-ink px-1 py-0.5 text-right"
+                  />
+                  <label className="text-ink-muted uppercase tracking-widest shrink-0">×</label>
+                  <input
+                    type="number"
+                    min="1"
+                    defaultValue={item.quantity}
+                    key={`qty-${item._id}-${item.quantity}`}
+                    onBlur={(e) => {
+                      const qty = parseInt(e.target.value, 10);
+                      if (!isNaN(qty) && qty > 0 && qty !== item.quantity) {
+                        updateItem({ itemId: item._id, organizerSecret: organizerSecret || undefined, price: item.price, quantity: qty }).catch(console.error);
+                      }
+                    }}
+                    className="w-12 border border-ink-muted bg-transparent text-ink px-1 py-0.5 text-right"
+                  />
+                </div>
+              ))}
+            </div>
 
             {/* People section (DASH-03) */}
             <h2 className="uppercase text-xs font-bold text-ink tracking-widest mt-6 mb-2">
