@@ -320,7 +320,7 @@ export default function DashboardPage({
       if (!storageId) throw new Error("Upload response missing storageId");
       await setBillReceipt({
         billId: billId as Id<"bills">,
-        organizerSecret,
+        organizerSecret: organizerSecret || undefined,
         receiptStorageId: storageId as Id<"_storage">,
       });
     } catch (err) {
@@ -345,7 +345,7 @@ export default function DashboardPage({
       if (!storageId) throw new Error("Upload response missing storageId");
       await updateQR({
         billId: billId as Id<"bills">,
-        organizerSecret,
+        organizerSecret: organizerSecret || undefined,
         qrStorageId: storageId as Id<"_storage">,
       });
     } catch (err) {
