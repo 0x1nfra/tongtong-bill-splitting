@@ -2,6 +2,7 @@
 
 import { use, useEffect, useRef, useState } from "react";
 import { useQuery, useMutation, useConvexAuth } from "convex/react";
+import { useAuthActions } from "@convex-dev/auth/react";
 import { api } from "../../../../convex/_generated/api";
 import type { Id } from "../../../../convex/_generated/dataModel";
 import { BillSummaryCard } from "../../../components/BillSummaryCard";
@@ -26,6 +27,7 @@ export default function DashboardPage({
   const [closeBillMsg, setCloseBillMsg] = useState<string | null>(null);
 
   const { isAuthenticated, isLoading: authLoading } = useConvexAuth();
+  const { signOut } = useAuthActions();
 
   useEffect(() => {
     const stored = localStorage.getItem("tongtong_organizer_secret");
@@ -422,6 +424,18 @@ export default function DashboardPage({
         <p className="text-[0.625rem] text-ink-muted mb-6 uppercase tracking-widest break-words">
           {bill.venueName ? `${bill.venueName} · ` : ""}{displayCode}
         </p>
+        {isAuthenticated && (
+          <p className="text-[0.625rem] text-ink-muted mb-4 -mt-4 uppercase tracking-widest">
+            Signed in with Google &middot;{" "}
+            <button
+              type="button"
+              onClick={() => void signOut()}
+              className="underline hover:text-ink transition-colors"
+            >
+              Sign out
+            </button>
+          </p>
+        )}
 
         {/* Mobile-only share strip — md+ uses right column quick actions */}
         <div className="md:hidden mb-6">
