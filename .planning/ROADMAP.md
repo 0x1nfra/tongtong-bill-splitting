@@ -13,7 +13,7 @@
 - [x] **Phase 5: Bonus Additions** - Departure Mono headings, landing page benefits/how-it-works, receipt upload, QR quick action (completed 2026-05-30)
 - [x] **Phase 6: Math & Precision Fixes** - Fix calculation bugs and add rounding adjustment option (completed 2026-06-03)
 - [x] **Phase 7: Claiming & Payment UX** - Banking info fields and claim items by quantity per member (completed 2026-06-04)
-- [ ] **Phase 8: Google Auth** - Google auth so organizers don't lose bill access across devices
+- [x] **Phase 8: Google Auth** - Google auth so organizers don't lose bill access across devices (completed 2026-06-07)
 
 ## Phase Details
 
@@ -170,7 +170,7 @@
 | 5. Bonus Additions | 4/4 | Complete | 2026-05-30 |
 | 6. Math & Precision Fixes | 4/4 | Complete   | 2026-06-03 |
 | 7. Claiming & Payment UX | 5/5 | Complete   | 2026-06-05 |
-| 8. Google Auth | 0/3 | Planned | — |
+| 8. Google Auth | 3/3 | Complete   | 2026-06-07 |
 
 ### Phase 5: bonus additions: Departure Mono headings + landing page enhancements (benefits, how-it-works guide)
 
@@ -256,16 +256,16 @@ Plans:
 **Goal:** Organizers can sign in with Google so bill dashboard access is preserved across devices and sessions
 **Requirements:** BONUS-05
 **Depends on:** Phase 7
-**Plans:** 3 plans
+**Plans:** 3/3 plans complete
 
 **Wave 1**
-- [ ] 08-01-PLAN.md — Foundation: install @convex-dev/auth, 4 new Convex files, schema authTables + googleUserId, provider wiring, external OAuth/env setup
+- [x] 08-01-PLAN.md — Foundation: install @convex-dev/auth, 4 new Convex files, schema authTables + googleUserId, provider wiring, external OAuth/env setup
 
 **Wave 2** *(blocked on Wave 1)*
-- [ ] 08-02-PLAN.md — Backend dual-auth: getAuthUserId guard on all organizer functions in bills.ts + payments.ts; createBill stores googleUserId
+- [x] 08-02-PLAN.md — Backend dual-auth: getAuthUserId guard on all organizer functions in bills.ts + payments.ts; createBill stores googleUserId
 
 **Wave 3** *(blocked on Waves 1+2)*
-- [ ] 08-03-PLAN.md — Frontend: wire SignInButton, dashboard sign-in banner + auth-loading skeleton, dual-auth query/mutation paths
+- [x] 08-03-PLAN.md — Frontend: wire SignInButton, dashboard sign-in banner + auth-loading skeleton, dual-auth query/mutation paths
 
 ### Phase 9: Bill editing — organizer can edit items, prices, and tax toggles after bill creation
 
