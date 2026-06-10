@@ -7,6 +7,44 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.2.1] - 2026-06-07
+
+### Added
+
+- **Inline item editor** — organizer can edit item name, price, and quantity directly in the dashboard item table
+- **Total column** — item editor exposes a Total field alongside Price; editing either recalculates the other (bidirectional sync)
+
+### Fixed
+
+- Total field preserves exact entered value instead of recalculating from price × qty (floating-point drift)
+- `organizerSecret` null coerced to `undefined` on `setBillReceipt` and `updateQR` to satisfy Convex validator
+
+## [1.2.0] - 2026-06-07
+
+### Added
+
+- **Google OAuth** — organizers can sign in with Google via `convex-auth`; dashboard shows sign-in banner for unauthenticated sessions
+- **Dual-auth guard** — all organizer mutations accept either `organizerSecret` (legacy) or a verified Google session; both paths enforced on `bills.ts` and `payments.ts`
+- **Sign-out button** — dashboard header exposes sign-out action for Google-auth sessions
+- **Banking info at creation** — bank name, account number, account holder, and reference fields available in the create flow
+- **Rounding adjustment** — organizer can add a rounding adjustment cent amount; propagated through `calculateTotals` and shown as a dedicated row in bill totals
+- **Member view transfer-to section** — banking info surfaced in the payment zone so members see where to transfer
+
+### Fixed
+
+- Item total price display in UAT verification
+- Transfer-to section visibility
+- Rounding adjustment colour and QR upload placement
+- Banking input stale-closure and trim sanitisation
+- `getMyPayment` uses `collect` + priority reduce to avoid returning stale rejected records
+- Banking fields clearable via null patch
+- `setIsSubmitting(false)` moved to `finally` block in `handleGenerate`
+- `pendingItems` guard and `finally` block added to `handleNameSubmit`
+- `key` prop on rounding adjustment inputs forces remount on external update
+- Server-side title validation added to `createBill`
+- Banking info `onBlur` moved to container level to prevent concurrent mutation races
+- OAuth proxy route added at `/api/auth` for Google OAuth sign-in
+
 ## [1.1.0] - 2026-06-01
 
 ### Added
@@ -62,6 +100,8 @@ Initial submission-ready release.
 - Convex backend — real-time queries, typed mutations, file storage for QR codes
 - Session-based identity via `localStorage` (no auth required)
 
-[Unreleased]: https://github.com/0x1nfra/tongtong-bill-splitting/compare/v1.1.0...HEAD
+[Unreleased]: https://github.com/0x1nfra/tongtong-bill-splitting/compare/v1.2.1...HEAD
+[1.2.1]: https://github.com/0x1nfra/tongtong-bill-splitting/compare/v1.2.0...v1.2.1
+[1.2.0]: https://github.com/0x1nfra/tongtong-bill-splitting/compare/v1.1.0...v1.2.0
 [1.1.0]: https://github.com/0x1nfra/tongtong-bill-splitting/compare/v1.0.0...v1.1.0
 [1.0.0]: https://github.com/0x1nfra/tongtong-bill-splitting/releases/tag/v1.0.0
