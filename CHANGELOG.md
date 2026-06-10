@@ -7,6 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- **Google OAuth** — organizers can sign in with Google via `convex-auth`; dashboard shows sign-in banner for unauthenticated sessions
+- **Dual-auth guard** — all organizer mutations accept either `organizerSecret` (legacy) or a verified Google session; both paths enforced on `bills.ts` and `payments.ts`
+- **Sign-out button** — dashboard header exposes sign-out action for Google-auth sessions
+- **OAuth proxy route** — `/api/auth` handles Google OAuth sign-in redirect
+
 ## [1.2.1] - 2026-06-07
 
 ### Added
@@ -23,9 +30,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
-- **Google OAuth** — organizers can sign in with Google via `convex-auth`; dashboard shows sign-in banner for unauthenticated sessions
-- **Dual-auth guard** — all organizer mutations accept either `organizerSecret` (legacy) or a verified Google session; both paths enforced on `bills.ts` and `payments.ts`
-- **Sign-out button** — dashboard header exposes sign-out action for Google-auth sessions
 - **Banking info at creation** — bank name, account number, account holder, and reference fields available in the create flow
 - **Rounding adjustment** — organizer can add a rounding adjustment cent amount; propagated through `calculateTotals` and shown as a dedicated row in bill totals
 - **Member view transfer-to section** — banking info surfaced in the payment zone so members see where to transfer
@@ -43,7 +47,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `key` prop on rounding adjustment inputs forces remount on external update
 - Server-side title validation added to `createBill`
 - Banking info `onBlur` moved to container level to prevent concurrent mutation races
-- OAuth proxy route added at `/api/auth` for Google OAuth sign-in
 
 ## [1.1.0] - 2026-06-01
 
